@@ -5,6 +5,7 @@ public class Book {
 	private String id;
 	private String authorId;
 	private String genreId;
+	private String libraryId;
 	private String name;
 	private String isbn;
 	private Integer numberOfPages;
@@ -43,6 +44,18 @@ public class Book {
 	 */
 	public void setGenreId(String genreId) {
 		this.genreId = genreId;
+	}
+	/**
+	 * @return the libraryId
+	 */
+	public String getLibraryId() {
+		return libraryId;
+	}
+	/**
+	 * @param libraryId the libraryId to set
+	 */
+	public void setLibraryId(String libraryId) {
+		this.libraryId = libraryId;
 	}
 	/**
 	 * @return the name

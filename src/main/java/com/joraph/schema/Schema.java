@@ -1,5 +1,6 @@
 package com.joraph.schema;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -47,6 +48,26 @@ public class Schema {
 	public Collection<ForeignKey<?>> getForeignKeys(Class<?> entityClass) {
 		EntityDescriptor ed = entityDescriptors.get(entityClass);
 		return Collections.unmodifiableCollection(ed.getForeignKeys().values());
+	}
+
+	public Collection<ForeignKey<?>> getForeignKeys(Class<?> fromEntityClass, Class<?> toEntityClass) {
+		 Collection<ForeignKey<?>> ret = new ArrayList<>();
+		 for (ForeignKey<?> fk : getForeignKeys(fromEntityClass)) {
+			 if (fk.getForeignEntity().equals(toEntityClass)) {
+				 ret.add(fk);
+			 }
+		 }
+		 return Collections.unmodifiableCollection(ret);
+	}
+
+	/**
+	 * Describes the given entity class.
+	 * @param entityClass the class
+	 * @return the node
+	 */
+	public Node describe(Class<?> entityClass) {
+		this.assertValidated();
+		return new Node(null, this, entityClass, getForeignKeys(entityClass), false);
 	}
 
 	/**
