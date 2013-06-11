@@ -2,6 +2,8 @@ package com.joraph.plan;
 
 import static org.junit.Assert.*;
 
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,9 +53,9 @@ public class ExecutionPlannerTest {
 		
 		EntityDescriptor checkout = schema.addEntityDescriptor(Checkout.class);
 		checkout.setPrimaryKey("id");
-		checkout.addForeignKey("bookId", Book.class);
 		checkout.addForeignKey("userId", User.class);
 		checkout.addForeignKey("libraryId", Library.class);
+		checkout.addForeignKey("bookId", Book.class);
 		
 		EntityDescriptor similarBook = schema.addEntityDescriptor(SimilarBook.class);
 		similarBook.setPrimaryKey("id");
@@ -73,9 +75,31 @@ public class ExecutionPlannerTest {
 
 	@Test
 	public void testPlan() {
+		// check plan
 		ExecutionPlan plan = planner.plan(Checkout.class);
 		assertNotNull(plan);
 		System.out.println(plan.explain());
+
+		// check ops
+		List<Operation> ops = plan.getOperations();
+		
+		// get book fks and load them
+		assertTrue(ops.get(0).equals(new GatherForeignKeysTo(Book.class)));
+		assertTrue(ops.get(1).equals(new LoadOperation(Book.class)));
+		
+		// get libray fks and load them
+		assertTrue(ops.get(2).equals(new GatherForeignKeysTo(Library.class)));
+		assertTrue(ops.get(3).equals(new LoadOperation(Library.class)));
+		
+		// get the rest of the fks and load
+		assertTrue(ops.subList(4, 7).equals(new GatherForeignKeysTo(Author.class)));
+		assertTrue(ops.subList(4, 7).equals(new GatherForeignKeysTo(Genre.class)));
+		assertTrue(ops.subList(4, 7).equals(new GatherForeignKeysTo(User.class)));
+		assertTrue(ops.subList(7, 10).equals(new LoadOperation(Author.class)));
+		assertTrue(ops.subList(7, 10).equals(new LoadOperation(Genre.class)));
+		assertTrue(ops.subList(7, 10).equals(new LoadOperation(User.class)));
+
+		
 	}
 
 }

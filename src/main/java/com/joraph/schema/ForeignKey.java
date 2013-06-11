@@ -33,4 +33,14 @@ public class ForeignKey<T extends Serializable>
 		return eagar;
 	}
 
+	@Override
+	public String toString() {
+		return getClass().getName()+"@"+hashCode()+" ["
+			+(eagar?"eager":"lazy")+" fk to -> "
+			+foreignEntity.getName()
+			+"]";
+	}
+
+	
+
 }

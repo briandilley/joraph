@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ParallelOperation 
+	extends AbstractOperation
 	implements Operation {
 
 	private List<Operation> operations = new ArrayList<>();

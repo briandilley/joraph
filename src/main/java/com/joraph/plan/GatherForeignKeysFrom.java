@@ -1,6 +1,7 @@
 package com.joraph.plan;
 
 public class GatherForeignKeysFrom
+	extends AbstractOperation
 	implements Operation {
 
 	private Class<?> entityClass;
