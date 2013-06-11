@@ -1,20 +1,16 @@
 package com.joraph.plan;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Stack;
 
 import com.joraph.Context;
-import com.joraph.schema.ForeignKey;
-import com.joraph.schema.Node;
+import com.joraph.schema.Graph;
 import com.joraph.schema.Schema;
 
 public class ExecutionPlanner {
+
+	public static final Integer WHITE=0, GREY=1, BLACK=2;
 
 	private Context context = null;
 	private Schema schema = null;
@@ -45,98 +41,32 @@ public class ExecutionPlanner {
 	 */
 	public <T> ExecutionPlan plan(Class<T> entityClass) {
 		clear();
-		traverse(entityClass, false);
+
+		// build the graph
+		Graph graph = schema.graph(entityClass);
+
+		// get entities with no incoming FKs
+		Stack<Class<?>> stack = new Stack<>();
+		stack.addAll(graph.getEntitiesWithoutIncomingEdges());
+
+		// loop
+		List<Class<?>> order = new ArrayList<>();
+		while (!stack.isEmpty()) {
+			Class<?> n = stack.pop();
+			order.add(n);
+			
+			for (Class<?> m : graph.getEntities()) {
+				if (!graph.hasEdge(n, m)) {
+					continue;
+				}
+				graph.removeEdge(n, m);
+				if (!graph.hasIncomingEdge(m)) {
+					stack.push(m);
+				}
+			}
+		}
+
 		return plan;
 	}
-
-	/**
-	 * Traverse the foreign keys.
-	 * @param node starting with this node
-	 */
-	private void traverse(Class<?> entityClass, boolean load) {
-
-		// describe this class
-		Node node = schema.describe(entityClass);
-
-		// get the foreign keys for this class
-		final List<ForeignKey<?>> fks = new ArrayList<>();
-		fks.addAll(node.getForeignKeys());
-
-		// now do the children
-		node.visitChildren(new Node.Visitor() {
-			@Override
-			public Result visit(Node node) {
-				if (node.isCircular()) {
-					return Result.SKIP_CHILDREN;
-				}
-				fks.addAll(node.getForeignKeys());
-				return Result.CONTINUE;
-			}
-		});
-
-		// count refs
-		Map<Class<?>, Integer> refCounts = new HashMap<>();
-		countRefs(refCounts, fks);
-
-		// gather
-		for (Entry<Class<?>, Integer> entry : refCounts.entrySet()) {
-			Collection<ForeignKey<?>> fksToEntry = schema.getForeignKeys(entityClass, entry.getKey());
-			if (entry.getValue()==fksToEntry.size()) {
-				plan.addOperation(new GatherForeignKeysTo(entry.getKey()));
-			}
-		}
-
-		// load
-		for (Entry<Class<?>, Integer> entry : refCounts.entrySet()) {
-			Collection<ForeignKey<?>> fksToEntry = schema.getForeignKeys(entityClass, entry.getKey());
-			if (entry.getValue()==fksToEntry.size()) {
-				plan.addOperation(new LoadOperation(entry.getKey()));
-			}
-		}
-
-		// traverse
-		List<Entry<Class<?>, Integer>> entryList = new ArrayList<>(refCounts.entrySet());
-		Collections.sort(entryList, REF_COUNT_ENTRY_COMPARATOR);
-		for (Entry<Class<?>, Integer> entry : entryList) {
-			if (entry.getValue()>schema.getForeignKeys(entityClass, entry.getKey()).size()) {
-				traverse(entry.getKey(), true);
-			}
-		}
-
-		// load it
-		if (load) {
-			plan.addOperation(new GatherForeignKeysTo(entityClass));
-			plan.addOperation(new LoadOperation(entityClass));
-		}
-		
-	}
-
-	/**
-	 * Counts the references to each entity class in the
-	 * given {@link ForeignKey}s.
-	 * @param refCounts
-	 * @param fks
-	 */
-	private void countRefs(Map<Class<?>, Integer> refCounts, Collection<ForeignKey<?>> fks) {
-		for (ForeignKey<?> fk : fks) {
-			if (!refCounts.containsKey(fk.getForeignEntity())) {
-				refCounts.put(fk.getForeignEntity(), 0);
-			}
-			Integer count = refCounts.get(fk.getForeignEntity());
-			count++;
-			refCounts.put(fk.getForeignEntity(), count);
-		}
-	}
-
-	/**
-	 * For sorting FKs.
-	 */
-	private static final Comparator<Entry<Class<?>, Integer>> REF_COUNT_ENTRY_COMPARATOR =
-		new Comparator<Entry<Class<?>, Integer>>() {
-		@Override
-		public int compare(Entry<Class<?>, Integer> o1, Entry<Class<?>, Integer> o2) {
-			return o1.getValue().compareTo(o2.getValue());
-		}
-	};
 
 }

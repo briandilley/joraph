@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.Set;
 
 public class Schema {
 
@@ -45,19 +46,53 @@ public class Schema {
 		return ret;
 	}
 
-	public Collection<ForeignKey<?>> getForeignKeys(Class<?> entityClass) {
+	public Collection<ForeignKey<?>> describeForeignKeysFrom(Class<?> entityClass) {
 		EntityDescriptor ed = entityDescriptors.get(entityClass);
 		return Collections.unmodifiableCollection(ed.getForeignKeys().values());
 	}
 
-	public Collection<ForeignKey<?>> getForeignKeys(Class<?> fromEntityClass, Class<?> toEntityClass) {
+	public Collection<ForeignKey<?>> describeForeignKeys(Class<?> fromEntityClass, Class<?> toEntityClass) {
 		 Collection<ForeignKey<?>> ret = new ArrayList<>();
-		 for (ForeignKey<?> fk : getForeignKeys(fromEntityClass)) {
+		 for (ForeignKey<?> fk : describeForeignKeysFrom(fromEntityClass)) {
 			 if (fk.getForeignEntity().equals(toEntityClass)) {
 				 ret.add(fk);
 			 }
 		 }
 		 return Collections.unmodifiableCollection(ret);
+	}
+
+	public Collection<ForeignKey<?>> describeForeignKeysTo(Class<?> toEntityClass) {
+		 Collection<ForeignKey<?>> ret = new ArrayList<>();
+		 for (ForeignKey<?> fk : describeForeignKeys()) {
+			 if (fk.getForeignEntity().equals(toEntityClass)) {
+				 ret.add(fk);
+			 }
+		 }
+		 return Collections.unmodifiableCollection(ret);
+	}
+
+	public Collection<ForeignKey<?>> describeForeignKeys() {
+		 Collection<ForeignKey<?>> ret = new ArrayList<>();
+		 for (Class<?> fromEntityClass : describeEntities()) {
+			 for (ForeignKey<?> fk : describeForeignKeysFrom(fromEntityClass)) {
+				 ret.add(fk);
+			 }
+		 }
+		 return Collections.unmodifiableCollection(ret);
+	}
+
+	public Graph graph(Class<?> startClass) {
+		Graph ret = new Graph();
+		graph(describe(startClass), ret);
+		return ret;
+	}
+
+	private void graph(Node node, Graph graph) {
+		graph.addEntity(node.getEntityClass());
+		for (ForeignKey<?> fk : node.getForeignKeys()) {
+			graph.addEdge(node.getEntityClass(), fk.getForeignEntity());
+			graph(node.child(fk.getName()), graph);
+		}
 	}
 
 	/**
@@ -67,7 +102,17 @@ public class Schema {
 	 */
 	public Node describe(Class<?> entityClass) {
 		this.assertValidated();
-		return new Node(null, this, entityClass, getForeignKeys(entityClass), false);
+		return new Node(null, this, entityClass, describeForeignKeysFrom(entityClass), false);
+	}
+
+	/**
+	 * Describes the given entity class.
+	 * @param entityClass the class
+	 * @return the node
+	 */
+	public Set<Class<?>> describeEntities() {
+		this.assertValidated();
+		return Collections.unmodifiableSet(entityDescriptors.keySet());
 	}
 
 	/**

@@ -154,7 +154,7 @@ public class Node {
 				return new Node(
 					this, schema,
 					fk.getForeignEntity(),
-					schema.getForeignKeys(fk.getForeignEntity()),
+					schema.describeForeignKeysFrom(fk.getForeignEntity()),
 					this.entityClass.equals(foreignClass) || getAncestor(foreignClass)!=null);
 			}
 		}

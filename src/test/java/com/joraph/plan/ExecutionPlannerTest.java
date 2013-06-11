@@ -92,9 +92,9 @@ public class ExecutionPlannerTest {
 		assertTrue(ops.get(3).equals(new LoadOperation(Library.class)));
 		
 		// get the rest of the fks and load
-		assertTrue(ops.subList(4, 7).equals(new GatherForeignKeysTo(Author.class)));
-		assertTrue(ops.subList(4, 7).equals(new GatherForeignKeysTo(Genre.class)));
-		assertTrue(ops.subList(4, 7).equals(new GatherForeignKeysTo(User.class)));
+		assertTrue(ops.subList(4, 7).contains(new GatherForeignKeysTo(Author.class)));
+		assertTrue(ops.subList(4, 7).contains(new GatherForeignKeysTo(Genre.class)));
+		assertTrue(ops.subList(4, 7).contains(new GatherForeignKeysTo(User.class)));
 		assertTrue(ops.subList(7, 10).equals(new LoadOperation(Author.class)));
 		assertTrue(ops.subList(7, 10).equals(new LoadOperation(Genre.class)));
 		assertTrue(ops.subList(7, 10).equals(new LoadOperation(User.class)));
