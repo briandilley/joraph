@@ -1,5 +1,6 @@
 package com.joraph.schema;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,6 +22,39 @@ public class Graph<T>
 	private Map<T, Integer> marked = new HashMap<>();
 
 	private Stack<Graph<T>> snapshots = new Stack<>();
+
+	public List<T> topSort() {
+
+		// take a snapshot since we're destructive
+		snapshot();
+
+		// get entities with no incoming FKs
+		Stack<T> stack = new Stack<>();
+		stack.addAll(getEntitiesWithoutIncomingEdges());
+
+		// sort
+		List<T> order = new ArrayList<>();
+		while (!stack.isEmpty()) {
+			T n = stack.pop();
+			order.add(n);
+			
+			for (T m : getEntities()) {
+				if (!hasEdge(n, m)) {
+					continue;
+				}
+				removeEdge(n, m);
+				if (!hasIncomingEdge(m)) {
+					stack.push(m);
+				}
+			}
+		}
+
+		// roll back the destruction
+		rollback();
+
+		// return it
+		return order;
+	}
 
 	public List<T> depthFirstSort() {
 		LinkedList<T> ret = new LinkedList<>();
