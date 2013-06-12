@@ -74,7 +74,7 @@ public class ExecutionPlannerTest {
 	}
 
 	@Test
-	public void testPlan() {
+	public void testPlan_Checkout() {
 		// check plan
 		ExecutionPlan plan = planner.plan(Checkout.class);
 		assertNotNull(plan);
@@ -95,11 +95,20 @@ public class ExecutionPlannerTest {
 		assertTrue(ops.subList(4, 7).contains(new GatherForeignKeysTo(Author.class)));
 		assertTrue(ops.subList(4, 7).contains(new GatherForeignKeysTo(Genre.class)));
 		assertTrue(ops.subList(4, 7).contains(new GatherForeignKeysTo(User.class)));
-		assertTrue(ops.subList(7, 10).equals(new LoadOperation(Author.class)));
-		assertTrue(ops.subList(7, 10).equals(new LoadOperation(Genre.class)));
-		assertTrue(ops.subList(7, 10).equals(new LoadOperation(User.class)));
+		assertTrue(ops.subList(7, 10).contains(new LoadOperation(Author.class)));
+		assertTrue(ops.subList(7, 10).contains(new LoadOperation(Genre.class)));
+		assertTrue(ops.subList(7, 10).contains(new LoadOperation(User.class)));
 
-		
+	}
+
+	@Test
+	public void testPlan_SimilarBook() {
+		// check plan
+		ExecutionPlan plan = planner.plan(SimilarBook.class);
+		assertNotNull(plan);
+		System.out.println(plan.explain());
+
+
 	}
 
 }

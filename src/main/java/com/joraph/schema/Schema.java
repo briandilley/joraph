@@ -81,13 +81,13 @@ public class Schema {
 		 return Collections.unmodifiableCollection(ret);
 	}
 
-	public Graph graph(Class<?> startClass) {
-		Graph ret = new Graph();
+	public Graph<Class<?>> graph(Class<?> startClass) {
+		Graph<Class<?>> ret = new Graph<Class<?>>();
 		graph(describe(startClass), ret);
 		return ret;
 	}
 
-	private void graph(Node node, Graph graph) {
+	private void graph(Node node, Graph<Class<?>> graph) {
 		graph.addEntity(node.getEntityClass());
 		for (ForeignKey<?> fk : node.getForeignKeys()) {
 			graph.addEdge(node.getEntityClass(), fk.getForeignEntity());

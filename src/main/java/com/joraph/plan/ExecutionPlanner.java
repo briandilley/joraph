@@ -1,7 +1,10 @@
 package com.joraph.plan;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 
 import com.joraph.Context;
@@ -43,13 +46,51 @@ public class ExecutionPlanner {
 		clear();
 
 		// build the graph
-		Graph graph = schema.graph(entityClass);
+		Graph<Class<?>> graph = schema.graph(entityClass);
+
+		// sort the graph
+		graph.reverse();
+		List<Class<?>> sorted = graph.depthFirstSort();
+
+		// create the plan
+		Set<Class<?>> buff = new HashSet<>();
+		Class<?> parent = sorted.remove(0);
+		for (Class<?> clazz : sorted) {
+			if (graph.isBelow(parent, clazz)) {
+				
+				// gather and load
+				gatherAndLoad(buff);
+				parent = clazz;
+
+				// clear it
+				buff.clear();
+			}
+			buff.add(clazz);
+		}
+
+		// gather and load the remaining
+		gatherAndLoad(buff);
+
+		// return it
+		return plan;
+	}
+
+	private void gatherAndLoad(Collection<Class<?>> entities) {
+		for (Class<?> c : entities) {
+			plan.addOperation(new GatherForeignKeysTo(c));
+		}
+		for (Class<?> c : entities) {
+			plan.addOperation(new LoadOperation(c));
+		}
+	}
+
+	private List<Class<?>> sortGraph(Graph<Class<?>> graph) {
 
 		// get entities with no incoming FKs
 		Stack<Class<?>> stack = new Stack<>();
 		stack.addAll(graph.getEntitiesWithoutIncomingEdges());
 
-		// loop
+		// sort
 		List<Class<?>> order = new ArrayList<>();
 		while (!stack.isEmpty()) {
 			Class<?> n = stack.pop();
@@ -66,7 +107,8 @@ public class ExecutionPlanner {
 			}
 		}
 
-		return plan;
+		// return it
+		return order;
 	}
 
 }
