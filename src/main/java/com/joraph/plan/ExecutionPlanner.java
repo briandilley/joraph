@@ -1,11 +1,11 @@
 package com.joraph.plan;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 
 import com.joraph.Context;
 import com.joraph.schema.Graph;
@@ -46,26 +46,28 @@ public class ExecutionPlanner {
 		clear();
 
 		// build the graph
-		Graph<Class<?>> graph = schema.graph(entityClass);
+		final Graph<Class<?>> graph = schema.graph(entityClass);
 
 		// sort the graph
-		graph.reverse();
-		List<Class<?>> sorted = graph.depthFirstSort();
+		List<Class<?>> sorted = graph.topSort();
 
 		// create the plan
 		Set<Class<?>> buff = new HashSet<>();
-		Class<?> parent = sorted.remove(0);
-		for (Class<?> clazz : sorted) {
-			if (graph.isBelow(parent, clazz)) {
-				
-				// gather and load
+		int lastGather = 0;
+		for (int i=0; i<sorted.size(); i++) {
+			boolean gather = false;
+			for (int j=lastGather; j<i; j++) {
+				if (graph.hasOutgoingEdge(sorted.get(j), sorted.get(i))) {
+					gather = true;
+					lastGather = i;
+					break;
+				}
+			}
+			if (gather) {
 				gatherAndLoad(buff);
-				parent = clazz;
-
-				// clear it
 				buff.clear();
 			}
-			buff.add(clazz);
+			buff.add(sorted.get(i));
 		}
 
 		// gather and load the remaining
@@ -82,33 +84,6 @@ public class ExecutionPlanner {
 		for (Class<?> c : entities) {
 			plan.addOperation(new LoadOperation(c));
 		}
-	}
-
-	private List<Class<?>> sortGraph(Graph<Class<?>> graph) {
-
-		// get entities with no incoming FKs
-		Stack<Class<?>> stack = new Stack<>();
-		stack.addAll(graph.getEntitiesWithoutIncomingEdges());
-
-		// sort
-		List<Class<?>> order = new ArrayList<>();
-		while (!stack.isEmpty()) {
-			Class<?> n = stack.pop();
-			order.add(n);
-			
-			for (Class<?> m : graph.getEntities()) {
-				if (!graph.hasEdge(n, m)) {
-					continue;
-				}
-				graph.removeEdge(n, m);
-				if (!graph.hasIncomingEdge(m)) {
-					stack.push(m);
-				}
-			}
-		}
-
-		// return it
-		return order;
 	}
 
 }

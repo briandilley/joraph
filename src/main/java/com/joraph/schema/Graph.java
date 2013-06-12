@@ -2,6 +2,7 @@ package com.joraph.schema;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -25,10 +26,8 @@ public class Graph<T>
 
 	public List<T> topSort() {
 
-		// take a snapshot since we're destructive
-		snapshot();
-
 		// get entities with no incoming FKs
+		snapshot();
 		Stack<T> stack = new Stack<>();
 		stack.addAll(getEntitiesWithoutIncomingEdges());
 
@@ -39,7 +38,7 @@ public class Graph<T>
 			order.add(n);
 			
 			for (T m : getEntities()) {
-				if (!hasEdge(n, m)) {
+				if (!hasOutgoingEdge(n, m)) {
 					continue;
 				}
 				removeEdge(n, m);
@@ -48,8 +47,6 @@ public class Graph<T>
 				}
 			}
 		}
-
-		// roll back the destruction
 		rollback();
 
 		// return it
@@ -73,7 +70,7 @@ public class Graph<T>
 		}
 		mark(node, TEMP);
 		for (T m : entities) {
-			if (hasEdge(node, m)) {
+			if (hasOutgoingEdge(node, m)) {
 				dfsVisit(m, ret);
 			}
 		}
@@ -155,29 +152,10 @@ public class Graph<T>
 		return ret;
 	}
 
-	public boolean isBelow(T above, T below) {
-		if (!outgoingEdge.containsKey(above)) {
-			return false;
-		}
-		Set<T> inspected = new HashSet<>();
-		for (T child : outgoingEdge.get(above)) {
-			if (inspected.contains(child)) {
-				return false;
-			}
-			inspected.add(child);
-			if (below.equals(child)) {
-				return true;
-			} else if (isBelow(child, below)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	public Set<T> getEntitiesWithoutIncomingEdges() {
 		Set<T> ret = new HashSet<>();
 		for (T entity : entities) {
-			if (!incomingEdge.containsKey(entity)) {
+			if (countEdges(entity, true)==0) {
 				ret.add(entity);
 			}
 		}
@@ -226,7 +204,7 @@ public class Graph<T>
 		}
 	}
 
-	public boolean hasEdge(T from, T to) {
+	public boolean hasOutgoingEdge(T from, T to) {
 		return outgoingEdge.containsKey(from)
 			&& outgoingEdge.get(from).contains(to);
 	}
@@ -234,6 +212,24 @@ public class Graph<T>
 	public boolean hasIncomingEdge(T to) {
 		return incomingEdge.containsKey(to)
 			&& !incomingEdge.get(to).isEmpty();
+	}
+
+	public List<T> sortByEdgeCount(final boolean incoming) {
+		List<T> sort = new ArrayList<>();
+		sort.addAll(entities);
+		Collections.sort(sort, new Comparator<T>() {
+			@Override
+			public int compare(T o1, T o2) {
+				return new Integer(countEdges(o1, incoming))
+					.compareTo(new Integer(countEdges(o2, incoming)));
+			}
+		});
+		return sort;
+	}
+
+	public int countEdges(T node, boolean incoming) {
+		Set<T> edges = (incoming) ? incomingEdge.get(node) : outgoingEdge.get(node);
+		return (edges!=null) ? edges.size() : 0;
 	}
 
 }

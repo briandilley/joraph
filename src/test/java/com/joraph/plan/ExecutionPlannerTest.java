@@ -82,32 +82,26 @@ public class ExecutionPlannerTest {
 
 		// check ops
 		List<Operation> ops = plan.getOperations();
+
+		// get book fks and load them
+		assertTrue(ops.get(0).equals(new GatherForeignKeysTo(Checkout.class)));
+		assertTrue(ops.get(1).equals(new LoadOperation(Checkout.class)));
 		
 		// get book fks and load them
-		assertTrue(ops.get(0).equals(new GatherForeignKeysTo(Book.class)));
-		assertTrue(ops.get(1).equals(new LoadOperation(Book.class)));
+		assertTrue(ops.get(2).equals(new GatherForeignKeysTo(Book.class)));
+		assertTrue(ops.get(3).equals(new LoadOperation(Book.class)));
 		
 		// get libray fks and load them
-		assertTrue(ops.get(2).equals(new GatherForeignKeysTo(Library.class)));
-		assertTrue(ops.get(3).equals(new LoadOperation(Library.class)));
+		assertTrue(ops.subList(4, 7).contains(new GatherForeignKeysTo(Author.class)));
+		assertTrue(ops.subList(4, 7).contains(new GatherForeignKeysTo(Library.class)));
+		assertTrue(ops.subList(4, 7).contains(new GatherForeignKeysTo(Genre.class)));
+		assertTrue(ops.subList(7, 10).contains(new LoadOperation(Author.class)));
+		assertTrue(ops.subList(7, 10).contains(new LoadOperation(Library.class)));
+		assertTrue(ops.subList(7, 10).contains(new LoadOperation(Genre.class)));
 		
 		// get the rest of the fks and load
-		assertTrue(ops.subList(4, 7).contains(new GatherForeignKeysTo(Author.class)));
-		assertTrue(ops.subList(4, 7).contains(new GatherForeignKeysTo(Genre.class)));
-		assertTrue(ops.subList(4, 7).contains(new GatherForeignKeysTo(User.class)));
-		assertTrue(ops.subList(7, 10).contains(new LoadOperation(Author.class)));
-		assertTrue(ops.subList(7, 10).contains(new LoadOperation(Genre.class)));
-		assertTrue(ops.subList(7, 10).contains(new LoadOperation(User.class)));
-
-	}
-
-	@Test
-	public void testPlan_SimilarBook() {
-		// check plan
-		ExecutionPlan plan = planner.plan(SimilarBook.class);
-		assertNotNull(plan);
-		System.out.println(plan.explain());
-
+		assertTrue(ops.subList(10, 12).contains(new GatherForeignKeysTo(User.class)));
+		assertTrue(ops.subList(10, 12).contains(new LoadOperation(User.class)));
 
 	}
 
