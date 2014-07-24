@@ -11,18 +11,28 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
 
 public class Graph<T>
 	implements Cloneable {
 
 	private static final int UNMARKED = 0, TEMP = 1, MARKED = 2;
 
-	private Set<T> entities = new HashSet<>();
-	private Map<T, Set<T>> outgoingEdge = new HashMap<>();
-	private Map<T, Set<T>> incomingEdge = new HashMap<>();
-	private Map<T, Integer> marked = new HashMap<>();
+	private Comparator<T> comparator;
+	private Set<T> entities;
+	private Map<T, Set<T>> outgoingEdge;
+	private Map<T, Set<T>> incomingEdge;
+	private Map<T, Integer> marked;
 
 	private Stack<Graph<T>> snapshots = new Stack<>();
+
+	public Graph(Comparator<T> comparator) {
+		this.comparator = comparator;
+		entities 		= new TreeSet<>(comparator);
+		outgoingEdge 	= new HashMap<>();
+		incomingEdge 	= new HashMap<>();
+		marked			= new HashMap<>();
+	}
 
 	public List<T> topSort() {
 
@@ -137,7 +147,7 @@ public class Graph<T>
 	@Override
 	public Graph<T> clone()
 		throws CloneNotSupportedException {
-		Graph<T> ret = new Graph<T>();
+		Graph<T> ret = new Graph<T>(comparator);
 		ret.entities.addAll(entities);
 		for (Entry<T, Set<T>> entry : outgoingEdge.entrySet()) {
 			ret.outgoingEdge.put(entry.getKey(), new HashSet<T>());

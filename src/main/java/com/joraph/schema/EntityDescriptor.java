@@ -76,7 +76,7 @@ public class EntityDescriptor {
 	public void addForeignKey(String propertyName, Class<?> foreignEntity, boolean eagar)
 		throws IntrospectionException {
 		this.foreignKeys.put(propertyName,
-			new ForeignKey<>(propertyName, entityClass, foreignEntity, eagar));
+			new ForeignKey<>(propertyName, entityClass, foreignEntity));
 	}
 
 }

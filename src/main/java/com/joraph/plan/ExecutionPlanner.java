@@ -1,38 +1,26 @@
 package com.joraph.plan;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.joraph.Context;
+import com.joraph.JoraphContext;
 import com.joraph.schema.Graph;
 import com.joraph.schema.Schema;
 
 public class ExecutionPlanner {
 
-	public static final Integer WHITE=0, GREY=1, BLACK=2;
-
-	private Context context = null;
-	private Schema schema = null;
-	private ExecutionPlan plan = null;
+	private JoraphContext context = null;
 
 	/**
 	 * Creates a plan for the given context.
 	 * @param context the context
 	 */
-	public ExecutionPlanner(Context context) {
+	public ExecutionPlanner(JoraphContext context) {
 		this.context = context;
-	}
-
-	/**
-	 * Clears the state.
-	 */
-	public void clear() {
-		schema = context.getSchema();
-		plan = new ExecutionPlan();
 	}
 
 	/**
@@ -43,7 +31,10 @@ public class ExecutionPlanner {
 	 * @return
 	 */
 	public <T> ExecutionPlan plan(Class<T> entityClass) {
-		clear();
+
+		// get the schema
+		Schema schema = context.getSchema();
+		ExecutionPlan plan = new ExecutionPlan();
 
 		// build the graph
 		final Graph<Class<?>> graph = schema.graph(entityClass);
@@ -64,25 +55,28 @@ public class ExecutionPlanner {
 				}
 			}
 			if (gather) {
-				gatherAndLoad(buff);
+				gatherAndLoad(plan, buff);
 				buff.clear();
 			}
 			buff.add(sorted.get(i));
 		}
 
 		// gather and load the remaining
-		gatherAndLoad(buff);
+		gatherAndLoad(plan, buff);
 
 		// return it
 		return plan;
 	}
 
-	private void gatherAndLoad(Collection<Class<?>> entities) {
-		for (Class<?> c : entities) {
+	@SuppressWarnings("unchecked")
+	private void gatherAndLoad(ExecutionPlan plan, Collection<Class<?>> entities) {
+		List<Class<?>> sortedEntities = new ArrayList<Class<?>>(entities);
+		Collections.sort(List.class.cast(sortedEntities), Schema.CLASS_COMPARATOR);
+		for (Class<?> c : sortedEntities) {
 			plan.addOperation(new GatherForeignKeysTo(c));
 		}
-		for (Class<?> c : entities) {
-			plan.addOperation(new LoadOperation(c));
+		for (Class<?> c : sortedEntities) {
+			plan.addOperation(new LoadEntities(c));
 		}
 	}
 

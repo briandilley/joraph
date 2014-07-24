@@ -1,12 +1,12 @@
 package com.joraph.plan;
 
-public class LoadOperation
+public class LoadEntities
 	extends AbstractOperation
 	implements Operation {
 
 	private Class<?> entityClass;
 
-	public LoadOperation(Class<?> entityClass) {
+	public LoadEntities(Class<?> entityClass) {
 		this.entityClass = entityClass;
 	}
 
@@ -43,7 +43,7 @@ public class LoadOperation
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		LoadOperation other = (LoadOperation) obj;
+		LoadEntities other = (LoadEntities) obj;
 		if (entityClass == null) {
 			if (other.entityClass != null)
 				return false;

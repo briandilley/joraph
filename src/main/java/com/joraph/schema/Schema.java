@@ -3,12 +3,21 @@ package com.joraph.schema;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Set;
 
 public class Schema {
+
+	public static final Comparator<Class<?>> CLASS_COMPARATOR
+		= new Comparator<Class<?>>() {
+			@Override
+			public int compare(Class<?> o1, Class<?> o2) {
+				return o1.getName().compareTo(o2.getName());
+			}
+		};
 
 	private boolean validated = false;
 	private Map<Class<?>, EntityDescriptor> entityDescriptors = new HashMap<>();
@@ -82,7 +91,7 @@ public class Schema {
 	}
 
 	public Graph<Class<?>> graph(Class<?> startClass) {
-		Graph<Class<?>> ret = new Graph<Class<?>>();
+		Graph<Class<?>> ret = new Graph<Class<?>>(CLASS_COMPARATOR);
 		graph(describe(startClass), ret);
 		return ret;
 	}

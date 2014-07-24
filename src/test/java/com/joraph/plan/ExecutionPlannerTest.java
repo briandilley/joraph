@@ -8,7 +8,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.joraph.Context;
+import com.joraph.JoraphContext;
 import com.joraph.schema.Author;
 import com.joraph.schema.Book;
 import com.joraph.schema.Checkout;
@@ -22,14 +22,14 @@ import com.joraph.schema.User;
 public class ExecutionPlannerTest {
 
 	private Schema schema;
-	private Context context;
+	private JoraphContext context;
 	private ExecutionPlanner planner;
 
 	@Before
 	public void setUp()
 		throws Exception {
 		schema = new Schema();
-		context = new Context(schema);
+		context = new JoraphContext(schema);
 		planner = new ExecutionPlanner(context);
 
 		EntityDescriptor author = schema.addEntityDescriptor(Author.class);
@@ -85,23 +85,23 @@ public class ExecutionPlannerTest {
 
 		// get book fks and load them
 		assertTrue(ops.get(0).equals(new GatherForeignKeysTo(Checkout.class)));
-		assertTrue(ops.get(1).equals(new LoadOperation(Checkout.class)));
+		assertTrue(ops.get(1).equals(new LoadEntities(Checkout.class)));
 		
 		// get book fks and load them
 		assertTrue(ops.get(2).equals(new GatherForeignKeysTo(Book.class)));
-		assertTrue(ops.get(3).equals(new LoadOperation(Book.class)));
+		assertTrue(ops.get(3).equals(new LoadEntities(Book.class)));
+
+		// get library fks and load them
+		assertTrue(ops.get(4).equals(new GatherForeignKeysTo(Library.class)));
+		assertTrue(ops.get(5).equals(new LoadEntities(Library.class)));
 		
 		// get libray fks and load them
-		assertTrue(ops.subList(4, 7).contains(new GatherForeignKeysTo(Author.class)));
-		assertTrue(ops.subList(4, 7).contains(new GatherForeignKeysTo(Library.class)));
-		assertTrue(ops.subList(4, 7).contains(new GatherForeignKeysTo(Genre.class)));
-		assertTrue(ops.subList(7, 10).contains(new LoadOperation(Author.class)));
-		assertTrue(ops.subList(7, 10).contains(new LoadOperation(Library.class)));
-		assertTrue(ops.subList(7, 10).contains(new LoadOperation(Genre.class)));
-		
-		// get the rest of the fks and load
-		assertTrue(ops.subList(10, 12).contains(new GatherForeignKeysTo(User.class)));
-		assertTrue(ops.subList(10, 12).contains(new LoadOperation(User.class)));
+		assertTrue(ops.get(6).equals(new GatherForeignKeysTo(Author.class)));
+		assertTrue(ops.get(7).equals(new GatherForeignKeysTo(Genre.class)));
+		assertTrue(ops.get(8).equals(new GatherForeignKeysTo(User.class)));
+		assertTrue(ops.get(9).equals(new LoadEntities(Author.class)));
+		assertTrue(ops.get(10).equals(new LoadEntities(Genre.class)));
+		assertTrue(ops.get(11).equals(new LoadEntities(User.class)));
 
 	}
 
