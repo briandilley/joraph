@@ -51,30 +51,6 @@ public class JoraphContext {
 	}
 
 	public Results load(Class<?> entityClass, Collection<Serializable> ids) {
-
-		// create plan and result
-		ExecutionPlan plan = plan(entityClass);
-		Results results = new Results();
-
-		// execute the plan
-		for (Operation op : plan.getOperations()) {
-			executeOperation(op, results);
-		}
-	}
-
-	private void executeOperation(Operation op, Results results) {
-
-		// gather fks
-		if (GatherForeignKeysTo.class.isInstance(op)) {
-			gatherFksTo(results, GatherForeignKeysTo.class.cast(op).getEntityClass());
-
-		// load
-		} else if (LoadEntities.class.isInstance(op)) {
-			
-		}
-	}
-
-	private Collection<Serializable> gatherFksTo(Results results, Class<?> entityClass) {
 		return null;
 	}
 
