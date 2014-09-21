@@ -48,6 +48,7 @@ public class ExecutionPlannerTest {
 		EntityDescriptor book = schema.addEntityDescriptor(Book.class);
 		book.setPrimaryKey("id");
 		book.addForeignKey("authorId", Author.class);
+		book.addForeignKey("coAuthorId", Author.class);
 		book.addForeignKey("genreId", Genre.class);
 		book.addForeignKey("libraryId", Library.class);
 		

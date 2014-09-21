@@ -4,6 +4,7 @@ public class Book {
 
 	private String id;
 	private String authorId;
+	private String coAuthorId;
 	private String genreId;
 	private String libraryId;
 	private String name;
@@ -32,6 +33,18 @@ public class Book {
 	 */
 	public void setAuthorId(String authorId) {
 		this.authorId = authorId;
+	}
+	/**
+	 * @return the coAuthorId
+	 */
+	public String getCoAuthorId() {
+		return coAuthorId;
+	}
+	/**
+	 * @param coAuthorId the coAuthorId to set
+	 */
+	public void setCoAuthorId(String coAuthorId) {
+		this.coAuthorId = coAuthorId;
 	}
 	/**
 	 * @return the genreId
