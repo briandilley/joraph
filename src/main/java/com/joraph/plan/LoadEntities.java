@@ -1,11 +1,19 @@
 package com.joraph.plan;
 
+/**
+ * Represents a step in a query plan where entities will need to be
+ * loaded to satisfy a subsequent step.
+ */
 public class LoadEntities
 	extends AbstractOperation
 	implements Operation {
 
-	private Class<?> entityClass;
+	private final Class<?> entityClass;
 
+	/**
+	 * Creates a new instance of LoadEntities.
+	 * @param entityClass the entity class
+	 */
 	public LoadEntities(Class<?> entityClass) {
 		this.entityClass = entityClass;
 	}

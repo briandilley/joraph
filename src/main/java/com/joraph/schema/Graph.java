@@ -112,7 +112,7 @@ public class Graph<T>
 
 	public T getMarked(Integer mark) {
 		for (Entry<T, Integer> entry : marked.entrySet()) {
-			if (entry.getValue()==mark) {
+			if (entry.getValue().equals(mark)) {
 				return entry.getKey();
 			}
 		}

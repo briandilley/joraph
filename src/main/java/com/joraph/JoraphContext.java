@@ -10,14 +10,15 @@ import com.joraph.plan.ExecutionPlanner;
 import com.joraph.schema.Schema;
 
 /**
- * The object that brings everything together.
+ * Derives a series of {@link com.joraph.plan.Operation} from a
+ * {@link com.joraph.schema.Schema}.
  */
 public class JoraphContext {
 
-	private Schema schema;
-	private ExecutionPlanner planner;
-	private Map<Class<?>, ExecutionPlan> cachedPlans;
-	private Map<Class<?>, EntityLoader<?>> loaders;
+	private final Schema schema;
+	private final ExecutionPlanner planner;
+	private final Map<Class<?>, ExecutionPlan> cachedPlans;
+	private final Map<Class<?>, EntityLoader<?>> loaders;
 
 	/**
 	 * Creates a context for the given {@link Schema}.
@@ -40,7 +41,6 @@ public class JoraphContext {
 	}
 
 	/**
-	 * 
 	 * @param entityClass
 	 * @param ids
 	 * @return
@@ -91,14 +91,6 @@ public class JoraphContext {
 	 */
 	public Schema getSchema() {
 		return schema;
-	}
-
-	/**
-	 * Returns the execution planner.
-	 * @return
-	 */
-	public ExecutionPlanner getPlanner() {
-		return planner;
 	}
 
 }

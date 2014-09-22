@@ -5,11 +5,15 @@ import java.io.Serializable;
 
 import com.joraph.util.ReflectionUtil;
 
+/**
+ * A key property.
+ * @param <T> the property type
+ */
 public class Key<T extends Serializable>
 		extends AbstractProperty<T>
 		implements Property<T> {
 
-	private Class<?> entityClass;
+	private final Class<?> entityClass;
 
 	/**
 	 * Creates the key.

@@ -4,6 +4,10 @@ import java.beans.PropertyDescriptor;
 
 import com.joraph.JoraphException;
 
+/**
+ * Base class for {@code Property}.
+ * @param <T> the property type
+ */
 public abstract class AbstractProperty<T>
 	implements Property<T> {
 

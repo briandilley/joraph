@@ -4,16 +4,15 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * An execution plan.
+ */
 public class ExecutionPlan {
 
-	private List<Operation> operations = new LinkedList<>();
+	private final List<Operation> operations = new LinkedList<>();
 
 	public void addOperation(Operation op) {
 		operations.add(op);
-	}
-
-	public void insertOperation(Operation op, int index) {
-		operations.add(index, op);
 	}
 
 	public List<Operation> getOperations() {

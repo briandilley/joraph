@@ -5,12 +5,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Metadata about an entity class.
+ */
 public class EntityDescriptor {
 
-	private Class<?> entityClass;
+	private final Class<?> entityClass;
 	private Key<?> primaryKey;
 	private Map<String, ForeignKey<?>> foreignKeys = new HashMap<>();
 
+	/**
+	 * Creates a new instance of EntityDescriptor.
+	 * @param entityClass the entity class
+	 */
 	public EntityDescriptor(Class<?> entityClass) {
 		this.entityClass = entityClass;
 	}

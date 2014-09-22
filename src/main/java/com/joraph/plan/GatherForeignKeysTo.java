@@ -1,11 +1,19 @@
 package com.joraph.plan;
 
+/**
+ * Represents a step in a query plan where the foreign key values will need
+ * to be retrieved for a subsequent step.
+ */
 public class GatherForeignKeysTo
 	extends AbstractOperation
 	implements Operation {
 
-	private Class<?> entityClass;
+	private final Class<?> entityClass;
 
+	/**
+	 * Creates a new instance of GatherForeignKeysTo.
+	 * @param entityClass the entity class
+	 */
 	public GatherForeignKeysTo(Class<?> entityClass) {
 		this.entityClass = entityClass;
 	}

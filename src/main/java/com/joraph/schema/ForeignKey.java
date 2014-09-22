@@ -5,6 +5,10 @@ import java.io.Serializable;
 
 import com.joraph.util.ReflectionUtil;
 
+/**
+ * A foreign key property.
+ * @param <T> the ID type
+ */
 public class ForeignKey<T extends Serializable>
 	extends AbstractProperty<T>
 	implements Property<T> {

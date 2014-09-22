@@ -15,27 +15,46 @@ import com.joraph.plan.ParallelOperation;
 import com.joraph.schema.ForeignKey;
 import com.joraph.schema.Key;
 
+/**
+ * An execution context which brings together a {@link com.joraph.JoraphContext},
+ * a single entity class, and the root objects.
+ */
 public class ExecutionContext {
 
+	private final JoraphContext context;
+	private final Results results;
+	private final Class<?> entityClass;
+	private final Map<Class<?>, Set<Serializable>> keysToLoad;
 	private ExecutionPlan plan;
-	private JoraphContext context;
-	private Results results;
-	private Class<?> entityClass;
-	private Map<Class<?>, Set<Serializable>> keysToLoad;
 
-	public <T> ExecutionContext(JoraphContext context, Class<T> entityClass, Iterable<T> objects) {
+	/**
+	 * Creates a new instance of ExecutionContext.
+	 * @param context the {@link com.joraph.JoraphContext}
+	 * @param entityClass the entity class
+	 * @param rootObjects root objects to derive child objects from based on the schema
+	 *                    contained within {@link com.joraph.JoraphContext}
+	 * @param <T> the entity type
+	 */
+	public <T> ExecutionContext(JoraphContext context, Class<T> entityClass, Iterable<T> rootObjects) {
 		this.context 		= context;
 		this.entityClass	= entityClass;
 		this.results 		= new Results();
 		this.keysToLoad		= new HashMap<>();
 
-		addToResults(objects, entityClass);
+		addToResults(rootObjects, entityClass);
 	}
 
+	/**
+	 * <p>Executes the plan, iterates the resulting operations, and returns the results.</p>
+	 * <p>Subsequent calls to {@code execute} result in a cached {@link com.joraph.Results}.</p>
+	 * @return the results derived from loading the associated objects supplied in the root
+	 * objects
+	 */
 	public Results execute() {
 		if (plan!=null) {
-			throw new IllegalStateException("Already run");
+			return results;
 		}
+
 		plan = context.plan(entityClass);
 		for (Operation op : plan.getOperations()) {
 			executeOperation(op);
