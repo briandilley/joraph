@@ -1,6 +1,8 @@
 package com.joraph;
 
+import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.joraph.plan.ExecutionPlan;
@@ -35,6 +37,18 @@ public class JoraphContext {
 	 */
 	public void addLoader(Class<?> entityClass, EntityLoader<?> loader) {
 		this.loaders.put(entityClass, loader);
+	}
+
+	/**
+	 * 
+	 * @param entityClass
+	 * @param ids
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> Results executeForIds(Class<T> entityClass, Iterable<Serializable> ids) {
+		List<?> objs = loaders.get(entityClass).load(ids);
+		return execute(entityClass, (List<T>)objs);
 	}
 
 	/**

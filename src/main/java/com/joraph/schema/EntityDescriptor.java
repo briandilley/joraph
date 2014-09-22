@@ -32,10 +32,12 @@ public class EntityDescriptor {
 	/**
 	 * @param primaryKey the primaryKey to set
 	 * @throws IntrospectionException on error
+	 * @return this
 	 */
-	public void setPrimaryKey(String propertyName)
+	public EntityDescriptor setPrimaryKey(String propertyName)
 		throws IntrospectionException {
 		this.primaryKey = new Key<>(propertyName, entityClass);
+		return this;
 	}
 
 	/**
@@ -60,10 +62,12 @@ public class EntityDescriptor {
 	 * @param foreignEntity the foreign entity
 	 * @param eagar whether or not it's an eager relationship
 	 * @throws IntrospectionException on error
+	 * @return this
 	 */
-	public void addForeignKey(String propertyName, Class<?> foreignEntity)
+	public EntityDescriptor addForeignKey(String propertyName, Class<?> foreignEntity)
 		throws IntrospectionException {
 		addForeignKey(propertyName, foreignEntity, true);
+		return this;
 	}
 
 	/**
@@ -72,11 +76,13 @@ public class EntityDescriptor {
 	 * @param foreignEntity the foreign entity
 	 * @param eagar whether or not it's an eager relationship
 	 * @throws IntrospectionException on error
+	 * @return this
 	 */
-	public void addForeignKey(String propertyName, Class<?> foreignEntity, boolean eagar)
+	public EntityDescriptor addForeignKey(String propertyName, Class<?> foreignEntity, boolean eagar)
 		throws IntrospectionException {
 		this.foreignKeys.put(propertyName,
 			new ForeignKey<>(propertyName, entityClass, foreignEntity));
+		return this;
 	}
 
 }

@@ -52,13 +52,6 @@ public class Schema {
 		return ret;
 	}
 
-	public EntityDescriptor addEntityDescriptor(Class<?> entityClass, String primaryKey) {
-		this.dirty();
-		EntityDescriptor ret = new EntityDescriptor(entityClass);
-		addEntityDescriptor(ret);
-		return ret;
-	}
-
 	public Collection<ForeignKey<?>> describeForeignKeysFrom(Class<?> entityClass) {
 		EntityDescriptor ed = entityDescriptors.get(entityClass);
 		return Collections.unmodifiableCollection(ed.getForeignKeys().values());
