@@ -6,8 +6,8 @@ import java.io.Serializable;
 import com.joraph.util.ReflectionUtil;
 
 public class Key<T extends Serializable>
-	extends AbstractProperty<T>
-	implements Property<T> {
+		extends AbstractProperty<T>
+		implements Property<T> {
 
 	private Class<?> entityClass;
 

@@ -20,6 +20,13 @@ public class ForeignKey<T extends Serializable>
 	}
 
 	/**
+	 * @return the entityClass
+	 */
+	public Class<?> getEntityClass() {
+		return entityClass;
+	}
+
+	/**
 	 * @return the foreignEntity
 	 */
 	public Class<?> getForeignEntity() {

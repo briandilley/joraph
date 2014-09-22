@@ -15,8 +15,9 @@ public class SimilarBook {
 	/**
 	 * @param id the id to set
 	 */
-	public void setId(String id) {
+	public SimilarBook setId(String id) {
 		this.id = id;
+		return this;
 	}
 	/**
 	 * @return the reason
@@ -27,8 +28,9 @@ public class SimilarBook {
 	/**
 	 * @param reason the reason to set
 	 */
-	public void setReason(String reason) {
+	public SimilarBook setReason(String reason) {
 		this.reason = reason;
+		return this;
 	}
 	/**
 	 * @return the bookId
@@ -39,8 +41,9 @@ public class SimilarBook {
 	/**
 	 * @param bookId the bookId to set
 	 */
-	public void setBookId(String bookId) {
+	public SimilarBook setBookId(String bookId) {
 		this.bookId = bookId;
+		return this;
 	}
 	/**
 	 * @return the similarBookId
@@ -51,8 +54,9 @@ public class SimilarBook {
 	/**
 	 * @param similarBookId the similarBookId to set
 	 */
-	public void setSimilarBookId(String similarBookId) {
+	public SimilarBook setSimilarBookId(String similarBookId) {
 		this.similarBookId = similarBookId;
+		return this;
 	}
 
 }

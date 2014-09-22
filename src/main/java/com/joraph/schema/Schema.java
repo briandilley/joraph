@@ -36,6 +36,10 @@ public class Schema {
 		}
 	}
 
+	public EntityDescriptor getEntityDescriptor(Class<?> entityClass) {
+		return this.entityDescriptors.get(entityClass);
+	}
+
 	public void addEntityDescriptor(EntityDescriptor entityDescriptor) {
 		this.dirty();
 		this.entityDescriptors.put(entityDescriptor.getEntityClass(), entityDescriptor);

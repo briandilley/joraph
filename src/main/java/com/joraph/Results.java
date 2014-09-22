@@ -41,7 +41,7 @@ public class Results {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T get(Class<?> type, Serializable id) {
+	public <T> T get(Class<T> type, Serializable id) {
 		Map<Serializable, Object> map = results.get(type);
 		if (map==null) {
 			return null;
@@ -55,7 +55,7 @@ public class Results {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> Map<Serializable, T> getMap(Class<?> type) {
+	public <T> Map<Serializable, T> getMap(Class<T> type) {
 		Map<Serializable, Object> map = results.get(type);
 		return map!=null
 				? (Map<Serializable, T>)map
@@ -67,8 +67,7 @@ public class Results {
 	 * @param type
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
-	public <T> List<T> getList(Class<?> type) {
+	public <T> List<T> getList(Class<T> type) {
 		return new ArrayList<T>((Collection<T>)getMap(type).values());
 	}
 
@@ -79,8 +78,7 @@ public class Results {
 	 * @param ids
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
-	public <T> List<T> getList(Class<?> type, Collection<Serializable> ids) {
+	public <T> List<T> getList(Class<T> type, Collection<Serializable> ids) {
 		List<T> ret = new ArrayList<T>();
 		for (Serializable id : ids) {
 			ret.add((T)get(type, id));

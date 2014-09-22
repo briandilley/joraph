@@ -13,8 +13,9 @@ public class User {
 	/**
 	 * @param id the id to set
 	 */
-	public void setId(String id) {
+	public User setId(String id) {
 		this.id = id;
+		return this;
 	}
 	/**
 	 * @return the name
@@ -25,8 +26,9 @@ public class User {
 	/**
 	 * @param name the name to set
 	 */
-	public void setName(String name) {
+	public User setName(String name) {
 		this.name = name;
+		return this;
 	}
 
 	

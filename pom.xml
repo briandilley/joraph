@@ -22,9 +22,6 @@
 		<!-- jdk config -->
 		<jdk.version>1.7</jdk.version>
 
-		<!-- checkstyle config -->
-		<checkstyle.failOnViolation>false</checkstyle.failOnViolation>
-
 	</properties>
 
 	<!-- 
@@ -88,27 +85,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-
-			<!-- checkstyle build plugin -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-checkstyle-plugin</artifactId>
-				<version>2.9.1</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>check</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<configLocation>src/main/resources/checkstyle/joraph_checks.xml</configLocation>
-					<failOnViolation>${checkstyle.failOnViolation}</failOnViolation>
-					<propertyExpansion>
-						cacheFile=${project.build.directory}/checkstyle-cachefile
-					</propertyExpansion>
-				</configuration>
 			</plugin>
 
 			<!-- 
@@ -178,18 +154,6 @@
 							<groupId>org.apache.maven.plugins</groupId>
 							<artifactId>maven-javadoc-plugin</artifactId>
 							<version>2.9</version>
-						</plugin>
-						<plugin>
-							<groupId>org.apache.maven.plugins</groupId>
-							<artifactId>maven-checkstyle-plugin</artifactId>
-							<version>2.9.1</version>
-							<configuration>
-								<configLocation>src/main/resources/checkstyle/joraph_checks.xml</configLocation>
-								<failOnViolation>${checkstyle.failOnViolation}</failOnViolation>
-								<propertyExpansion>
-									cacheFile=${project.build.directory}/checkstyle-cachefile
-								</propertyExpansion>
-							</configuration>
 						</plugin>
 						<!--<plugin>
 							<groupId>org.codehaus.mojo</groupId> 

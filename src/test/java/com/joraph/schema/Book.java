@@ -10,6 +10,7 @@ public class Book {
 	private String name;
 	private String isbn;
 	private Integer numberOfPages;
+
 	/**
 	 * @return the id
 	 */
@@ -19,8 +20,9 @@ public class Book {
 	/**
 	 * @param id the id to set
 	 */
-	public void setId(String id) {
+	public Book setId(String id) {
 		this.id = id;
+		return this;
 	}
 	/**
 	 * @return the authorId
@@ -31,8 +33,9 @@ public class Book {
 	/**
 	 * @param authorId the authorId to set
 	 */
-	public void setAuthorId(String authorId) {
+	public Book setAuthorId(String authorId) {
 		this.authorId = authorId;
+		return this;
 	}
 	/**
 	 * @return the coAuthorId
@@ -43,8 +46,9 @@ public class Book {
 	/**
 	 * @param coAuthorId the coAuthorId to set
 	 */
-	public void setCoAuthorId(String coAuthorId) {
+	public Book setCoAuthorId(String coAuthorId) {
 		this.coAuthorId = coAuthorId;
+		return this;
 	}
 	/**
 	 * @return the genreId
@@ -55,8 +59,9 @@ public class Book {
 	/**
 	 * @param genreId the genreId to set
 	 */
-	public void setGenreId(String genreId) {
+	public Book setGenreId(String genreId) {
 		this.genreId = genreId;
+		return this;
 	}
 	/**
 	 * @return the libraryId
@@ -67,8 +72,9 @@ public class Book {
 	/**
 	 * @param libraryId the libraryId to set
 	 */
-	public void setLibraryId(String libraryId) {
+	public Book setLibraryId(String libraryId) {
 		this.libraryId = libraryId;
+		return this;
 	}
 	/**
 	 * @return the name
@@ -79,8 +85,9 @@ public class Book {
 	/**
 	 * @param name the name to set
 	 */
-	public void setName(String name) {
+	public Book setName(String name) {
 		this.name = name;
+		return this;
 	}
 	/**
 	 * @return the isbn
@@ -91,8 +98,9 @@ public class Book {
 	/**
 	 * @param isbn the isbn to set
 	 */
-	public void setIsbn(String isbn) {
+	public Book setIsbn(String isbn) {
 		this.isbn = isbn;
+		return this;
 	}
 	/**
 	 * @return the numberOfPages
@@ -103,8 +111,9 @@ public class Book {
 	/**
 	 * @param numberOfPages the numberOfPages to set
 	 */
-	public void setNumberOfPages(Integer numberOfPages) {
+	public Book setNumberOfPages(Integer numberOfPages) {
 		this.numberOfPages = numberOfPages;
+		return this;
 	}
 
 }

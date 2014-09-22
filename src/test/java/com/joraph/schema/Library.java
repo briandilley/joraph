@@ -13,8 +13,9 @@ public class Library {
 	/**
 	 * @param id the id to set
 	 */
-	public void setId(String id) {
+	public Library setId(String id) {
 		this.id = id;
+		return this;
 	}
 	/**
 	 * @return the name
@@ -25,8 +26,9 @@ public class Library {
 	/**
 	 * @param name the name to set
 	 */
-	public void setName(String name) {
+	public Library setName(String name) {
 		this.name = name;
+		return this;
 	}
 	/**
 	 * @return the librarianUserId
@@ -37,7 +39,8 @@ public class Library {
 	/**
 	 * @param librarianUserId the librarianUserId to set
 	 */
-	public void setLibrarianUserId(String librarianUserId) {
+	public Library setLibrarianUserId(String librarianUserId) {
 		this.librarianUserId = librarianUserId;
+		return this;
 	}
 }

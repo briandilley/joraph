@@ -2,7 +2,7 @@ package com.joraph;
 
 @SuppressWarnings("serial")
 public class JoraphException
-	extends RuntimeException {
+		extends RuntimeException {
 
     public JoraphException(String message) {
         super(message);

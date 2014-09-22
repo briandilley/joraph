@@ -18,8 +18,9 @@ public class Checkout {
 	/**
 	 * @param id the id to set
 	 */
-	public void setId(String id) {
+	public Checkout setId(String id) {
 		this.id = id;
+		return this;
 	}
 	/**
 	 * @return the date
@@ -30,8 +31,9 @@ public class Checkout {
 	/**
 	 * @param date the date to set
 	 */
-	public void setDate(Date date) {
+	public Checkout setDate(Date date) {
 		this.date = date;
+		return this;
 	}
 	/**
 	 * @return the libraryId
@@ -42,8 +44,9 @@ public class Checkout {
 	/**
 	 * @param libraryId the libraryId to set
 	 */
-	public void setLibraryId(String libraryId) {
+	public Checkout setLibraryId(String libraryId) {
 		this.libraryId = libraryId;
+		return this;
 	}
 	/**
 	 * @return the userId
@@ -54,8 +57,9 @@ public class Checkout {
 	/**
 	 * @param userId the userId to set
 	 */
-	public void setUserId(String userId) {
+	public Checkout setUserId(String userId) {
 		this.userId = userId;
+		return this;
 	}
 	/**
 	 * @return the bookId
@@ -66,8 +70,9 @@ public class Checkout {
 	/**
 	 * @param bookId the bookId to set
 	 */
-	public void setBookId(String bookId) {
+	public Checkout setBookId(String bookId) {
 		this.bookId = bookId;
+		return this;
 	}
 
 }

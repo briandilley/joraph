@@ -14,8 +14,9 @@ public class Genre {
 	/**
 	 * @param id the id to set
 	 */
-	public void setId(String id) {
+	public Genre setId(String id) {
 		this.id = id;
+		return this;
 	}
 	/**
 	 * @return the name
@@ -26,8 +27,9 @@ public class Genre {
 	/**
 	 * @param name the name to set
 	 */
-	public void setName(String name) {
+	public Genre setName(String name) {
 		this.name = name;
+		return this;
 	}
 	/**
 	 * @return the description
@@ -38,8 +40,9 @@ public class Genre {
 	/**
 	 * @param description the description to set
 	 */
-	public void setDescription(String description) {
+	public Genre setDescription(String description) {
 		this.description = description;
+		return this;
 	}
 
 }
