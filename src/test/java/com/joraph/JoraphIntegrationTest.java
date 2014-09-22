@@ -2,7 +2,6 @@ package com.joraph;
 
 import static org.junit.Assert.*;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -169,9 +168,9 @@ public class JoraphIntegrationTest
 		}
 
 		@Override
-		public List<Object> load(Iterable<Serializable> ids) {
+		public List<Object> load(Iterable<?> ids) {
 			List<Object> ret = new ArrayList<Object>();
-			for (Serializable id : ids) {
+			for (Object id : ids) {
 				if (!values.containsKey(id)) {
 					continue;
 				}
