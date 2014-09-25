@@ -22,7 +22,7 @@ import com.joraph.schema.Key;
 public class ExecutionContext {
 
 	private final JoraphContext context;
-	private final Results results;
+	private final ObjectGraph objectGraph;
 	private final Class<?> entityClass;
 	private final Map<Class<?>, Set<Serializable>> keysToLoad;
 	private ExecutionPlan plan;
@@ -38,7 +38,7 @@ public class ExecutionContext {
 	public <T> ExecutionContext(JoraphContext context, Class<T> entityClass, Iterable<T> rootObjects) {
 		this.context 		= context;
 		this.entityClass	= entityClass;
-		this.results 		= new Results();
+		this.objectGraph = new ObjectGraph();
 		this.keysToLoad		= new HashMap<>();
 
 		addToResults(rootObjects, entityClass);
@@ -46,26 +46,26 @@ public class ExecutionContext {
 
 	/**
 	 * <p>Executes the plan, iterates the resulting operations, and returns the results.</p>
-	 * <p>Subsequent calls to {@code execute} result in a cached {@link com.joraph.Results}.</p>
+	 * <p>Subsequent calls to {@code execute} result in a cached {@link ObjectGraph}.</p>
 	 * @return the results derived from loading the associated objects supplied in the root
 	 * objects
 	 */
-	public Results execute() {
+	public ObjectGraph execute() {
 		if (plan!=null) {
-			return results;
+			return objectGraph;
 		}
 
 		plan = context.plan(entityClass);
 		for (Operation op : plan.getOperations()) {
 			executeOperation(op);
 		}
-		return results;
+		return objectGraph;
 	}
 
 	private void addToResults(Iterable<?> objects, Class<?> entityClass) {
 		Key<?> pk = context.getSchema().getEntityDescriptor(entityClass).getPrimaryKey();
 		for (Object obj : objects) {
-			results.addResult(entityClass, pk.read(obj), obj);
+			objectGraph.addResult(entityClass, pk.read(obj), obj);
 		}
 	}
 
@@ -88,9 +88,9 @@ public class ExecutionContext {
 			}
 		}
 		for (ForeignKey<?> fk : context.getSchema().describeForeignKeysTo(entityClass)) {
-			for (Object o : results.getList(fk.getEntityClass())) {
+			for (Object o : objectGraph.getList(fk.getEntityClass())) {
 				Serializable id = fk.read(o);
-				if (results.get(entityClass, id)!=null) {
+				if (objectGraph.get(entityClass, id)!=null) {
 					continue;
 				}
 				keysToLoad.get(entityClass).add(id);

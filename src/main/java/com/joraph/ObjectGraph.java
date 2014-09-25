@@ -1,6 +1,5 @@
 package com.joraph;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -10,11 +9,11 @@ import java.util.Map;
 /**
  * A class that holds results.
  */
-public class Results {
+public class ObjectGraph {
 
-	private Map<Class<?>, Map<Serializable, Object>> results;
+	private Map<Class<?>, Map<Object, Object>> results;
 
-	public Results() {
+	public ObjectGraph() {
 		results = new HashMap<>();
 	}
 
@@ -24,10 +23,10 @@ public class Results {
 	 * @param id
 	 * @param value
 	 */
-	public void addResult(Class<?> type, Serializable id, Object value) {
+	public void addResult(Class<?> type, Object id, Object value) {
 		synchronized (results) {
 			if (!results.containsKey(type)) {
-				results.put(type, new HashMap<Serializable, Object>());
+				results.put(type, new HashMap<>());
 			}
 		}
 		results.get(type).put(id, value);
@@ -41,8 +40,8 @@ public class Results {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T get(Class<T> type, Serializable id) {
-		Map<Serializable, Object> map = results.get(type);
+	public <T> T get(Class<T> type, Object id) {
+		Map<Object, Object> map = results.get(type);
 		if (map==null) {
 			return null;
 		}
@@ -55,11 +54,11 @@ public class Results {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> Map<Serializable, T> getMap(Class<T> type) {
-		Map<Serializable, Object> map = results.get(type);
+	public <T> Map<Object, T> getMap(Class<T> type) {
+		Map<Object, Object> map = results.get(type);
 		return map!=null
-				? (Map<Serializable, T>)map
-				: new HashMap<Serializable, T>();
+				? (Map<Object, T>)map
+				: new HashMap<Object, T>();
 	}
 
 	/**
@@ -68,7 +67,7 @@ public class Results {
 	 * @return
 	 */
 	public <T> List<T> getList(Class<T> type) {
-		return new ArrayList<T>((Collection<T>)getMap(type).values());
+		return new ArrayList<>(getMap(type).values());
 	}
 
 	/**
@@ -78,10 +77,10 @@ public class Results {
 	 * @param ids
 	 * @return
 	 */
-	public <T> List<T> getList(Class<T> type, Collection<Serializable> ids) {
-		List<T> ret = new ArrayList<T>();
-		for (Serializable id : ids) {
-			ret.add((T)get(type, id));
+	public <T> List<T> getList(Class<T> type, Collection<Object> ids) {
+		List<T> ret = new ArrayList<>();
+		for (Object id : ids) {
+			ret.add(get(type, id));
 		}
 		return ret;
 	}

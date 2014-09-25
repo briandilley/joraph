@@ -53,22 +53,22 @@ public class JoraphIntegrationTest
 
 		Book book1 = (Book)values.get("book1");
 
-		Results results = context.execute(Book.class, Arrays.asList(book1));
-		assertNotNull(results);
+		ObjectGraph objectGraph = context.execute(Book.class, Arrays.asList(book1));
+		assertNotNull(objectGraph);
 
-		assertNotNull(results.get(Book.class, "book1"));
-		assertEquals("book1", results.get(Book.class, "book1").getId());
+		assertNotNull(objectGraph.get(Book.class, "book1"));
+		assertEquals("book1", objectGraph.get(Book.class, "book1").getId());
 
-		assertNotNull(results.get(Author.class, "author3"));
-		assertEquals("author3", results.get(Author.class, "author3").getId());
+		assertNotNull(objectGraph.get(Author.class, "author3"));
+		assertEquals("author3", objectGraph.get(Author.class, "author3").getId());
 
-		assertNotNull(results.get(Genre.class, "genre2"));
-		assertEquals("genre2", results.get(Genre.class, "genre2").getId());
+		assertNotNull(objectGraph.get(Genre.class, "genre2"));
+		assertEquals("genre2", objectGraph.get(Genre.class, "genre2").getId());
 
-		assertNotNull(results.get(Library.class, "library1"));
-		assertEquals("library1", results.get(Library.class, "library1").getId());
+		assertNotNull(objectGraph.get(Library.class, "library1"));
+		assertEquals("library1", objectGraph.get(Library.class, "library1").getId());
 
-		assertNull(results.get(Library.class, "library2"));
+		assertNull(objectGraph.get(Library.class, "library2"));
 
 	}
 
@@ -78,49 +78,49 @@ public class JoraphIntegrationTest
 		Book book1 = (Book)values.get("book1");
 		Book book2 = (Book)values.get("book2");
 
-		Results results = context.execute(Book.class, Arrays.asList(book1, book2));
-		assertNotNull(results);
+		ObjectGraph objectGraph = context.execute(Book.class, Arrays.asList(book1, book2));
+		assertNotNull(objectGraph);
 
 		// book1
 
-		assertNotNull(results.get(Book.class, "book1"));
-		assertEquals("book1", results.get(Book.class, "book1").getId());
+		assertNotNull(objectGraph.get(Book.class, "book1"));
+		assertEquals("book1", objectGraph.get(Book.class, "book1").getId());
 
-		assertNotNull(results.get(Author.class, "author3"));
-		assertEquals("author3", results.get(Author.class, "author3").getId());
+		assertNotNull(objectGraph.get(Author.class, "author3"));
+		assertEquals("author3", objectGraph.get(Author.class, "author3").getId());
 
-		assertNotNull(results.get(Genre.class, "genre2"));
-		assertEquals("genre2", results.get(Genre.class, "genre2").getId());
+		assertNotNull(objectGraph.get(Genre.class, "genre2"));
+		assertEquals("genre2", objectGraph.get(Genre.class, "genre2").getId());
 
-		assertNotNull(results.get(Library.class, "library1"));
-		assertEquals("library1", results.get(Library.class, "library1").getId());
+		assertNotNull(objectGraph.get(Library.class, "library1"));
+		assertEquals("library1", objectGraph.get(Library.class, "library1").getId());
 
-		assertNotNull(results.get(User.class, "user3"));
-		assertEquals("user3", results.get(User.class, "user3").getId());
+		assertNotNull(objectGraph.get(User.class, "user3"));
+		assertEquals("user3", objectGraph.get(User.class, "user3").getId());
 
-		assertNull(results.get(Library.class, "library2"));
+		assertNull(objectGraph.get(Library.class, "library2"));
 
 		// book2
 
-		assertNotNull(results.get(Book.class, "book2"));
-		assertEquals("book2", results.get(Book.class, "book2").getId());
+		assertNotNull(objectGraph.get(Book.class, "book2"));
+		assertEquals("book2", objectGraph.get(Book.class, "book2").getId());
 
-		assertNotNull(results.get(Author.class, "author2"));
-		assertEquals("author2", results.get(Author.class, "author2").getId());
+		assertNotNull(objectGraph.get(Author.class, "author2"));
+		assertEquals("author2", objectGraph.get(Author.class, "author2").getId());
 
-		assertNotNull(results.get(Author.class, "author3"));
-		assertEquals("author3", results.get(Author.class, "author3").getId());
+		assertNotNull(objectGraph.get(Author.class, "author3"));
+		assertEquals("author3", objectGraph.get(Author.class, "author3").getId());
 
-		assertNotNull(results.get(Genre.class, "genre1"));
-		assertEquals("genre1", results.get(Genre.class, "genre1").getId());
+		assertNotNull(objectGraph.get(Genre.class, "genre1"));
+		assertEquals("genre1", objectGraph.get(Genre.class, "genre1").getId());
 
-		assertNotNull(results.get(Library.class, "library1"));
-		assertEquals("library1", results.get(Library.class, "library1").getId());
+		assertNotNull(objectGraph.get(Library.class, "library1"));
+		assertEquals("library1", objectGraph.get(Library.class, "library1").getId());
 
-		assertNotNull(results.get(User.class, "user3"));
-		assertEquals("user3", results.get(User.class, "user3").getId());
+		assertNotNull(objectGraph.get(User.class, "user3"));
+		assertEquals("user3", objectGraph.get(User.class, "user3").getId());
 
-		assertNull(results.get(Library.class, "library2"));
+		assertNull(objectGraph.get(Library.class, "library2"));
 
 	}
 
@@ -129,31 +129,31 @@ public class JoraphIntegrationTest
 
 		Checkout checkout1 = (Checkout)values.get("checkout1");
 
-		Results results = context.execute(Checkout.class, Arrays.asList(checkout1));
-		assertNotNull(results);
+		ObjectGraph objectGraph = context.execute(Checkout.class, Arrays.asList(checkout1));
+		assertNotNull(objectGraph);
 
 		// checkout1
 
-		assertNotNull(results.get(Book.class, "book2"));
-		assertEquals("book2", results.get(Book.class, "book2").getId());
+		assertNotNull(objectGraph.get(Book.class, "book2"));
+		assertEquals("book2", objectGraph.get(Book.class, "book2").getId());
 
-		assertNotNull(results.get(User.class, "user2"));
-		assertEquals("user2", results.get(User.class, "user2").getId());
+		assertNotNull(objectGraph.get(User.class, "user2"));
+		assertEquals("user2", objectGraph.get(User.class, "user2").getId());
 
-		assertNotNull(results.get(Library.class, "library1"));
-		assertEquals("library1", results.get(Library.class, "library1").getId());
+		assertNotNull(objectGraph.get(Library.class, "library1"));
+		assertEquals("library1", objectGraph.get(Library.class, "library1").getId());
 
-		assertNotNull(results.get(Author.class, "author2"));
-		assertEquals("author2", results.get(Author.class, "author2").getId());
+		assertNotNull(objectGraph.get(Author.class, "author2"));
+		assertEquals("author2", objectGraph.get(Author.class, "author2").getId());
 
-		assertNotNull(results.get(Author.class, "author3"));
-		assertEquals("author3", results.get(Author.class, "author3").getId());
+		assertNotNull(objectGraph.get(Author.class, "author3"));
+		assertEquals("author3", objectGraph.get(Author.class, "author3").getId());
 
-		assertNotNull(results.get(Genre.class, "genre1"));
-		assertEquals("genre1", results.get(Genre.class, "genre1").getId());
+		assertNotNull(objectGraph.get(Genre.class, "genre1"));
+		assertEquals("genre1", objectGraph.get(Genre.class, "genre1").getId());
 
-		assertNotNull(results.get(User.class, "user3"));
-		assertEquals("user3", results.get(User.class, "user3").getId());
+		assertNotNull(objectGraph.get(User.class, "user3"));
+		assertEquals("user3", objectGraph.get(User.class, "user3").getId());
 
 
 	}

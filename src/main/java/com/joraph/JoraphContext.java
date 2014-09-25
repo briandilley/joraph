@@ -46,7 +46,7 @@ public class JoraphContext {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> Results executeForIds(Class<T> entityClass, Iterable<Serializable> ids) {
+	public <T> ObjectGraph executeForIds(Class<T> entityClass, Iterable<Serializable> ids) {
 		List<?> objs = loaders.get(entityClass).load(ids);
 		return execute(entityClass, (List<T>)objs);
 	}
@@ -57,7 +57,7 @@ public class JoraphContext {
 	 * @param ids
 	 * @return
 	 */
-	public <T> Results execute(Class<T> entityClass, Iterable<T> objs) {
+	public <T> ObjectGraph execute(Class<T> entityClass, Iterable<T> objs) {
 		return new ExecutionContext(this, entityClass, objs).execute();
 	}
 
