@@ -106,6 +106,8 @@ public class ExecutionContext {
 
 		Set<Serializable> ids	= keysToLoad.get(entityClass);
 		EntityLoader<?> loader 	= context.getLoader(entityClass);
+		// TODO error handling around here, if a loader is not configured NPEs
+		assert(loader != null);
 		List<?> objects			= loader.load(ids);
 
 		addToResults(objects, entityClass);
