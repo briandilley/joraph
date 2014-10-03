@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -173,6 +174,13 @@ public class JoraphIntegrationTest
 	@Test(expected = NullPointerException.class)
 	public void testFeatureBookWhenFeaturedBooksIsNull() throws Exception {
 		final ObjectGraph objectGraph = context.execute(FeaturedBook.class, (Iterable<FeaturedBook>)null);
+
+		assertNull(objectGraph.get(Book.class, "book1"));
+	}
+
+	@Test
+	public void testFeatureBookWhenFeaturedBooksIsEmpty() throws Exception {
+		final ObjectGraph objectGraph = context.execute(FeaturedBook.class, Collections.<FeaturedBook>emptyList());
 
 		assertNull(objectGraph.get(Book.class, "book1"));
 	}
