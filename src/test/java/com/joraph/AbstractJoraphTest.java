@@ -4,6 +4,7 @@ import com.joraph.schema.Author;
 import com.joraph.schema.Book;
 import com.joraph.schema.Checkout;
 import com.joraph.schema.EntityDescriptor;
+import com.joraph.schema.FeaturedBook;
 import com.joraph.schema.Genre;
 import com.joraph.schema.Library;
 import com.joraph.schema.Schema;
@@ -48,6 +49,12 @@ public abstract class AbstractJoraphTest {
 		similarBook.setPrimaryKey("id");
 		similarBook.addForeignKey("bookId", Book.class);
 		similarBook.addForeignKey("similarBookId", Book.class);
+
+		EntityDescriptor featuredBook = schema.addEntityDescriptor(FeaturedBook.class);
+		/* purposefully set this way */
+		featuredBook.setPrimaryKey("bookId");
+		featuredBook.addForeignKey("bookId", Book.class);
+		featuredBook.addForeignKey("featuredById", User.class);
 		
 		schema.validate();
 	}

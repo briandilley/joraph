@@ -15,6 +15,7 @@ import org.junit.Test;
 import com.joraph.schema.Author;
 import com.joraph.schema.Book;
 import com.joraph.schema.Checkout;
+import com.joraph.schema.FeaturedBook;
 import com.joraph.schema.Genre;
 import com.joraph.schema.Library;
 import com.joraph.schema.SimilarBook;
@@ -39,6 +40,7 @@ public class JoraphIntegrationTest
 		context.addLoader(Library.class, 		new TestLoader(Library.class));
 		context.addLoader(User.class, 			new TestLoader(User.class));
 		context.addLoader(SimilarBook.class, 	new TestLoader(SimilarBook.class));
+		context.addLoader(FeaturedBook.class,   new TestLoader(Book.class));
 	}
 
 	@After
@@ -155,7 +157,16 @@ public class JoraphIntegrationTest
 		assertNotNull(objectGraph.get(User.class, "user3"));
 		assertEquals("user3", objectGraph.get(User.class, "user3").getId());
 
+	}
 
+	@Test
+	public void testFeaturedBook() throws Exception {
+		final FeaturedBook featuredBook1 = (FeaturedBook)values.get("featuredBook1");
+
+		final ObjectGraph objectGraph = context.execute(FeaturedBook.class, featuredBook1);
+
+		assertNotNull(objectGraph.get(Book.class, "book1"));
+		assertEquals("book1", objectGraph.get(Book.class, "book1").getId());
 	}
 
 	public class TestLoader
@@ -246,6 +257,11 @@ public class JoraphIntegrationTest
 				.setBookId("book2")
 				.setLibraryId("library1")
 				.setUserId("user2"));
+
+			put("featuredBook1", new FeaturedBook()
+				.setId("featuredBook1")
+				.setBookId("book1")
+				.setFeaturedById("user3"));
 		}};
 	}
 
