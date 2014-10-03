@@ -11,8 +11,11 @@ import com.joraph.plan.GatherForeignKeysTo;
 import com.joraph.plan.LoadEntities;
 import com.joraph.plan.Operation;
 import com.joraph.plan.ParallelOperation;
+import com.joraph.schema.EntityDescriptor;
 import com.joraph.schema.ForeignKey;
 import com.joraph.schema.Key;
+import com.joraph.schema.Schema;
+import com.sun.org.apache.bcel.internal.classfile.Unknown;
 
 /**
  * An execution context which brings together a {@link com.joraph.JoraphContext},
@@ -62,7 +65,18 @@ public class ExecutionContext {
 	}
 
 	private void addToResults(Iterable<?> objects, Class<?> entityClass) {
-		Key<?> pk = context.getSchema().getEntityDescriptor(entityClass).getPrimaryKey();
+		if (objects == null) {
+			return;
+		}
+
+		final Schema schema = context.getSchema();
+		assert(schema != null);
+		final EntityDescriptor entityDescriptor = schema.getEntityDescriptor(entityClass);
+		if (entityDescriptor == null) {
+			throw new UnknownEntityDescriptorException(entityClass);
+		}
+
+		Key<?> pk = entityDescriptor.getPrimaryKey();
 		for (Object obj : objects) {
 			objectGraph.addResult(entityClass, pk.read(obj), obj);
 		}
@@ -98,17 +112,16 @@ public class ExecutionContext {
 	}
 
 	private void loadEntities(Class<?> entityClass) {
-		if (!keysToLoad.containsKey(entityClass)
-				|| keysToLoad.get(entityClass).isEmpty()) {
+		final EntityLoader<?> loader = context.getLoader(entityClass);
+		if (loader == null) {
+			throw new UnconfiguredLoaderException(entityClass);
+		}
+		final Set<Object> ids = keysToLoad.get(entityClass);
+		if (ids == null || ids.isEmpty()) {
 			return;
 		}
 
-		Set<Object> ids	= keysToLoad.get(entityClass);
-		EntityLoader<?> loader 	= context.getLoader(entityClass);
-		// TODO error handling around here, if a loader is not configured NPEs
-		assert(loader != null);
-		List<?> objects			= loader.load(ids);
-
+		List<?> objects = loader.load(ids);
 		addToResults(objects, entityClass);
 
 		keysToLoad.get(entityClass).clear();

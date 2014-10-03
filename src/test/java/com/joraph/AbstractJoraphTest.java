@@ -4,6 +4,7 @@ import com.joraph.schema.Author;
 import com.joraph.schema.Book;
 import com.joraph.schema.Checkout;
 import com.joraph.schema.EntityDescriptor;
+import com.joraph.schema.ErrorBook;
 import com.joraph.schema.FeaturedBook;
 import com.joraph.schema.Genre;
 import com.joraph.schema.Library;
@@ -55,7 +56,11 @@ public abstract class AbstractJoraphTest {
 		featuredBook.setPrimaryKey("bookId");
 		featuredBook.addForeignKey("bookId", Book.class);
 		featuredBook.addForeignKey("featuredById", User.class);
-		
+
+		/* this entity should have no EntityLoader defined */
+		EntityDescriptor errorBook = schema.addEntityDescriptor(ErrorBook.class);
+		errorBook.setPrimaryKey("bookId");
+
 		schema.validate();
 	}
 

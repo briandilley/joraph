@@ -16,6 +16,7 @@ import org.junit.Test;
 import com.joraph.schema.Author;
 import com.joraph.schema.Book;
 import com.joraph.schema.Checkout;
+import com.joraph.schema.ErrorBook;
 import com.joraph.schema.FeaturedBook;
 import com.joraph.schema.Genre;
 import com.joraph.schema.Library;
@@ -170,8 +171,7 @@ public class JoraphIntegrationTest
 		assertEquals("book1", objectGraph.get(Book.class, "book1").getId());
 	}
 
-	/* TODO this should gracefully handle null root objects by returning empty object graphs */
-	@Test(expected = NullPointerException.class)
+	@Test
 	public void testFeatureBookWhenFeaturedBooksIsNull() throws Exception {
 		final ObjectGraph objectGraph = context.execute(FeaturedBook.class, (Iterable<FeaturedBook>)null);
 
@@ -183,6 +183,16 @@ public class JoraphIntegrationTest
 		final ObjectGraph objectGraph = context.execute(FeaturedBook.class, Collections.<FeaturedBook>emptyList());
 
 		assertNull(objectGraph.get(Book.class, "book1"));
+	}
+
+	@Test(expected = UnknownEntityDescriptorException.class)
+	public void testUnconfiguredClassLoader() throws Exception {
+		context.execute(Object.class, new Object());
+	}
+
+	@Test(expected = UnconfiguredLoaderException.class)
+	public void testErrorBookWhenAttemptingToLoad() throws Exception {
+		context.execute(ErrorBook.class, new ErrorBook());
 	}
 
 	public class TestLoader
