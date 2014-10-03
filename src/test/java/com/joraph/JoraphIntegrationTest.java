@@ -169,6 +169,14 @@ public class JoraphIntegrationTest
 		assertEquals("book1", objectGraph.get(Book.class, "book1").getId());
 	}
 
+	/* TODO this should gracefully handle null root objects by returning empty object graphs */
+	@Test(expected = NullPointerException.class)
+	public void testFeatureBookWhenFeaturedBooksIsNull() throws Exception {
+		final ObjectGraph objectGraph = context.execute(FeaturedBook.class, (Iterable<FeaturedBook>)null);
+
+		assertNull(objectGraph.get(Book.class, "book1"));
+	}
+
 	public class TestLoader
 			implements EntityLoader<Object> {
 
@@ -259,9 +267,9 @@ public class JoraphIntegrationTest
 				.setUserId("user2"));
 
 			put("featuredBook1", new FeaturedBook()
-				.setId("featuredBook1")
-				.setBookId("book1")
-				.setFeaturedById("user3"));
+					.setId("featuredBook1")
+					.setBookId("book1")
+					.setFeaturedById("user3"));
 		}};
 	}
 
