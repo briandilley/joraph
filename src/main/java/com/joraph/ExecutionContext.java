@@ -1,6 +1,5 @@
 package com.joraph;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -24,7 +23,7 @@ public class ExecutionContext {
 	private final JoraphContext context;
 	private final ObjectGraph objectGraph;
 	private final Class<?> entityClass;
-	private final Map<Class<?>, Set<Serializable>> keysToLoad;
+	private final Map<Class<?>, Set<Object>> keysToLoad;
 	private ExecutionPlan plan;
 
 	/**
@@ -84,12 +83,12 @@ public class ExecutionContext {
 	private void gatherForeignKeysTo(Class<?> entityClass) {
 		synchronized (this.keysToLoad) {
 			if (!keysToLoad.containsKey(entityClass)) {
-				keysToLoad.put(entityClass, new HashSet<Serializable>());
+				keysToLoad.put(entityClass, new HashSet<Object>());
 			}
 		}
 		for (ForeignKey<?> fk : context.getSchema().describeForeignKeysTo(entityClass)) {
 			for (Object o : objectGraph.getList(fk.getEntityClass())) {
-				Serializable id = fk.read(o);
+				Object id = fk.read(o);
 				if (objectGraph.get(entityClass, id)!=null) {
 					continue;
 				}
@@ -104,7 +103,7 @@ public class ExecutionContext {
 			return;
 		}
 
-		Set<Serializable> ids	= keysToLoad.get(entityClass);
+		Set<Object> ids	= keysToLoad.get(entityClass);
 		EntityLoader<?> loader 	= context.getLoader(entityClass);
 		// TODO error handling around here, if a loader is not configured NPEs
 		assert(loader != null);
