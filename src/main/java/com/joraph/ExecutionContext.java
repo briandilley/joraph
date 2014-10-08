@@ -103,7 +103,7 @@ public class ExecutionContext {
 		for (ForeignKey<?> fk : context.getSchema().describeForeignKeysTo(entityClass)) {
 			for (Object o : objectGraph.getList(fk.getEntityClass())) {
 				Object id = fk.read(o);
-				if (objectGraph.get(entityClass, id)!=null) {
+				if (id==null || objectGraph.get(entityClass, id)!=null) {
 					continue;
 				}
 				keysToLoad.get(entityClass).add(id);
