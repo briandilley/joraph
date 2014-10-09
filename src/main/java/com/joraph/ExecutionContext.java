@@ -15,7 +15,6 @@ import com.joraph.schema.EntityDescriptor;
 import com.joraph.schema.ForeignKey;
 import com.joraph.schema.Key;
 import com.joraph.schema.Schema;
-import com.sun.org.apache.bcel.internal.classfile.Unknown;
 
 /**
  * An execution context which brings together a {@link com.joraph.JoraphContext},
@@ -112,13 +111,13 @@ public class ExecutionContext {
 	}
 
 	private void loadEntities(Class<?> entityClass) {
-		final EntityLoader<?> loader = context.getLoader(entityClass);
-		if (loader == null) {
-			throw new UnconfiguredLoaderException(entityClass);
-		}
 		final Set<Object> ids = keysToLoad.get(entityClass);
 		if (ids == null || ids.isEmpty()) {
 			return;
+		}
+		final EntityLoader<?> loader = context.getLoader(entityClass);
+		if (loader == null) {
+			throw new UnconfiguredLoaderException(entityClass);
 		}
 
 		List<?> objects = loader.load(ids);

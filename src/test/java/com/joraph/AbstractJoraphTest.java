@@ -60,6 +60,7 @@ public abstract class AbstractJoraphTest {
 		/* this entity should have no EntityLoader defined */
 		EntityDescriptor errorBook = schema.addEntityDescriptor(ErrorBook.class);
 		errorBook.setPrimaryKey("bookId");
+		errorBook.addForeignKey("anotherErrorBookId", ErrorBook.class);
 
 		schema.validate();
 	}
