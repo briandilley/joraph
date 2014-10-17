@@ -14,20 +14,21 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.joraph.schema.Author;
+import com.joraph.schema.BasicCompositeKey;
 import com.joraph.schema.Book;
 import com.joraph.schema.Checkout;
-import com.joraph.schema.ErrorBook;
 import com.joraph.schema.FeaturedBook;
 import com.joraph.schema.Genre;
 import com.joraph.schema.Library;
 import com.joraph.schema.SimilarBook;
 import com.joraph.schema.User;
+import com.joraph.schema.UserFollow;
 
 public class JoraphIntegrationTest
 		extends AbstractJoraphTest {
 
 	private JoraphContext context;
-	private Map<String, Object> values;
+	private Map<Object, Object> values;
 
 	@Before
 	public void setUp()
@@ -43,6 +44,7 @@ public class JoraphIntegrationTest
 		context.addLoader(User.class, 			new TestLoader(User.class));
 		context.addLoader(SimilarBook.class, 	new TestLoader(SimilarBook.class));
 		context.addLoader(FeaturedBook.class,   new TestLoader(Book.class));
+		context.addLoader(UserFollow.class,   	new TestLoader(UserFollow.class));
 	}
 
 	@After
@@ -190,6 +192,36 @@ public class JoraphIntegrationTest
 		context.execute(Object.class, new Object());
 	}
 
+	@Test
+	public void testSupplementExistingGraph() {
+
+		User user1 = (User)values.get("user1");
+
+		ObjectGraph objectGraph = context.execute(User.class, user1);
+		assertNotNull(objectGraph);
+		assertTrue(objectGraph.has(User.class, "user1"));
+		assertFalse(objectGraph.has(User.class, "user2"));
+		assertFalse(objectGraph.has(User.class, "user3"));
+
+		objectGraph = context.supplement(objectGraph, UserFollow.class,
+				new BasicCompositeKey("user1", "user2"),
+				new BasicCompositeKey("user1", "user3"),
+				new BasicCompositeKey("user2", "user1"),
+				new BasicCompositeKey("user2", "user3"),
+				new BasicCompositeKey("user3", "user1"),
+				new BasicCompositeKey("user3", "user2"));
+		assertNotNull(objectGraph);
+		assertTrue(objectGraph.has(User.class, "user1"));
+		assertTrue(objectGraph.has(User.class, "user2"));
+		assertTrue(objectGraph.has(User.class, "user3"));
+		
+		assertTrue(objectGraph.has(UserFollow.class, new BasicCompositeKey("user1", "user2")));
+		assertTrue(objectGraph.has(UserFollow.class, new BasicCompositeKey("user2", "user1")));
+		assertTrue(objectGraph.has(UserFollow.class, new BasicCompositeKey("user3", "user1")));
+		assertTrue(objectGraph.has(UserFollow.class, new BasicCompositeKey("user2", "user3")));
+
+	}
+
 	/* TODO fix https://github.com/briandilley/joraph/issues/7 and re-enable, or rewrite with 2 entities */
 //	@Test(expected = UnconfiguredLoaderException.class)
 //	public void testErrorBookWhenAttemptingToLoad() throws Exception {
@@ -224,7 +256,7 @@ public class JoraphIntegrationTest
 
 	@SuppressWarnings("serial")
 	private void initDb() {
-		values = new HashMap<String, Object>() {{
+		values = new HashMap<Object, Object>() {{
 
 			put("author1", new Author()
 				.setId("author1")
@@ -245,6 +277,15 @@ public class JoraphIntegrationTest
 			put("user3", new User()
 				.setId("user3")
 				.setName("User 3"));
+
+			put(new BasicCompositeKey("user1", "user2"),
+					new UserFollow("user1", "user2"));
+			put(new BasicCompositeKey("user2", "user1"),
+					new UserFollow("user2", "user1"));
+			put(new BasicCompositeKey("user3", "user1"),
+					new UserFollow("user3", "user1"));
+			put(new BasicCompositeKey("user2", "user3"),
+					new UserFollow("user2", "user3"));
 
 			put("genre1", new Genre()
 				.setId("genre1")

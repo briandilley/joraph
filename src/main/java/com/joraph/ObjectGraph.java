@@ -3,8 +3,14 @@ package com.joraph;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import com.joraph.schema.EntityDescriptor;
+import com.joraph.schema.Property;
+import com.joraph.schema.Schema;
 
 /**
  * A class that holds results.
@@ -12,9 +18,31 @@ import java.util.Map;
 public class ObjectGraph {
 
 	private Map<Class<?>, Map<Object, Object>> results;
+	private Schema schema;
 
 	public ObjectGraph() {
-		results = new HashMap<>();
+		this.results = new HashMap<>();
+		this.schema = null;
+	}
+
+	public ObjectGraph(Schema schema) {
+		this.results = new HashMap<>();
+		this.schema = schema;
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> Set<T> getIds(Class<?> type) {
+		assert( schema != null );
+		EntityDescriptor descriptor = schema.getEntityDescriptor(type);
+		assert( descriptor != null );
+		Property<?> pk = descriptor.getPrimaryKey();
+		assert( pk != null );
+
+		Set<T> ret = new HashSet<>();
+		for (Object o : getList(type)) {
+			ret.add((T)pk.read(o));
+		}
+		return ret;
 	}
 
 	/**
@@ -30,6 +58,21 @@ public class ObjectGraph {
 			}
 		}
 		results.get(type).put(id, value);
+	}
+
+	/**
+	 * Returns the object of the given type with
+	 * the given id.
+	 * @param type
+	 * @param id
+	 * @return
+	 */
+	public boolean has(Class<?> type, Object id) {
+		Map<Object, Object> map = results.get(type);
+		if (map==null) {
+			return false;
+		}
+		return map.containsKey(id);
 	}
 
 	/**

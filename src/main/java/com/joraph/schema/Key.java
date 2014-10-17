@@ -10,7 +10,7 @@ import com.joraph.util.ReflectionUtil;
  * @param <T> the property type
  */
 public class Key<T extends Serializable>
-		extends AbstractProperty<T>
+		extends BaseProperty<T>
 		implements Property<T> {
 
 	private final Class<?> entityClass;
@@ -21,7 +21,7 @@ public class Key<T extends Serializable>
 	 * @param entityClass the entity class
 	 */
 	public Key(String propertyName, Class<?> entityClass) 
-		throws IntrospectionException {
+			throws IntrospectionException {
 		this.entityClass = entityClass;
 		super.setDescriptor(ReflectionUtil.getPropertyDescriptor(entityClass, propertyName));
 	}

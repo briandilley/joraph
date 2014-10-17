@@ -13,7 +13,7 @@ import com.joraph.plan.Operation;
 import com.joraph.plan.ParallelOperation;
 import com.joraph.schema.EntityDescriptor;
 import com.joraph.schema.ForeignKey;
-import com.joraph.schema.Key;
+import com.joraph.schema.Property;
 import com.joraph.schema.Schema;
 
 /**
@@ -23,9 +23,9 @@ import com.joraph.schema.Schema;
 public class ExecutionContext {
 
 	private final JoraphContext context;
-	private final ObjectGraph objectGraph;
-	private final Class<?> entityClass;
+	private final Query query;
 	private final Map<Class<?>, Set<Object>> keysToLoad;
+	private final ObjectGraph objectGraph;
 	private ExecutionPlan plan;
 
 	/**
@@ -34,15 +34,19 @@ public class ExecutionContext {
 	 * @param entityClass the entity class
 	 * @param rootObjects root objects to derive child objects from based on the schema
 	 *                    contained within {@link com.joraph.JoraphContext}
+	 * @param existingGraph an existing graph to populate
 	 * @param <T> the entity type
 	 */
-	public <T> ExecutionContext(JoraphContext context, Class<T> entityClass, Iterable<T> rootObjects) {
-		this.context 		= context;
-		this.entityClass	= entityClass;
-		this.objectGraph = new ObjectGraph();
+	public <T> ExecutionContext(JoraphContext context, Query query) {
+		this.context		= context;
+		this.query 			= query;
 		this.keysToLoad		= new HashMap<>();
 
-		addToResults(rootObjects, entityClass);
+		this.objectGraph = query.hasExistingGraph()
+				? query.getExistingGraph()
+				: new ObjectGraph(context.getSchema());
+
+		addToResults(query.getRootObjects(), query.getEntityClass());
 	}
 
 	/**
@@ -56,7 +60,7 @@ public class ExecutionContext {
 			return objectGraph;
 		}
 
-		plan = context.plan(entityClass);
+		plan = context.plan(query.getEntityClass());
 		for (Operation op : plan.getOperations()) {
 			executeOperation(op);
 		}
@@ -75,7 +79,7 @@ public class ExecutionContext {
 			throw new UnknownEntityDescriptorException(entityClass);
 		}
 
-		Key<?> pk = entityDescriptor.getPrimaryKey();
+		Property<?> pk = entityDescriptor.getPrimaryKey();
 		for (Object obj : objects) {
 			objectGraph.addResult(entityClass, pk.read(obj), obj);
 		}
@@ -111,7 +115,7 @@ public class ExecutionContext {
 	}
 
 	private void loadEntities(Class<?> entityClass) {
-		final Set<Object> ids = keysToLoad.get(entityClass);
+		Set<Object> ids = keysToLoad.get(entityClass);
 		if (ids == null || ids.isEmpty()) {
 			return;
 		}
@@ -128,6 +132,34 @@ public class ExecutionContext {
 
 	private void runInParallel(List<Operation> ops) {
 		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * @return the context
+	 */
+	public JoraphContext getContext() {
+		return context;
+	}
+
+	/**
+	 * @return the query
+	 */
+	public Query getQuery() {
+		return query;
+	}
+
+	/**
+	 * @return the objectGraph
+	 */
+	public ObjectGraph getObjectGraph() {
+		return objectGraph;
+	}
+
+	/**
+	 * @return the plan
+	 */
+	public ExecutionPlan getPlan() {
+		return plan;
 	}
 
 }

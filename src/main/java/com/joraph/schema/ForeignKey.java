@@ -10,7 +10,7 @@ import com.joraph.util.ReflectionUtil;
  * @param <T> the ID type
  */
 public class ForeignKey<T extends Serializable>
-	extends AbstractProperty<T>
+	extends BaseProperty<T>
 	implements Property<T> {
 
 	private Class<?> entityClass;

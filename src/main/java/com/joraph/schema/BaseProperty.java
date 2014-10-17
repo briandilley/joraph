@@ -8,10 +8,22 @@ import com.joraph.JoraphException;
  * Base class for {@code Property}.
  * @param <T> the property type
  */
-public abstract class AbstractProperty<T>
+public class BaseProperty<T>
 	implements Property<T> {
 
 	private PropertyDescriptor descriptor;
+
+	/**
+	 */
+	public BaseProperty() {
+	}
+
+	/**
+	 * @param descriptor the descriptor to set
+	 */
+	public BaseProperty(PropertyDescriptor descriptor) {
+		this.descriptor = descriptor;
+	}
 
 	/**
 	 * @param descriptor the descriptor to set
