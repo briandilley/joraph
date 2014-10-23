@@ -1,6 +1,9 @@
 package com.joraph.schema;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
 
 import com.joraph.JoraphException;
 
@@ -29,7 +32,7 @@ public class BaseProperty<T>
 	 * @param descriptor the descriptor to set
 	 */
 	protected void setDescriptor(PropertyDescriptor descriptor) {
-		this.descriptor = descriptor;
+		this.descriptor = checkNotNull(descriptor, "descriptor must not be null");
 	}
 
 	@Override
@@ -41,7 +44,10 @@ public class BaseProperty<T>
 	@SuppressWarnings("unchecked")
 	public T read(Object obj) {
 		try {
-			return (T)descriptor.getReadMethod().invoke(obj);
+			assert(descriptor != null);
+			final Method readMethod =
+					checkNotNull(descriptor.getReadMethod(), "descriptor.getReadMethod must not be null");
+			return (T)readMethod.invoke(obj);
 		} catch (Exception e) {
 			throw new JoraphException(e);
 		}
@@ -50,7 +56,10 @@ public class BaseProperty<T>
 	@Override
 	public void write(Object obj, Object value) {
 		try {
-			descriptor.getWriteMethod().invoke(obj, value);
+			assert(descriptor != null);
+			final Method writeMethod =
+					checkNotNull(descriptor.getWriteMethod(), "descriptor.getWriteMethod must not be null");
+			writeMethod.invoke(obj, value);
 		} catch (Exception e) {
 			throw new JoraphException(e);
 		}

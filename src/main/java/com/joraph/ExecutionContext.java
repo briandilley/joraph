@@ -35,9 +35,8 @@ public class ExecutionContext {
 	 * @param rootObjects root objects to derive child objects from based on the schema
 	 *                    contained within {@link com.joraph.JoraphContext}
 	 * @param existingGraph an existing graph to populate
-	 * @param <T> the entity type
 	 */
-	public <T> ExecutionContext(JoraphContext context, Query query) {
+	public ExecutionContext(JoraphContext context, Query query) {
 		this.context		= context;
 		this.query 			= query;
 		this.keysToLoad		= new HashMap<>();
@@ -80,6 +79,7 @@ public class ExecutionContext {
 		}
 
 		Property<?> pk = entityDescriptor.getPrimaryKey();
+		assert(pk != null);
 		for (Object obj : objects) {
 			objectGraph.addResult(entityClass, pk.read(obj), obj);
 		}
@@ -91,7 +91,7 @@ public class ExecutionContext {
 
 		} else if (LoadEntities.class.isInstance(op)) {
 			loadEntities(LoadEntities.class.cast(op).getEntityClass());
-			
+
 		} else if (ParallelOperation.class.isInstance(op)) {
 			runInParallel(ParallelOperation.class.cast(op).getOperations());
 		}
