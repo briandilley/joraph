@@ -147,7 +147,7 @@ public class JoraphContext {
 	 * @return an object graph derived from the relationships defined in in the schema and
 	 * associated with the rootObject
 	 */
-	public ObjectGraph execute(Object rootObject) {
+	public ObjectGraph executeForObject(Object rootObject) {
 		assert(rootObject != null);
 		final Class<?> entityClass = rootObject.getClass();
 		assert(entityClass != null);
@@ -166,7 +166,7 @@ public class JoraphContext {
 	 * @return an object graph derived from the relationships defined in in the schema and
 	 * associated with the rootObject
 	 */
-	public ObjectGraph execute(Iterable<Object> rootObjects) {
+	public ObjectGraph executeForObjects(Iterable<?> rootObjects) {
 		assert(rootObjects != null);
 		final Set<Class<?>> entityClasses = Sets.newHashSet();
 		for (Object rootObject : rootObjects) {

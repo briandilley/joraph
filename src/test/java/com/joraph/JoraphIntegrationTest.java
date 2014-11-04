@@ -85,7 +85,7 @@ public class JoraphIntegrationTest
 		Book book1 = (Book)values.get("book1");
 		User user1 = (User)values.get("user1");
 
-		ObjectGraph objectGraph = context.execute(Arrays.asList(book1, user1));
+		ObjectGraph objectGraph = context.executeForObjects(Arrays.asList(book1, user1));
 		assertNotNull(objectGraph);
 
 		assertNotNull(objectGraph.get(Book.class, "book1"));
