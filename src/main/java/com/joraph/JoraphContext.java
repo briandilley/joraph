@@ -22,7 +22,7 @@ public class JoraphContext {
 
 	private final Schema schema;
 	private final ExecutionPlanner planner;
-	private final Map<Class<?>, ExecutionPlan> cachedPlans;
+	private final Map<Set<Class<?>>, ExecutionPlan> cachedPlans;
 	private final Map<Class<?>, EntityLoader<?>> loaders;
 
 	/**
@@ -69,6 +69,18 @@ public class JoraphContext {
 
 	/**
 	 * 
+	 * @param entityClasses the entity classes
+	 * @param objects
+	 * @return
+	 */
+	public ObjectGraph execute(Set<Class<?>> entityClasses, Iterable<Object> objects) {
+		return execute(new Query()
+				.withEntityClasses(entityClasses)
+				.withRootObjects(Sets.newHashSet(Optional.fromNullable(objects).or(new HashSet<Object>()))));
+	}
+
+	/**
+	 * 
 	 * @param entityClass the entity class
 	 * @param objects
 	 * @return
@@ -77,6 +89,19 @@ public class JoraphContext {
 		return execute(new Query()
 			.withEntityClass(entityClass)
 			.withRootObjects(Sets.newHashSet(Optional.fromNullable(objects).or(Collections.<T>emptySet())))
+			.withExistingGraph(existingGraph));
+	}
+
+	/**
+	 * 
+	 * @param entityClass the entity class
+	 * @param objects
+	 * @return
+	 */
+	public ObjectGraph execute(Set<Class<?>> entityClasses, Iterable<Object> objects, ObjectGraph existingGraph) {
+		return execute(new Query()
+			.withEntityClasses(entityClasses)
+			.withRootObjects(Sets.newHashSet(Optional.fromNullable(objects).or(Collections.<Object>emptySet())))
 			.withExistingGraph(existingGraph));
 	}
 
@@ -122,15 +147,35 @@ public class JoraphContext {
 	 * @return an object graph derived from the relationships defined in in the schema and
 	 * associated with the rootObject
 	 */
-	@SuppressWarnings("unchecked")
-	public <T> ObjectGraph execute(T rootObject) {
+	public ObjectGraph execute(Object rootObject) {
 		assert(rootObject != null);
-		final Class<T> entityClass = (Class<T>)rootObject.getClass();
+		final Class<?> entityClass = rootObject.getClass();
 		assert(entityClass != null);
 		
 		return execute(new Query()
 			.withEntityClass(entityClass)
-			.withRootObjects(Optional.fromNullable((Set<T>)Sets.<T>newHashSet(rootObject)).or(Collections.<T>emptySet())));
+			.withRootObjects(Optional.fromNullable((Set<Object>)Sets.newHashSet(rootObject)).or(Collections.emptySet())));
+	}
+
+	/**
+	 * <p>Executes and retrieves an object graph using the appropriate {@link EntityLoader}s
+	 * deriving the {@code entityClasses} from the classes of the passed in {@code rootObjects}.</p>
+	 * <p>Assumes that the classes of {@code rootObjects} are defined classes within the schema.</p>
+	 * @param rootObjects the root object to create the graph from
+	 * @param <T> the entity class
+	 * @return an object graph derived from the relationships defined in in the schema and
+	 * associated with the rootObject
+	 */
+	public ObjectGraph execute(Iterable<Object> rootObjects) {
+		assert(rootObjects != null);
+		final Set<Class<?>> entityClasses = Sets.newHashSet();
+		for (Object rootObject : rootObjects) {
+			entityClasses.add(rootObject.getClass());
+		}
+		
+		return execute(new Query()
+			.withEntityClasses(entityClasses)
+			.withRootObjects(Optional.fromNullable((Set<Object>)Sets.newHashSet(rootObjects)).or(Collections.emptySet())));
 	}
 
 	/**
@@ -142,15 +187,14 @@ public class JoraphContext {
 	 * @return an object graph derived from the relationships defined in in the schema and
 	 * associated with the rootObject
 	 */
-	@SuppressWarnings("unchecked")
-	public <T> ObjectGraph execute(T rootObject, ObjectGraph existingGraph) {
+	public ObjectGraph execute(Object rootObject, ObjectGraph existingGraph) {
 		assert(rootObject != null);
-		final Class<T> entityClass = (Class<T>)rootObject.getClass();
+		final Class<?> entityClass = rootObject.getClass();
 		assert(entityClass != null);
 	
 		return execute(new Query()
 			.withEntityClass(entityClass)
-			.withRootObjects(Optional.fromNullable((Set<T>)Sets.<T>newHashSet(rootObject)).or(Collections.<T>emptySet()))
+			.withRootObjects(Optional.fromNullable((Set<Object>)Sets.newHashSet(rootObject)).or(Collections.emptySet()))
 			.withExistingGraph(existingGraph));
 	}
 
@@ -191,13 +235,13 @@ public class JoraphContext {
 	 * @param ids
 	 * @return
 	 */
-	public ExecutionPlan plan(Class<?> entityClass) {
-		ExecutionPlan ret = cachedPlans.get(entityClass);
+	public ExecutionPlan plan(Set<Class<?>> entityClasses) {
+		ExecutionPlan ret = cachedPlans.get(entityClasses);
 		if (ret!=null) {
 			return ret;
 		}
-		ret = planner.plan(entityClass);
-		cachedPlans.put(entityClass, ret);
+		ret = planner.plan(entityClasses);
+		cachedPlans.put(entityClasses, ret);
 		return ret;
 	}
 

@@ -65,7 +65,7 @@ public class EntityDescriptor {
 		this.primaryKey = new Key<>(propertyName, entityClass);
 		return this;
 	}
-
+ 
 	/**
 	 * @return the foreignKeys
 	 */

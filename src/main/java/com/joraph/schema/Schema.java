@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.joraph.JoraphException;
+
 /**
  * A schema.
  */
@@ -140,6 +142,9 @@ public class Schema {
 	}
 
 	private void graph(Node node, Graph<Class<?>> graph) {
+		if (node.isCircular()) {
+			throw new JoraphException("Circular dependency detected on "+node.getEntityClass());
+		}
 		graph.addEntity(node.getEntityClass());
 		for (ForeignKey<?> fk : node.getForeignKeys()) {
 			graph.addEdge(node.getEntityClass(), fk.getForeignEntity());

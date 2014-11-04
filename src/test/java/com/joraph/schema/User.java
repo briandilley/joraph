@@ -1,9 +1,13 @@
 package com.joraph.schema;
 
+import java.util.List;
+
 public class User {
 
 	private String id;
 	private String name;
+	private List<String> favoriteAuthorIds;
+
 	/**
 	 * @return the id
 	 */
@@ -30,7 +34,17 @@ public class User {
 		this.name = name;
 		return this;
 	}
-
-	
-
+	/**
+	 * @return the favoriteAuthorIds
+	 */
+	public List<String> getFavoriteAuthorIds() {
+		return favoriteAuthorIds;
+	}
+	/**
+	 * @param favoriteAuthorIds the favoriteAuthorIds to set
+	 */
+	public User setFavoriteAuthorIds(List<String> favoriteAuthorIds) {
+		this.favoriteAuthorIds = favoriteAuthorIds;
+		return this;
+	}
 }

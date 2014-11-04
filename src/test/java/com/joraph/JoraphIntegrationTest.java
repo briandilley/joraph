@@ -13,6 +13,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.collect.Lists;
 import com.joraph.schema.Author;
 import com.joraph.schema.BasicCompositeKey;
 import com.joraph.schema.Book;
@@ -64,6 +65,38 @@ public class JoraphIntegrationTest
 
 		assertNotNull(objectGraph.get(Book.class, "book1"));
 		assertEquals("book1", objectGraph.get(Book.class, "book1").getId());
+
+		assertNotNull(objectGraph.get(Author.class, "author3"));
+		assertEquals("author3", objectGraph.get(Author.class, "author3").getId());
+
+		assertNotNull(objectGraph.get(Genre.class, "genre2"));
+		assertEquals("genre2", objectGraph.get(Genre.class, "genre2").getId());
+
+		assertNotNull(objectGraph.get(Library.class, "library1"));
+		assertEquals("library1", objectGraph.get(Library.class, "library1").getId());
+
+		assertNull(objectGraph.get(Library.class, "library2"));
+
+	}
+
+	@Test
+	public void testSimpleObjectGraph_MultipleRoots() {
+
+		Book book1 = (Book)values.get("book1");
+		User user1 = (User)values.get("user1");
+
+		ObjectGraph objectGraph = context.execute(Arrays.asList(book1, user1));
+		assertNotNull(objectGraph);
+
+		assertNotNull(objectGraph.get(Book.class, "book1"));
+		assertEquals("book1", objectGraph.get(Book.class, "book1").getId());
+
+		assertNotNull(objectGraph.get(User.class, "user1"));
+		assertEquals("user1", objectGraph.get(User.class, "user1").getId());
+
+		assertNotNull(objectGraph.get(User.class, "user1"));
+		assertEquals("author1", objectGraph.get(Author.class, "author1").getId());
+		assertEquals("author2", objectGraph.get(Author.class, "author2").getId());
 
 		assertNotNull(objectGraph.get(Author.class, "author3"));
 		assertEquals("author3", objectGraph.get(Author.class, "author3").getId());
@@ -270,13 +303,15 @@ public class JoraphIntegrationTest
 
 			put("user1", new User()
 				.setId("user1")
-				.setName("User 1"));
+				.setName("User 1")
+				.setFavoriteAuthorIds(Lists.newArrayList("author1", "author2")));
 			put("user2", new User()
 				.setId("user2")
 				.setName("User 2"));
 			put("user3", new User()
 				.setId("user3")
-				.setName("User 3"));
+				.setName("User 3")
+				.setFavoriteAuthorIds(Lists.newArrayList("author3", "author1")));
 
 			put(new BasicCompositeKey("user1", "user2"),
 					new UserFollow("user1", "user2"));

@@ -44,6 +44,7 @@ public abstract class AbstractJoraphTest {
 		
 		EntityDescriptor user = schema.addEntityDescriptor(User.class);
 		user.setPrimaryKey("id");
+		user.addForeignKey("favoriteAuthorIds", Author.class);
 		
 		EntityDescriptor library = schema.addEntityDescriptor(Library.class);
 		library.setPrimaryKey("id");

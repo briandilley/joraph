@@ -1,23 +1,34 @@
 package com.joraph;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class Query {
 
-	private Class<?> entityClass;
+	private Set<Class<?>> entityClasses;
 	private Set<?> rootObjects;
 	private ObjectGraph existingGraph;
 	/**
-	 * @return the entityClass
+	 * @return the entityClasses
 	 */
-	public Class<?> getEntityClass() {
-		return entityClass;
+	public Set<Class<?>> getEntityClasses() {
+		return entityClasses;
+	}
+	/**
+	 * @param entityClasses the entityClasses to set
+	 */
+	public Query withEntityClasses(Set<Class<?>> entityClasses) {
+		this.entityClasses = entityClasses;
+		return this;
 	}
 	/**
 	 * @param entityClass the entityClass to set
 	 */
 	public Query withEntityClass(Class<?> entityClass) {
-		this.entityClass = entityClass;
+		if (this.entityClasses==null || this.entityClasses.isEmpty()) {
+			this.entityClasses = new HashSet<Class<?>>();
+		}
+		this.entityClasses.add(entityClass);
 		return this;
 	}
 	/**

@@ -1,11 +1,13 @@
 package com.joraph;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.Sets;
 import com.joraph.plan.ExecutionPlan;
 import com.joraph.plan.GatherForeignKeysTo;
 import com.joraph.plan.LoadEntities;
@@ -45,7 +47,8 @@ public class ExecutionContext {
 				? query.getExistingGraph()
 				: new ObjectGraph(context.getSchema());
 
-		addToResults(query.getRootObjects(), query.getEntityClass());
+		
+		addToResults(query.getRootObjects(), query.getEntityClasses());
 	}
 
 	/**
@@ -59,29 +62,34 @@ public class ExecutionContext {
 			return objectGraph;
 		}
 
-		plan = context.plan(query.getEntityClass());
+		plan = context.plan(query.getEntityClasses());
 		for (Operation op : plan.getOperations()) {
 			executeOperation(op);
 		}
 		return objectGraph;
 	}
 
-	private void addToResults(Iterable<?> objects, Class<?> entityClass) {
+	private void addToResults(Iterable<?> objects, Set<Class<?>> entityClasses) {
 		if (objects == null) {
 			return;
 		}
 
 		final Schema schema = context.getSchema();
 		assert(schema != null);
-		final EntityDescriptor entityDescriptor = schema.getEntityDescriptor(entityClass);
-		if (entityDescriptor == null) {
-			throw new UnknownEntityDescriptorException(entityClass);
-		}
 
-		Property<?> pk = entityDescriptor.getPrimaryKey();
-		assert(pk != null);
-		for (Object obj : objects) {
-			objectGraph.addResult(entityClass, pk.read(obj), obj);
+		for (Class<?> entityClass : entityClasses) {
+			final EntityDescriptor entityDescriptor = schema.getEntityDescriptor(entityClass);
+			if (entityDescriptor == null) {
+				throw new UnknownEntityDescriptorException(entityClass);
+			}
+	
+			Property<?> pk = entityDescriptor.getPrimaryKey();
+			assert(pk != null);
+			for (Object obj : objects) {
+				if (obj.getClass().equals(entityClass)) {
+					objectGraph.addResult(entityClass, pk.read(obj), obj);
+				}
+			}
 		}
 	}
 
@@ -97,6 +105,7 @@ public class ExecutionContext {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private void gatherForeignKeysTo(Class<?> entityClass) {
 		synchronized (this.keysToLoad) {
 			if (!keysToLoad.containsKey(entityClass)) {
@@ -105,11 +114,24 @@ public class ExecutionContext {
 		}
 		for (ForeignKey<?> fk : context.getSchema().describeForeignKeysTo(entityClass)) {
 			for (Object o : objectGraph.getList(fk.getEntityClass())) {
-				Object id = fk.read(o);
-				if (id==null || objectGraph.get(entityClass, id)!=null) {
+				Object val = fk.read(o);
+				if (val==null) {
 					continue;
 				}
-				keysToLoad.get(entityClass).add(id);
+				Set<Object> ids;
+				if (Collection.class.isInstance(val)) {
+					ids = Sets.newHashSet((Collection<Object>)val);
+				} else if (val.getClass().isArray()) {
+					ids = Sets.newHashSet((Object[])val);
+				} else {
+					ids = Sets.newHashSet(val);
+				}
+				for (Object id : ids) {
+					if (id==null || objectGraph.get(entityClass, id)!=null) {
+						continue;
+					}
+					keysToLoad.get(entityClass).add(id);
+				}
 			}
 		}
 	}
@@ -125,7 +147,7 @@ public class ExecutionContext {
 		}
 
 		List<?> objects = loader.load(ids);
-		addToResults(objects, entityClass);
+		addToResults(objects, Sets.<Class<?>>newHashSet(entityClass));
 
 		keysToLoad.get(entityClass).clear();
 	}
