@@ -3,11 +3,14 @@ package com.joraph.plan;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents steps in a query plan which may be executed in parallel.
+ */
 public class ParallelOperation 
 	extends AbstractOperation
 	implements Operation {
 
-	private List<Operation> operations = new ArrayList<>();
+	private final List<Operation> operations = new ArrayList<>();
 
 	@Override
 	public String explain() {

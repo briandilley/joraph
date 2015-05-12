@@ -5,12 +5,21 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.common.base.Converter;
+
+/**
+ * Metadata about an entity class.
+ */
 public class EntityDescriptor {
 
-	private Class<?> entityClass;
-	private Key<?> primaryKey;
+	private final Class<?> entityClass;
+	private Property<?> primaryKey;
 	private Map<String, ForeignKey<?>> foreignKeys = new HashMap<>();
 
+	/**
+	 * Creates a new instance of EntityDescriptor.
+	 * @param entityClass the entity class
+	 */
 	public EntityDescriptor(Class<?> entityClass) {
 		this.entityClass = entityClass;
 	}
@@ -25,8 +34,25 @@ public class EntityDescriptor {
 	/**
 	 * @return the primaryKey
 	 */
-	public Key<?> getPrimaryKey() {
+	public Property<?> getPrimaryKey() {
 		return primaryKey;
+	}
+
+	/**
+	 * 
+	 * @param converter
+	 * @param firstPropertyName
+	 * @param secondPropertyName
+	 * @param additionalPropertyNames
+	 * @return
+	 * @throws IntrospectionException
+	 */
+	public <T> EntityDescriptor setPrimaryKey(Converter<Object[], T> converter,
+			String firstPropertyName, String secondPropertyName, String... additionalPropertyNames)
+		throws IntrospectionException {
+		this.primaryKey = new CompositeKey<T>(entityClass, converter,
+				firstPropertyName, secondPropertyName, additionalPropertyNames);
+		return this;
 	}
 
 	/**
@@ -39,7 +65,7 @@ public class EntityDescriptor {
 		this.primaryKey = new Key<>(propertyName, entityClass);
 		return this;
 	}
-
+ 
 	/**
 	 * @return the foreignKeys
 	 */

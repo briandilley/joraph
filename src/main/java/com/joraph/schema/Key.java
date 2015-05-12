@@ -3,13 +3,15 @@ package com.joraph.schema;
 import java.beans.IntrospectionException;
 import java.io.Serializable;
 
-import com.joraph.util.ReflectionUtil;
-
+/**
+ * A key property.
+ * @param <T> the property type
+ */
 public class Key<T extends Serializable>
-		extends AbstractProperty<T>
+		extends BaseProperty<T>
 		implements Property<T> {
 
-	private Class<?> entityClass;
+	private final Class<?> entityClass;
 
 	/**
 	 * Creates the key.
@@ -17,9 +19,9 @@ public class Key<T extends Serializable>
 	 * @param entityClass the entity class
 	 */
 	public Key(String propertyName, Class<?> entityClass) 
-		throws IntrospectionException {
+			throws IntrospectionException {
 		this.entityClass = entityClass;
-		super.setDescriptor(ReflectionUtil.getPropertyDescriptor(entityClass, propertyName));
+		super.setDescriptor(new PropertyDescriptorChain(propertyName, entityClass));
 	}
 
 	/**

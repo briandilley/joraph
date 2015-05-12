@@ -3,10 +3,12 @@ package com.joraph.schema;
 import java.beans.IntrospectionException;
 import java.io.Serializable;
 
-import com.joraph.util.ReflectionUtil;
-
+/**
+ * A foreign key property.
+ * @param <T> the ID type
+ */
 public class ForeignKey<T extends Serializable>
-	extends AbstractProperty<T>
+	extends BaseProperty<T>
 	implements Property<T> {
 
 	private Class<?> entityClass;
@@ -16,7 +18,7 @@ public class ForeignKey<T extends Serializable>
 		throws IntrospectionException {
 		this.entityClass = entityClass;
 		this.foreignEntity = foreignEntity;
-		super.setDescriptor(ReflectionUtil.getPropertyDescriptor(entityClass, propertyName));
+		super.setDescriptor(new PropertyDescriptorChain(propertyName, entityClass));
 	}
 
 	/**

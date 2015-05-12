@@ -48,25 +48,22 @@ public class ExecutionPlannerTest
 		// check ops
 		List<Operation> ops = plan.getOperations();
 
-		// get book fks and load them
 		assertTrue(ops.get(0).equals(new GatherForeignKeysTo(Checkout.class)));
 		assertTrue(ops.get(1).equals(new LoadEntities(Checkout.class)));
-		
-		// get book fks and load them
+
 		assertTrue(ops.get(2).equals(new GatherForeignKeysTo(Book.class)));
 		assertTrue(ops.get(3).equals(new LoadEntities(Book.class)));
 
-		// get library fks and load them
 		assertTrue(ops.get(4).equals(new GatherForeignKeysTo(Library.class)));
 		assertTrue(ops.get(5).equals(new LoadEntities(Library.class)));
-		
-		// get libray fks and load them
-		assertTrue(ops.get(6).equals(new GatherForeignKeysTo(Author.class)));
-		assertTrue(ops.get(7).equals(new GatherForeignKeysTo(Genre.class)));
-		assertTrue(ops.get(8).equals(new GatherForeignKeysTo(User.class)));
-		assertTrue(ops.get(9).equals(new LoadEntities(Author.class)));
-		assertTrue(ops.get(10).equals(new LoadEntities(Genre.class)));
-		assertTrue(ops.get(11).equals(new LoadEntities(User.class)));
+
+		assertTrue(ops.get(6).equals(new GatherForeignKeysTo(User.class)));
+		assertTrue(ops.get(7).equals(new LoadEntities(User.class)));
+
+		assertTrue(ops.get(8).equals(new GatherForeignKeysTo(Author.class)));
+		assertTrue(ops.get(9).equals(new GatherForeignKeysTo(Genre.class)));
+		assertTrue(ops.get(10).equals(new LoadEntities(Author.class)));
+		assertTrue(ops.get(11).equals(new LoadEntities(Genre.class)));
 
 	}
 

@@ -153,8 +153,8 @@ public class Node {
 				Class<?> foreignClass = fk.getForeignEntity();
 				return new Node(
 					this, schema,
-					fk.getForeignEntity(),
-					schema.describeForeignKeysFrom(fk.getForeignEntity()),
+					foreignClass,
+					schema.describeForeignKeysFrom(foreignClass),
 					this.entityClass.equals(foreignClass) || getAncestor(foreignClass)!=null);
 			}
 		}
