@@ -10,6 +10,7 @@ public class Book {
 	private String name;
 	private String isbn;
 	private Integer numberOfPages;
+	private Rating rating;
 
 	/**
 	 * @return the id
@@ -113,6 +114,15 @@ public class Book {
 	 */
 	public Book setNumberOfPages(Integer numberOfPages) {
 		this.numberOfPages = numberOfPages;
+		return this;
+	}
+
+	public Rating getRating() {
+		return rating;
+	}
+
+	public Book setRating(Rating rating) {
+		this.rating = rating;
 		return this;
 	}
 

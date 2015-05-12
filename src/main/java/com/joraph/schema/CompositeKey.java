@@ -5,7 +5,6 @@ import java.beans.IntrospectionException;
 import com.google.common.base.Converter;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import com.joraph.util.ReflectionUtil;
 
 /**
  * A composite key.
@@ -36,7 +35,7 @@ public class CompositeKey<T>
 		this.properties			= new BaseProperty[propertyNames.length];
 		for (int i=0; i<propertyNames.length; i++) {
 			this.properties[i] = new BaseProperty<Object>(
-					ReflectionUtil.getPropertyDescriptor(entityClass, propertyNames[i]));
+					new PropertyDescriptorChain(propertyNames[i], entityClass));
 		}
 	}
 

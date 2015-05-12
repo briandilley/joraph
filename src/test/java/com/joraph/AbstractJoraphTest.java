@@ -56,6 +56,7 @@ public abstract class AbstractJoraphTest {
 		book.addForeignKey("coAuthorId", Author.class);
 		book.addForeignKey("genreId", Genre.class);
 		book.addForeignKey("libraryId", Library.class);
+		book.addForeignKey("rating.userId", User.class);
 		
 		EntityDescriptor checkout = schema.addEntityDescriptor(Checkout.class);
 		checkout.setPrimaryKey("id");

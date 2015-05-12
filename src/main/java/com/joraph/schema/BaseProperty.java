@@ -2,9 +2,6 @@ package com.joraph.schema;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Method;
-
 import com.joraph.JoraphException;
 
 /**
@@ -14,7 +11,7 @@ import com.joraph.JoraphException;
 public class BaseProperty<T>
 	implements Property<T> {
 
-	private PropertyDescriptor descriptor;
+	private PropertyDescriptorChain descriptor;
 
 	/**
 	 */
@@ -24,20 +21,20 @@ public class BaseProperty<T>
 	/**
 	 * @param descriptor the descriptor to set
 	 */
-	public BaseProperty(PropertyDescriptor descriptor) {
+	public BaseProperty(PropertyDescriptorChain descriptor) {
 		this.descriptor = descriptor;
 	}
 
 	/**
 	 * @param descriptor the descriptor to set
 	 */
-	protected void setDescriptor(PropertyDescriptor descriptor) {
+	protected void setDescriptor(PropertyDescriptorChain descriptor) {
 		this.descriptor = checkNotNull(descriptor, "descriptor must not be null");
 	}
 
 	@Override
 	public String getName() {
-		return descriptor.getName();
+		return descriptor.getPath();
 	}
 
 	@Override
@@ -45,9 +42,7 @@ public class BaseProperty<T>
 	public T read(Object obj) {
 		try {
 			assert(descriptor != null);
-			final Method readMethod =
-					checkNotNull(descriptor.getReadMethod(), "descriptor.getReadMethod must not be null");
-			return (T)readMethod.invoke(obj);
+			return (T)descriptor.read(obj, false);
 		} catch (Exception e) {
 			throw new JoraphException(e);
 		}
@@ -57,9 +52,7 @@ public class BaseProperty<T>
 	public void write(Object obj, Object value) {
 		try {
 			assert(descriptor != null);
-			final Method writeMethod =
-					checkNotNull(descriptor.getWriteMethod(), "descriptor.getWriteMethod must not be null");
-			writeMethod.invoke(obj, value);
+			descriptor.write(obj, value, false);
 		} catch (Exception e) {
 			throw new JoraphException(e);
 		}

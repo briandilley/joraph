@@ -21,6 +21,7 @@ import com.joraph.schema.Checkout;
 import com.joraph.schema.FeaturedBook;
 import com.joraph.schema.Genre;
 import com.joraph.schema.Library;
+import com.joraph.schema.Rating;
 import com.joraph.schema.SimilarBook;
 import com.joraph.schema.User;
 import com.joraph.schema.UserFollow;
@@ -76,6 +77,19 @@ public class JoraphIntegrationTest
 		assertEquals("library1", objectGraph.get(Library.class, "library1").getId());
 
 		assertNull(objectGraph.get(Library.class, "library2"));
+
+	}
+
+	@Test
+	public void testDeepObjectsAreLoaded() {
+
+		Book book1 = (Book)values.get("book2"); // BOOK 2 !
+
+		ObjectGraph objectGraph = context.execute(Book.class, Arrays.asList(book1));
+		assertNotNull(objectGraph);
+
+		assertNotNull(objectGraph.get(User.class, "user1"));
+		assertEquals("user1", objectGraph.get(User.class, "user1").getId());
 
 	}
 
@@ -353,7 +367,10 @@ public class JoraphIntegrationTest
 				.setAuthorId("author2")
 				.setCoAuthorId("author3")
 				.setGenreId("genre1")
-				.setLibraryId("library1"));
+				.setLibraryId("library1")
+				.setRating(new Rating()
+					.setRating(4.20f)
+					.setUserId("user1")));
 
 			put("checkout1", new Checkout()
 				.setId("checkout1")
