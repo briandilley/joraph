@@ -128,4 +128,12 @@ public class ObjectGraph {
 		return ret;
 	}
 
+	/**
+	 * Returns the results map.
+	 * @return the results
+	 */
+	public Map<Class<?>, Map<Object, Object>> getResults() {
+		return results;
+	}
+
 }

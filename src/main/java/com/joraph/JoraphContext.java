@@ -24,6 +24,7 @@ public class JoraphContext {
 	private final ExecutionPlanner planner;
 	private final Map<Set<Class<?>>, ExecutionPlan> cachedPlans;
 	private final Map<Class<?>, EntityLoader<?>> loaders;
+	private boolean debugEnabled = false;
 
 	/**
 	 * Creates a context for the given {@link Schema}.
@@ -250,6 +251,14 @@ public class JoraphContext {
 	 */
 	public Schema getSchema() {
 		return schema;
+	}
+
+	public boolean isDebugEnabled() {
+		return debugEnabled;
+	}
+
+	public void setDebugEnabled(boolean debugEnabled) {
+		this.debugEnabled = debugEnabled;
 	}
 
 }

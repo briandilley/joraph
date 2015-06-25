@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
+import com.joraph.debug.JoraphDebug;
 import com.joraph.schema.Author;
 import com.joraph.schema.BasicCompositeKey;
 import com.joraph.schema.Book;
@@ -267,6 +268,51 @@ public class JoraphIntegrationTest
 		assertTrue(objectGraph.has(UserFollow.class, new BasicCompositeKey("user3", "user1")));
 		assertTrue(objectGraph.has(UserFollow.class, new BasicCompositeKey("user2", "user3")));
 
+	}
+
+	@Test
+	public void testDebugInfoIsNotCollected() {
+
+		Book book1 = (Book)values.get("book1");
+		context.execute(Book.class, Arrays.asList(book1));
+		assertFalse(JoraphDebug.hasDebugInfo());
+	}
+
+	@Test
+	public void testDebugInfoIsCollected() {
+
+		JoraphDebug.startDebug();
+
+		Book book1 = (Book)values.get("book1");
+		ObjectGraph objectGraph = context.execute(Book.class, Arrays.asList(book1));
+
+		assertTrue(JoraphDebug.hasDebugInfo());
+		assertEquals(1, JoraphDebug.getDebugInfo().getObjectGraphs().size());
+		assertEquals(1, JoraphDebug.getDebugInfo().getExecutionPlans().size());
+		assertTrue(JoraphDebug.getDebugInfo().getObjectGraphs().contains(objectGraph));
+
+		JoraphDebug.finishDebug();
+		assertFalse(JoraphDebug.hasDebugInfo());
+	}
+
+	@Test
+	public void testDebugInfoIsCollectedTwice() {
+
+		JoraphDebug.startDebug();
+
+		Book book1 = (Book)values.get("book1");
+		Author author1 = (Author)values.get("author1");
+		ObjectGraph objectGraph = context.execute(Book.class, Arrays.asList(book1));
+		ObjectGraph objectGraph2 = context.execute(Author.class, Arrays.asList(author1));
+
+		assertTrue(JoraphDebug.hasDebugInfo());
+		assertEquals(2, JoraphDebug.getDebugInfo().getObjectGraphs().size());
+		assertEquals(2, JoraphDebug.getDebugInfo().getExecutionPlans().size());
+		assertTrue(JoraphDebug.getDebugInfo().getObjectGraphs().contains(objectGraph));
+		assertTrue(JoraphDebug.getDebugInfo().getObjectGraphs().contains(objectGraph2));
+
+		JoraphDebug.finishDebug();
+		assertFalse(JoraphDebug.hasDebugInfo());
 	}
 
 	/* TODO fix https://github.com/briandilley/joraph/issues/7 and re-enable, or rewrite with 2 entities */

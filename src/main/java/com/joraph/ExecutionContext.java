@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
+import com.joraph.debug.JoraphDebug;
 import com.joraph.plan.ExecutionPlan;
 import com.joraph.plan.GatherForeignKeysTo;
 import com.joraph.plan.LoadEntities;
@@ -66,6 +67,10 @@ public class ExecutionContext {
 		for (Operation op : plan.getOperations()) {
 			executeOperation(op);
 		}
+
+		JoraphDebug.addExecutionPlan(plan);
+		JoraphDebug.addObjectGraph(objectGraph);
+
 		return objectGraph;
 	}
 
