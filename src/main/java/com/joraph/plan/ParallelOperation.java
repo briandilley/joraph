@@ -25,7 +25,7 @@ public class ParallelOperation
 			}
 			ret.append("\n");
 		}
-		return ret.append("]")
+		return ret.append("   ]")
 			.toString();
 	}
 

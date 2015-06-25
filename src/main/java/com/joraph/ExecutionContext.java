@@ -1,11 +1,14 @@
 package com.joraph;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import com.google.common.collect.Sets;
 import com.joraph.debug.JoraphDebug;
@@ -158,7 +161,22 @@ public class ExecutionContext {
 	}
 
 	private void runInParallel(List<Operation> ops) {
-		throw new UnsupportedOperationException();
+		List<Future<?>> futures = new ArrayList<Future<?>>();
+		for (final Operation op : ops) {
+			futures.add(context.getExecutorService().submit(new Runnable() {
+				@Override
+				public void run() {
+					executeOperation(op);
+				}
+			}));
+		}
+		for (Future<?> future : futures) {
+			try {
+				future.get(context.getParallelExecutorDefaultTimeoutMillis(), TimeUnit.MILLISECONDS);
+			} catch (Exception e) {
+				throw new JoraphException(e);
+			}
+		}
 	}
 
 	/**

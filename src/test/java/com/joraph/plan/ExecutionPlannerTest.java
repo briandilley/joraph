@@ -62,8 +62,11 @@ public class ExecutionPlannerTest
 
 		assertTrue(ops.get(8).equals(new GatherForeignKeysTo(Author.class)));
 		assertTrue(ops.get(9).equals(new GatherForeignKeysTo(Genre.class)));
-		assertTrue(ops.get(10).equals(new LoadEntities(Author.class)));
-		assertTrue(ops.get(11).equals(new LoadEntities(Genre.class)));
+
+		ParallelOperation parallelOperation = new ParallelOperation();
+		parallelOperation.getOperations().add(new LoadEntities(Author.class));
+		parallelOperation.getOperations().add(new LoadEntities(Genre.class));
+		assertTrue(ops.get(10).equals(parallelOperation));
 
 	}
 

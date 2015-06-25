@@ -1,5 +1,16 @@
 package com.joraph;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -8,33 +19,38 @@ import com.joraph.plan.ExecutionPlan;
 import com.joraph.plan.ExecutionPlanner;
 import com.joraph.schema.Schema;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 /**
  * Derives a series of {@link com.joraph.plan.Operation} from a
  * {@link com.joraph.schema.Schema}.
  */
 public class JoraphContext {
 
-	private final Schema schema;
-	private final ExecutionPlanner planner;
-	private final Map<Set<Class<?>>, ExecutionPlan> cachedPlans;
-	private final Map<Class<?>, EntityLoader<?>> loaders;
-	private boolean debugEnabled = false;
+	private Schema schema;
+	private ExecutionPlanner planner;
+	private Map<Set<Class<?>>, ExecutionPlan> cachedPlans;
+	private Map<Class<?>, EntityLoader<?>> loaders;
+	private ExecutorService executorService;
+	private long parallelExecutorDefaultTimeoutMillis = TimeUnit.SECONDS.toMillis(30);
 
 	/**
 	 * Creates a context for the given {@link Schema}.
 	 * @param schema
 	 */
 	public JoraphContext(Schema schema) {
+		this(schema, 50);
+	}
+
+	/**
+	 * Creates a context for the given {@link Schema}.
+	 * @param schema
+	 * @param parallelExecutorCount
+	 */
+	public JoraphContext(Schema schema, int parallelExecutorCount) {
 		this.schema 		= schema;
 		this.planner		= new ExecutionPlanner(this);
 		this.cachedPlans	= new HashMap<>();
 		this.loaders		= new HashMap<>();
+		setParallelExecutorCount(parallelExecutorCount);
 	}
 
 	/**
@@ -246,19 +262,35 @@ public class JoraphContext {
 		return ret;
 	}
 
-	/**
-	 * @return the schema
-	 */
 	public Schema getSchema() {
 		return schema;
 	}
 
-	public boolean isDebugEnabled() {
-		return debugEnabled;
+	public ExecutorService getExecutorService() {
+		return executorService;
 	}
 
-	public void setDebugEnabled(boolean debugEnabled) {
-		this.debugEnabled = debugEnabled;
+	public void setParallelExecutorCount(int parallelExecutorCount) {
+		ThreadPoolExecutor executorService = new ThreadPoolExecutor(
+				parallelExecutorCount, parallelExecutorCount,
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>());
+		executorService.setRejectedExecutionHandler(new RejectedExecutionHandler() {
+			@Override
+			public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+				r.run();
+			}
+		});
+		this.executorService = executorService;
+	}
+
+	public long getParallelExecutorDefaultTimeoutMillis() {
+		return parallelExecutorDefaultTimeoutMillis;
+	}
+
+	public void setParallelExecutorDefaultTimeoutMillis(
+			long parallelExecutorDefaultTimeoutMillis) {
+		this.parallelExecutorDefaultTimeoutMillis = parallelExecutorDefaultTimeoutMillis;
 	}
 
 }

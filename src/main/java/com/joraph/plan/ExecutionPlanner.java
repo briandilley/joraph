@@ -92,8 +92,14 @@ public class ExecutionPlanner {
 		for (Class<?> c : sortedEntities) {
 			plan.addOperation(new GatherForeignKeysTo(c));
 		}
-		for (Class<?> c : sortedEntities) {
-			plan.addOperation(new LoadEntities(c));
+		if (sortedEntities.size()>1) {
+			ParallelOperation parallelOperation = new ParallelOperation();
+			for (Class<?> c : sortedEntities) {
+				parallelOperation.getOperations().add(new LoadEntities(c));
+			}
+			plan.addOperation(parallelOperation);
+		} else if (sortedEntities.size()==1) {
+			plan.addOperation(new LoadEntities(sortedEntities.get(0)));
 		}
 	}
 
