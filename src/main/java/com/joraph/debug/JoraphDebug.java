@@ -39,4 +39,21 @@ public class JoraphDebug {
 		getDebugInfo().addExecutionPlan(executionPlan);
 	}
 
+	public static void addLoaderDebug(LoaderDebug loaderDebug) {
+		if (!hasDebugInfo()) {
+			return;
+		}
+		getDebugInfo().addLoaderDebug(loaderDebug);
+	}
+
+	public static void addLoaderDebug(
+			Class<?> entityClass, Long loaderTimeMillis, Integer loadedEntityCount, Integer entityIdCount) {
+		if (!hasDebugInfo()) {
+			return;
+		}
+		getDebugInfo().addLoaderDebug(
+				entityClass, loaderTimeMillis,
+				loadedEntityCount, entityIdCount);
+	}
+
 }

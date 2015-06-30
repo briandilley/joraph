@@ -154,7 +154,16 @@ public class ExecutionContext {
 			throw new UnconfiguredLoaderException(entityClass);
 		}
 
+		long start = System.currentTimeMillis();
+
 		List<?> objects = loader.load(ids);
+
+		JoraphDebug.addLoaderDebug(
+				entityClass,
+				System.currentTimeMillis()-start,
+				objects.size(),
+				ids.size());
+
 		addToResults(objects, Sets.<Class<?>>newHashSet(entityClass));
 
 		keysToLoad.get(entityClass).clear();
