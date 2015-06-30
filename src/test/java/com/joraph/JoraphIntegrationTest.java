@@ -1,6 +1,10 @@
 package com.joraph;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,6 +23,7 @@ import com.joraph.schema.Author;
 import com.joraph.schema.BasicCompositeKey;
 import com.joraph.schema.Book;
 import com.joraph.schema.Checkout;
+import com.joraph.schema.CheckoutMetaData;
 import com.joraph.schema.FeaturedBook;
 import com.joraph.schema.Genre;
 import com.joraph.schema.Library;
@@ -271,6 +276,29 @@ public class JoraphIntegrationTest
 	}
 
 	@Test
+	public void testDeepForeignKeys()
+			throws Exception {
+
+		getSchema().getEntityDescriptor(Checkout.class)
+			.addForeignKey("metaData.librarianUserId", User.class);
+
+		getSchema().validate();
+		assertTrue(getSchema().isValidated());
+
+		 Checkout checkout = new Checkout()
+		 	.setId("checkout1")
+		 	.setUserId("user1")
+		 	.setMetaData(new CheckoutMetaData()
+		 		.setLibrarianUserId("user2"));
+
+		 ObjectGraph objectGraph = context.execute(Checkout.class, checkout);
+		 assertNotNull(objectGraph);
+		 assertNotNull(objectGraph.get(User.class, "user1"));
+		 assertNotNull(objectGraph.get(User.class, "user2"));
+
+	}
+
+	@Test
 	public void testDebugInfoIsNotCollected() {
 
 		Book book1 = (Book)values.get("book1");
@@ -431,5 +459,6 @@ public class JoraphIntegrationTest
 
 		}};
 	}
+
 
 }

@@ -11,6 +11,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.collect.Sets;
+import com.joraph.debug.DebugInfo;
 import com.joraph.debug.JoraphDebug;
 import com.joraph.plan.ExecutionPlan;
 import com.joraph.plan.GatherForeignKeysTo;
@@ -172,12 +173,16 @@ public class ExecutionContext {
 	private void runInParallel(List<Operation> ops) {
 		List<Future<?>> futures = new ArrayList<Future<?>>();
 		for (final Operation op : ops) {
+			final DebugInfo info = JoraphDebug.getDebugInfo();
 			futures.add(context.getExecutorService().submit(new Runnable() {
 				@Override
 				public void run() {
+					JoraphDebug.setThreadDebugInfo(info);
 					executeOperation(op);
+					JoraphDebug.clearThreadDebugInfo();
 				}
 			}));
+			JoraphDebug.setThreadDebugInfo(info);
 		}
 		for (Future<?> future : futures) {
 			try {

@@ -4,8 +4,16 @@ import com.joraph.ObjectGraph;
 import com.joraph.plan.ExecutionPlan;
 
 public class JoraphDebug {
-	
-	private static InheritableThreadLocal<DebugInfo> debugInfo = new InheritableThreadLocal<>();
+
+	private static ThreadLocal<DebugInfo> debugInfo = new ThreadLocal<>();
+
+	public static void setThreadDebugInfo(DebugInfo info) {
+		debugInfo.set(info);
+	}
+
+	public static void clearThreadDebugInfo() {
+		debugInfo.set(null);
+	}
 
 	public static void startDebug() {
 		debugInfo.set(new DebugInfo());

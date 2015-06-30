@@ -9,6 +9,8 @@ public class Checkout {
 	private String libraryId;
 	private String userId;
 	private String bookId;
+	private CheckoutMetaData metaData;
+
 	/**
 	 * @return the id
 	 */
@@ -72,6 +74,15 @@ public class Checkout {
 	 */
 	public Checkout setBookId(String bookId) {
 		this.bookId = bookId;
+		return this;
+	}
+
+	public CheckoutMetaData getMetaData() {
+		return metaData;
+	}
+
+	public Checkout setMetaData(CheckoutMetaData metaData) {
+		this.metaData = metaData;
 		return this;
 	}
 
