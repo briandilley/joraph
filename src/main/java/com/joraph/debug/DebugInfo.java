@@ -26,14 +26,15 @@ public class DebugInfo {
 		this.loaderDebugs.add(loaderDebug);
 	}
 
-	public void addLoaderDebug(Class<?> entityClass, Long loaderTimeMillis,
-			Integer loadedEntityCount, Set<Object> ids) {
+	public void addLoaderDebug(
+			Class<?> entityClass, Long loaderTimeMillis, Set<Object> ids, List<?> objects) {
 		LoaderDebug loaderDebug = new LoaderDebug();
 		loaderDebug.setEntityClass(entityClass);
-		loaderDebug.setLoadedEntityCount(loadedEntityCount);
+		loaderDebug.setLoadedEntityCount(objects.size());
+		loaderDebug.setLoadedEntities(objects);
 		loaderDebug.setLoaderTimeMillis(loaderTimeMillis);
 		loaderDebug.setEntityIdCount(ids.size());
-		loaderDebug.setIds(ids);
+		loaderDebug.setEntityIds(ids);
 		this.loaderDebugs.add(loaderDebug);
 	}
 

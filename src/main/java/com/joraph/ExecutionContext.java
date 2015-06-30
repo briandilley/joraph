@@ -104,7 +104,7 @@ public class ExecutionContext {
 
 	private void executeOperation(Operation op) {
 		if (GatherForeignKeysTo.class.isInstance(op)) {
-			gatherForeignKeysTo(GatherForeignKeysTo.class.cast(op).getEntityClass());
+			gatherValuesForForeignKeysTo(GatherForeignKeysTo.class.cast(op).getEntityClass());
 
 		} else if (LoadEntities.class.isInstance(op)) {
 			loadEntities(LoadEntities.class.cast(op).getEntityClass());
@@ -115,7 +115,7 @@ public class ExecutionContext {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void gatherForeignKeysTo(Class<?> entityClass) {
+	private void gatherValuesForForeignKeysTo(Class<?> entityClass) {
 		synchronized (this.keysToLoad) {
 			if (!keysToLoad.containsKey(entityClass)) {
 				keysToLoad.put(entityClass, new HashSet<Object>());
@@ -162,8 +162,7 @@ public class ExecutionContext {
 		JoraphDebug.addLoaderDebug(
 				entityClass,
 				System.currentTimeMillis()-start,
-				objects.size(),
-				ids);
+				ids, objects);
 
 		addToResults(objects, Sets.<Class<?>>newHashSet(entityClass));
 
