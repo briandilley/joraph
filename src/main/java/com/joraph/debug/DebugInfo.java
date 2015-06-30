@@ -27,12 +27,13 @@ public class DebugInfo {
 	}
 
 	public void addLoaderDebug(Class<?> entityClass, Long loaderTimeMillis,
-			Integer loadedEntityCount, Integer entityIdCount) {
+			Integer loadedEntityCount, Set<Object> ids) {
 		LoaderDebug loaderDebug = new LoaderDebug();
 		loaderDebug.setEntityClass(entityClass);
 		loaderDebug.setLoadedEntityCount(loadedEntityCount);
 		loaderDebug.setLoaderTimeMillis(loaderTimeMillis);
-		loaderDebug.setEntityIdCount(entityIdCount);
+		loaderDebug.setEntityIdCount(ids.size());
+		loaderDebug.setIds(ids);
 		this.loaderDebugs.add(loaderDebug);
 	}
 

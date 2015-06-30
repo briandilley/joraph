@@ -1,5 +1,7 @@
 package com.joraph.debug;
 
+import java.util.Set;
+
 import com.joraph.ObjectGraph;
 import com.joraph.plan.ExecutionPlan;
 
@@ -55,13 +57,13 @@ public class JoraphDebug {
 	}
 
 	public static void addLoaderDebug(
-			Class<?> entityClass, Long loaderTimeMillis, Integer loadedEntityCount, Integer entityIdCount) {
+			Class<?> entityClass, Long loaderTimeMillis, Integer loadedEntityCount, Set<Object> ids) {
 		if (!hasDebugInfo()) {
 			return;
 		}
 		getDebugInfo().addLoaderDebug(
 				entityClass, loaderTimeMillis,
-				loadedEntityCount, entityIdCount);
+				loadedEntityCount, ids);
 	}
 
 }

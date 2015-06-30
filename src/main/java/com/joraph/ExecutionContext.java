@@ -163,7 +163,7 @@ public class ExecutionContext {
 				entityClass,
 				System.currentTimeMillis()-start,
 				objects.size(),
-				ids.size());
+				ids);
 
 		addToResults(objects, Sets.<Class<?>>newHashSet(entityClass));
 

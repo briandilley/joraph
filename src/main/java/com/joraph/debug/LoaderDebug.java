@@ -1,8 +1,12 @@
 package com.joraph.debug;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class LoaderDebug {
 
 	private Class<?> entityClass;
+	private Set<Object> ids;
 	private Long loaderTimeMillis;
 	private Integer entityIdCount;
 	private Integer loadedEntityCount;
@@ -37,6 +41,14 @@ public class LoaderDebug {
 
 	public void setLoadedEntityCount(Integer loadedEntityCount) {
 		this.loadedEntityCount = loadedEntityCount;
+	}
+
+	public Set<Object> getIds() {
+		return ids;
+	}
+
+	public void setIds(Set<Object> ids) {
+		this.ids = new HashSet<Object>(ids);
 	}
 
 }
