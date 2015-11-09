@@ -1,10 +1,9 @@
 package com.joraph.schema;
 
 import java.beans.IntrospectionException;
-
-import com.google.common.base.Converter;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A composite key.
@@ -15,8 +14,8 @@ public class CompositeKey<T>
 
 	private String[] propertyNames;
 	private BaseProperty<?>[] properties;
-	private Converter<Object[], T> converter;
-	private Converter<T, Object[]> reverseConverter;
+	private Function<Object[], T> converter;
+	private Function<T, Object[]> reverseConverter;
 
 	/**
 	 * @param entityClass
@@ -26,12 +25,16 @@ public class CompositeKey<T>
 	 * @param additionalPropertyNames
 	 * @throws IntrospectionException
 	 */
-	public CompositeKey(Class<?> entityClass, Converter<Object[], T> converter,
+	public CompositeKey(Class<?> entityClass,
+			Function<Object[], T> converter, Function<T, Object[]> reverseConverter,
 			String firstPropertyName, String secondPropertyName, String... additionalPropertyNames)
 			throws IntrospectionException {
-		this.propertyNames 		= Lists.asList(firstPropertyName, secondPropertyName, additionalPropertyNames).toArray(new String[0]);
+		this.propertyNames= Stream.concat(
+				Stream.of(additionalPropertyNames),
+				Stream.of(firstPropertyName, secondPropertyName)
+			).toArray(String[]::new);
 		this.converter 			= converter;
-		this.reverseConverter	= converter.reverse();
+		this.reverseConverter	= reverseConverter;
 		this.properties			= new BaseProperty[propertyNames.length];
 		for (int i=0; i<propertyNames.length; i++) {
 			this.properties[i] = new BaseProperty<Object>(
@@ -41,7 +44,8 @@ public class CompositeKey<T>
 
 	@Override
 	public String getName() {
-		return Joiner.on(", ").join(propertyNames);
+		return Stream.of(propertyNames)
+				.collect(Collectors.joining(","));
 	}
 
 	@Override
@@ -50,12 +54,12 @@ public class CompositeKey<T>
 		for (int i=0; i<ret.length; i++) {
 			ret[i] = properties[i].read(obj);
 		}
-		return converter.convert(ret);
+		return converter.apply(ret);
 	}
 
 	@Override
 	public void write(Object obj, T value) {
-		Object[] values = reverseConverter.convert(value);
+		Object[] values = reverseConverter.apply(value);
 		for (int i=0; i<values.length; i++) {
 			properties[i].write(obj, values[i]);
 		}

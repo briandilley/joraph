@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.collect.Sets;
 import com.joraph.debug.DebugInfo;
 import com.joraph.debug.JoraphDebug;
 import com.joraph.plan.ExecutionPlan;
@@ -129,11 +128,11 @@ public class ExecutionContext {
 				}
 				Set<Object> ids;
 				if (Collection.class.isInstance(val)) {
-					ids = Sets.newHashSet((Collection<Object>)val);
+					ids = new HashSet<>((Collection<Object>)val);
 				} else if (val.getClass().isArray()) {
-					ids = Sets.newHashSet((Object[])val);
+					ids = CollectionUtil.asSet((Object[])val);
 				} else {
-					ids = Sets.newHashSet(val);
+					ids = CollectionUtil.asSet(val);
 				}
 				for (Object id : ids) {
 					if (id==null || objectGraph.get(entityClass, id)!=null) {
@@ -164,7 +163,7 @@ public class ExecutionContext {
 				System.currentTimeMillis()-start,
 				ids, objects);
 
-		addToResults(objects, Sets.<Class<?>>newHashSet(entityClass));
+		addToResults(objects, CollectionUtil.asSet(entityClass));
 
 		keysToLoad.get(entityClass).clear();
 	}

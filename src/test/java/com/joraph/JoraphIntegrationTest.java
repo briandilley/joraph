@@ -8,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -17,7 +18,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.collect.Lists;
 import com.joraph.debug.JoraphDebug;
 import com.joraph.schema.Author;
 import com.joraph.schema.BasicCompositeKey;
@@ -228,7 +228,7 @@ public class JoraphIntegrationTest
 
 	@Test
 	public void testFeatureBookWhenFeaturedBooksIsNull() throws Exception {
-		final ObjectGraph objectGraph = context.execute(FeaturedBook.class, (Iterable<FeaturedBook>)null);
+		final ObjectGraph objectGraph = context.execute(FeaturedBook.class, (Collection<FeaturedBook>)null);
 
 		assertNull(objectGraph.get(Book.class, "book1"));
 	}
@@ -267,11 +267,15 @@ public class JoraphIntegrationTest
 		assertTrue(objectGraph.has(User.class, "user1"));
 		assertTrue(objectGraph.has(User.class, "user2"));
 		assertTrue(objectGraph.has(User.class, "user3"));
-		
+
+		// user1 follows: user2
+		// user2 follows: user1, user3
+		// user3 follows: user1
+
 		assertTrue(objectGraph.has(UserFollow.class, new BasicCompositeKey("user1", "user2")));
 		assertTrue(objectGraph.has(UserFollow.class, new BasicCompositeKey("user2", "user1")));
-		assertTrue(objectGraph.has(UserFollow.class, new BasicCompositeKey("user3", "user1")));
 		assertTrue(objectGraph.has(UserFollow.class, new BasicCompositeKey("user2", "user3")));
+		assertTrue(objectGraph.has(UserFollow.class, new BasicCompositeKey("user3", "user1")));
 
 	}
 
@@ -392,14 +396,18 @@ public class JoraphIntegrationTest
 			put("user1", new User()
 				.setId("user1")
 				.setName("User 1")
-				.setFavoriteAuthorIds(Lists.newArrayList("author1", "author2")));
+				.setFavoriteAuthorIds(CollectionUtil.asList("author1", "author2")));
 			put("user2", new User()
 				.setId("user2")
 				.setName("User 2"));
 			put("user3", new User()
 				.setId("user3")
 				.setName("User 3")
-				.setFavoriteAuthorIds(Lists.newArrayList("author3", "author1")));
+				.setFavoriteAuthorIds(CollectionUtil.asList("author3", "author1")));
+			
+			// user1 follows: user2
+			// user2 follows: user1, user3
+			// user3 follows: user1
 
 			put(new BasicCompositeKey("user1", "user2"),
 					new UserFollow("user1", "user2"));

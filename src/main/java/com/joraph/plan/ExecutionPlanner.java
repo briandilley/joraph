@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.google.common.collect.Sets;
+import com.joraph.CollectionUtil;
 import com.joraph.JoraphContext;
 import com.joraph.schema.Graph;
 import com.joraph.schema.Schema;
@@ -32,7 +32,7 @@ public class ExecutionPlanner {
 	 * @return
 	 */
 	public <T> ExecutionPlan plan(Class<?> entityClass) {
-		return plan(Sets.<Class<?>>newHashSet(entityClass));
+		return plan(CollectionUtil.asSet(entityClass));
 	}
 
 	/**

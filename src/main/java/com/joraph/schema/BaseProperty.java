@@ -1,6 +1,6 @@
 package com.joraph.schema;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 import com.joraph.JoraphException;
 
@@ -29,7 +29,7 @@ public class BaseProperty<T>
 	 * @param descriptor the descriptor to set
 	 */
 	protected void setDescriptor(PropertyDescriptorChain descriptor) {
-		this.descriptor = checkNotNull(descriptor, "descriptor must not be null");
+		this.descriptor = requireNonNull(descriptor, "descriptor must not be null");
 	}
 
 	@Override

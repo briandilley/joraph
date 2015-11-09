@@ -5,7 +5,7 @@
 
 	<groupId>com.joraph</groupId>
 	<artifactId>joraph</artifactId>
-	<version>0.8-SNAPSHOT</version>
+	<version>0.9-SNAPSHOT</version>
 
 	<name>Joraph</name>
 	<description>Java library for joining objects into a graph, JOin gRAPH</description>
@@ -20,7 +20,7 @@
 		<maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
 
 		<!-- jdk config -->
-		<jdk.version>1.7</jdk.version>
+		<jdk.version>1.8</jdk.version>
 
 	</properties>
 
@@ -211,12 +211,6 @@
 
 
 	<dependencies>
-
-		<dependency>
-		    <groupId>com.google.guava</groupId>
-		    <artifactId>guava</artifactId>
-		    <version>18.0</version>
-		</dependency>
 
 		<dependency>
 			<groupId>org.hamcrest</groupId>

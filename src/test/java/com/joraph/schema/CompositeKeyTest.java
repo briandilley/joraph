@@ -2,20 +2,24 @@ package com.joraph.schema;
 
 import static org.junit.Assert.*;
 
+import java.util.function.Function;
+
 import org.junit.Before;
 import org.junit.Test;
-
-import com.google.common.base.Converter;
 
 public class CompositeKeyTest {
 
 	private CompositeKey<CPK> key;
 
+	public Function<Object[], CPK> CONVERTER = (a) -> new CPK(a[0].toString(), a[1].toString());
+	public Function<CPK, Object[]> CONVERTER_R = (a) -> new Object[] { a.from, a.to };
+
 	@Before
 	public void setUp()
 			throws Exception {
 		key = new CompositeKey<CompositeKeyTest.CPK>(
-				UserFollow.class, CONVERTER, "fromUserId", "toUserId");
+				UserFollow.class, CONVERTER, CONVERTER_R,
+				"fromUserId", "toUserId");
 	}
 
 	@Test
@@ -44,22 +48,5 @@ public class CompositeKeyTest {
 			this.to = to;
 		}
 	}
-
-	public Converter<Object[], CPK> CONVERTER
-			= new Converter<Object[], CompositeKeyTest.CPK>() {
-			
-		@Override
-		protected CPK doForward(Object[] a) {
-			return new CPK(a[0].toString(), a[1].toString());
-		}
-		
-		@Override
-		protected Object[] doBackward(CPK b) {
-			return new Object[] {
-				b.from,
-				b.to
-			};
-		}
-	};
 
 }

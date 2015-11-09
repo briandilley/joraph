@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.joraph.schema.EntityDescriptor;
 import com.joraph.schema.Property;
@@ -30,6 +32,11 @@ public class ObjectGraph {
 		this.schema = schema;
 	}
 
+	/**
+	 * Returns all of the ids for the given type.
+	 * @param type the type
+	 * @return the ids
+	 */
 	@SuppressWarnings("unchecked")
 	public <T> Set<T> getIds(Class<?> type) {
 		assert( schema != null );
@@ -110,7 +117,35 @@ public class ObjectGraph {
 	 * @return
 	 */
 	public <T> List<T> getList(Class<T> type) {
-		return new ArrayList<>(getMap(type).values());
+		return stream(type).collect(Collectors.toList());
+	}
+
+	/**
+	 * Returns a list of all items of a given type.
+	 * @param type
+	 * @return
+	 */
+	public <T> Stream<T> stream(Class<T> type) {
+		return getMap(type).values().stream();
+	}
+
+	/**
+	 * Returns a list of all items of a given type.
+	 * @param type
+	 * @return
+	 */
+	public Stream<Object> streamIds(Class<?> type) {
+		return getMap(type).keySet().stream();
+	}
+
+	/**
+	 * Returns a list of all items of a given type.
+	 * @param type
+	 * @return
+	 */
+	public <I> Stream<I> streamIds(Class<?> type, Class<I> idClass) {
+		return getMap(type).keySet().stream()
+				.map(idClass::cast);
 	}
 
 	/**
@@ -120,7 +155,7 @@ public class ObjectGraph {
 	 * @param ids
 	 * @return
 	 */
-	public <T> List<T> getList(Class<T> type, Collection<Object> ids) {
+	public <T, I> List<T> getList(Class<T> type, Collection<I> ids) {
 		List<T> ret = new ArrayList<>();
 		for (Object id : ids) {
 			ret.add(get(type, id));

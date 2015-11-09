@@ -4,8 +4,7 @@ import java.beans.IntrospectionException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.google.common.base.Converter;
+import java.util.function.Function;
 
 /**
  * Metadata about an entity class.
@@ -47,12 +46,31 @@ public class EntityDescriptor {
 	 * @return
 	 * @throws IntrospectionException
 	 */
-	public <T> EntityDescriptor setPrimaryKey(Converter<Object[], T> converter,
+	public <T> EntityDescriptor setPrimaryKey(
+			Function<Object[], T> converter, Function<T, Object[]> reverseConverter,
 			String firstPropertyName, String secondPropertyName, String... additionalPropertyNames)
 		throws IntrospectionException {
-		this.primaryKey = new CompositeKey<T>(entityClass, converter,
+		this.primaryKey = new CompositeKey<T>(entityClass,
+				converter, reverseConverter,
 				firstPropertyName, secondPropertyName, additionalPropertyNames);
 		return this;
+	}
+
+	/**
+	 * 
+	 * @param converter
+	 * @param firstPropertyName
+	 * @param secondPropertyName
+	 * @param additionalPropertyNames
+	 * @return
+	 * @throws IntrospectionException
+	 */
+	public <T> EntityDescriptor setPrimaryKey(
+			String firstPropertyName, String secondPropertyName, String... additionalPropertyNames)
+		throws IntrospectionException {
+		return setPrimaryKey(
+				BasicCompositeKey.CONVERTER, BasicCompositeKey.CONVERTER_R,
+				firstPropertyName, secondPropertyName, additionalPropertyNames);
 	}
 
 	/**

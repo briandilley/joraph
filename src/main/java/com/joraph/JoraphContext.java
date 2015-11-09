@@ -1,8 +1,8 @@
 package com.joraph;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -11,10 +11,6 @@ import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.joraph.plan.ExecutionPlan;
 import com.joraph.plan.ExecutionPlanner;
 import com.joraph.schema.Schema;
@@ -63,6 +59,14 @@ public class JoraphContext {
 	}
 
 	/**
+	 * Creates and returns an empty {@link ObjectGraph}.
+	 * @return the graph
+	 */
+	public ObjectGraph createEmptyGraph() {
+		return new ObjectGraph(schema);
+	}
+
+	/**
 	 * 
 	 * @param entityClass the entity class
 	 * @param objects
@@ -81,7 +85,7 @@ public class JoraphContext {
 	public <T> ObjectGraph execute(Class<T> entityClass, Iterable<T> objects) {
 		return execute(new Query()
 				.withEntityClass(entityClass)
-				.withRootObjects(Sets.newHashSet(Optional.fromNullable(objects).or(new HashSet<T>()))));
+				.withRootObjects(objects));
 	}
 
 	/**
@@ -93,7 +97,7 @@ public class JoraphContext {
 	public ObjectGraph execute(Set<Class<?>> entityClasses, Iterable<Object> objects) {
 		return execute(new Query()
 				.withEntityClasses(entityClasses)
-				.withRootObjects(Sets.newHashSet(Optional.fromNullable(objects).or(new HashSet<Object>()))));
+				.withRootObjects(objects));
 	}
 
 	/**
@@ -105,7 +109,7 @@ public class JoraphContext {
 	public <T> ObjectGraph execute(Class<T> entityClass, Iterable<T> objects, ObjectGraph existingGraph) {
 		return execute(new Query()
 			.withEntityClass(entityClass)
-			.withRootObjects(Sets.newHashSet(Optional.fromNullable(objects).or(Collections.<T>emptySet())))
+			.withRootObjects(objects)
 			.withExistingGraph(existingGraph));
 	}
 
@@ -118,7 +122,7 @@ public class JoraphContext {
 	public ObjectGraph execute(Set<Class<?>> entityClasses, Iterable<Object> objects, ObjectGraph existingGraph) {
 		return execute(new Query()
 			.withEntityClasses(entityClasses)
-			.withRootObjects(Sets.newHashSet(Optional.fromNullable(objects).or(Collections.<Object>emptySet())))
+			.withRootObjects(objects)
 			.withExistingGraph(existingGraph));
 	}
 
@@ -131,11 +135,10 @@ public class JoraphContext {
 	 * @return an object graph derived from the relationships defined in in the schema and
 	 * associated with the rootObject
 	 */
-	@SuppressWarnings("unchecked")
 	public <T> ObjectGraph execute(Class<T> entityClass, T rootObject) {
 		return execute(new Query()
 			.withEntityClass(entityClass)
-			.withRootObjects(Optional.fromNullable((Set<T>)Sets.<T>newHashSet(rootObject)).or(Collections.<T>emptySet())));
+			.withRootObjects(CollectionUtil.asSet(rootObject)));
 	}
 
 	/**
@@ -147,11 +150,10 @@ public class JoraphContext {
 	 * @return an object graph derived from the relationships defined in in the schema and
 	 * associated with the rootObject
 	 */
-	@SuppressWarnings("unchecked")
 	public <T> ObjectGraph execute(Class<T> entityClass, T rootObject, ObjectGraph existingGraph) {
 		return execute(new Query()
 			.withEntityClass(entityClass)
-			.withRootObjects(Optional.fromNullable((Set<T>)Sets.<T>newHashSet(rootObject)).or(Collections.<T>emptySet()))
+			.withRootObjects(CollectionUtil.asSet(rootObject))
 			.withExistingGraph(existingGraph));
 	}
 
@@ -171,7 +173,7 @@ public class JoraphContext {
 		
 		return execute(new Query()
 			.withEntityClass(entityClass)
-			.withRootObjects(Optional.fromNullable((Set<Object>)Sets.newHashSet(rootObject)).or(Collections.emptySet())));
+			.withRootObjects(CollectionUtil.asSet(rootObject)));
 	}
 
 	/**
@@ -185,14 +187,14 @@ public class JoraphContext {
 	 */
 	public ObjectGraph executeForObjects(Iterable<?> rootObjects) {
 		assert(rootObjects != null);
-		final Set<Class<?>> entityClasses = Sets.newHashSet();
+		final Set<Class<?>> entityClasses = new HashSet<>();
 		for (Object rootObject : rootObjects) {
 			entityClasses.add(rootObject.getClass());
 		}
 		
 		return execute(new Query()
 			.withEntityClasses(entityClasses)
-			.withRootObjects(Optional.fromNullable((Set<Object>)Sets.newHashSet(rootObjects)).or(Collections.emptySet())));
+			.withRootObjects(rootObjects));
 	}
 
 	/**
@@ -211,7 +213,7 @@ public class JoraphContext {
 	
 		return execute(new Query()
 			.withEntityClass(entityClass)
-			.withRootObjects(Optional.fromNullable((Set<Object>)Sets.newHashSet(rootObject)).or(Collections.emptySet()))
+			.withRootObjects(CollectionUtil.asSet(rootObject))
 			.withExistingGraph(existingGraph));
 	}
 
@@ -226,14 +228,14 @@ public class JoraphContext {
 	public <T> ObjectGraph supplement(
 			ObjectGraph existingGraph, Class<?> entityType, Object firstId, Object... ids) {
 
-		Iterable<?> objects = getLoader(entityType).load(Lists.asList(firstId, ids));
-		if (Iterables.isEmpty(objects)) {
+		List<?> objects = getLoader(entityType).load(CollectionUtil.asList(firstId, ids));
+		if (objects==null || objects.isEmpty()) {
 			return existingGraph;
 		}
 
 		return execute(new Query()
 				.withEntityClass(entityType)
-				.withRootObjects(Sets.newHashSet(objects))
+				.withRootObjects(objects)
 				.withExistingGraph(existingGraph));
 	}
 

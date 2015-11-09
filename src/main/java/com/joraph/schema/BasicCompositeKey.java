@@ -1,22 +1,12 @@
 package com.joraph.schema;
 
 import java.util.Arrays;
-
-import com.google.common.base.Converter;
+import java.util.function.Function;
 
 public class BasicCompositeKey {
 
-	public static final Converter<Object[], BasicCompositeKey> CONVERTER
-			= new Converter<Object[], BasicCompositeKey>() {
-				@Override
-				protected BasicCompositeKey doForward(Object[] a) {
-					return new BasicCompositeKey(a);
-				}
-				@Override
-				protected Object[] doBackward(BasicCompositeKey b) {
-					return b.objects;
-				}
-			};
+	public static final Function<Object[], BasicCompositeKey> CONVERTER = BasicCompositeKey::new;
+	public static final Function<BasicCompositeKey, Object[]> CONVERTER_R = BasicCompositeKey::getParts;
 
 	private Object[] objects;
 
@@ -38,6 +28,10 @@ public class BasicCompositeKey {
 
 	public int getSize() {
 		return this.objects.length;
+	}
+
+	public Object[] getParts() {
+		return this.objects;
 	}
 
 	@Override

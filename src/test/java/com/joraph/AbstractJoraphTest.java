@@ -1,7 +1,9 @@
 package com.joraph;
 
-import com.google.common.base.Converter;
-import com.google.common.base.Joiner;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.joraph.schema.Author;
 import com.joraph.schema.BasicCompositeKey;
 import com.joraph.schema.Book;
@@ -18,17 +20,8 @@ import com.joraph.schema.UserFollow;
 
 public abstract class AbstractJoraphTest {
 
-	public static Converter<Object[], String> STRING_CONCAT_CONVERTER
-			= new Converter<Object[], String>() {
-				@Override
-				protected String doForward(Object[] a) {
-					return Joiner.on("|").join(a);
-				}
-				@Override
-				protected Object[] doBackward(String b) {
-					return b.split("|");
-				}
-			};
+	public static Function<Object[], String> STRING_CONCAT_CONVERTER = (a) -> Stream.of(a).map(String.class::cast).collect(Collectors.joining("|"));
+	public static Function<String, Object[]> STRING_CONCAT_CONVERTER_R = (a) -> a.split("|");
 
 	private Schema schema;
 
@@ -77,7 +70,7 @@ public abstract class AbstractJoraphTest {
 
 		/* follows */
 		schema.addEntityDescriptor(UserFollow.class)
-			.setPrimaryKey(BasicCompositeKey.CONVERTER, "fromUserId", "toUserId")
+			.setPrimaryKey(BasicCompositeKey.CONVERTER, BasicCompositeKey.CONVERTER_R, "fromUserId", "toUserId")
 			.addForeignKey("fromUserId", User.class)
 			.addForeignKey("toUserId", User.class);
 
