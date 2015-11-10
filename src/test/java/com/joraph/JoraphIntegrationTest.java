@@ -27,6 +27,7 @@ import com.joraph.schema.CheckoutMetaData;
 import com.joraph.schema.FeaturedBook;
 import com.joraph.schema.Genre;
 import com.joraph.schema.Library;
+import com.joraph.schema.PropertyDescriptorChain;
 import com.joraph.schema.Rating;
 import com.joraph.schema.SimilarBook;
 import com.joraph.schema.User;
@@ -284,7 +285,10 @@ public class JoraphIntegrationTest
 			throws Exception {
 
 		getSchema().getEntityDescriptor(Checkout.class)
-			.addForeignKey("metaData.librarianUserId", User.class);
+			.addForeignKey(User.class, new PropertyDescriptorChain.Builder()
+					.addAccessor(Checkout::getMetaData)
+					.addAccessor(CheckoutMetaData::getLibrarianUserId)
+					.build());
 
 		getSchema().validate();
 		assertTrue(getSchema().isValidated());

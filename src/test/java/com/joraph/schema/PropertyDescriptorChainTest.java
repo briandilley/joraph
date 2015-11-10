@@ -3,17 +3,9 @@ package com.joraph.schema;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import java.beans.IntrospectionException;
-
 import org.junit.Test;
 
 public class PropertyDescriptorChainTest {
-
-	@Test(expected=IntrospectionException.class)
-	public void testFailsOnInvalidProperty()
-			throws Exception {
-		new PropertyDescriptorChain("anus", Person.class);
-	}
 
 	@Test
 	public void testReadRootLevelItem()
@@ -21,7 +13,9 @@ public class PropertyDescriptorChainTest {
 
 		Person person = new Person();
 
-		PropertyDescriptorChain chain = new PropertyDescriptorChain("id", Person.class);
+		PropertyDescriptorChain chain = new PropertyDescriptorChain.Builder()
+				.addAccessor(Person::getId)
+				.build();
 
 		assertNull(chain.read(person, false));
 		assertNull(chain.read(person, true));
@@ -37,7 +31,11 @@ public class PropertyDescriptorChainTest {
 
 		Person megatron = new Person();
 
-		PropertyDescriptorChain firstNameChain = new PropertyDescriptorChain("name.firstName", Person.class);
+		PropertyDescriptorChain firstNameChain = new PropertyDescriptorChain.Builder()
+				.addAccessor(Person::getName)
+				.addAccessor(Name::getFirstName)
+				.build();
+
 		firstNameChain.read(megatron, true);
 	}
 
@@ -47,7 +45,11 @@ public class PropertyDescriptorChainTest {
 
 		Person megatron = new Person();
 
-		PropertyDescriptorChain firstNameChain = new PropertyDescriptorChain("name.firstName", Person.class);
+		PropertyDescriptorChain firstNameChain = new PropertyDescriptorChain.Builder()
+				.addAccessor(Person::getName)
+				.addAccessor(Name::getFirstName)
+				.build();
+
 		assertNull(firstNameChain.read(megatron, false));
 	}
 
@@ -69,75 +71,22 @@ public class PropertyDescriptorChainTest {
 		starscream.setFriend(megatron);
 		
 
-		PropertyDescriptorChain firstNameChain = new PropertyDescriptorChain("name.firstName", Person.class);
-		PropertyDescriptorChain friendLastNameChain = new PropertyDescriptorChain("friend.name.lastName", Person.class);
+
+		PropertyDescriptorChain firstNameChain = new PropertyDescriptorChain.Builder()
+				.addAccessor(Person::getName)
+				.addAccessor(Name::getFirstName)
+				.build();
+
+
+		PropertyDescriptorChain friendLastNameChain = new PropertyDescriptorChain.Builder()
+				.addAccessor(Person::getFriend)
+				.addAccessor(Person::getName)
+				.addAccessor(Name::getLastName)
+				.build();
 
 		assertEquals(megatron.getName().getFirstName(), firstNameChain.read(megatron, true));
 		assertEquals(megatron.getName().getFirstName(), firstNameChain.read(megatron, true));
 		assertEquals(megatron.getName().getLastName(), friendLastNameChain.read(starscream, true));
-	}
-
-	@Test
-	public void testWriteRootLevelItem()
-			throws Exception {
-
-		Person person = new Person();
-
-		PropertyDescriptorChain chain = new PropertyDescriptorChain("id", Person.class);
-
-		chain.write(person, "an id", true);
-		assertEquals("an id", person.getId());
-	}
-
-	@Test(expected=IllegalStateException.class)
-	public void testWriteSubItemsFailsOnNullsWhenToldTo()
-			throws Exception {
-
-		Person megatron = new Person();
-
-		PropertyDescriptorChain firstNameChain = new PropertyDescriptorChain("name.firstName", Person.class);
-		firstNameChain.write(megatron, "Megatron", true);
-	}
-
-	@Test
-	public void testWriteSubItemsDoesNotFailOnNullsWhenToldNotTo()
-			throws Exception {
-
-		Person megatron = new Person();
-
-		PropertyDescriptorChain firstNameChain = new PropertyDescriptorChain("name.firstName", Person.class);
-		firstNameChain.write(megatron, "Megatron", false);
-		assertNull(megatron.getName());
-	}
-
-	@Test
-	public void testWriteSubItems()
-			throws Exception {
-
-		Person megatron = new Person();
-		megatron.setId("megatron");
-		megatron.setName(new Name());
-
-		Person starscream = new Person();
-		starscream.setId("starscream");
-		starscream.setName(new Name());
-		
-
-		PropertyDescriptorChain firstNameChain = new PropertyDescriptorChain("name.firstName", Person.class);
-		PropertyDescriptorChain friendChain = new PropertyDescriptorChain("friend", Person.class);
-		PropertyDescriptorChain friendLastNameChain = new PropertyDescriptorChain("friend.name.lastName", Person.class);
-
-		firstNameChain.write(megatron, "Megatron", true);
-		assertEquals(megatron.getName().getFirstName(), "Megatron");
-
-		firstNameChain.write(starscream, "Starscream", true);
-		assertEquals(starscream.getName().getFirstName(), "Starscream");
-
-		friendChain.write(starscream, megatron, true);
-		assertEquals(starscream.getFriend(), megatron);
-
-		friendLastNameChain.write(starscream, "Smith", true);
-		assertEquals(starscream.getFriend().getName().getLastName(), "Smith");
 	}
 
 	public class Person {

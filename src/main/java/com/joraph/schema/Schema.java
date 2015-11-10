@@ -148,7 +148,7 @@ public class Schema {
 		graph.addEntity(node.getEntityClass());
 		for (ForeignKey<?> fk : node.getForeignKeys()) {
 			graph.addEdge(node.getEntityClass(), fk.getForeignEntity());
-			graph(node.child(fk.getName()), graph);
+			graph(node.child(fk), graph);
 		}
 	}
 
@@ -187,7 +187,7 @@ public class Schema {
 			}
 
 			// check FKs
-			for (Entry<String, ForeignKey<?>> fkEntry : ed.getForeignKeys().entrySet()) {
+			for (Entry<PropertyDescriptorChain, ForeignKey<?>> fkEntry : ed.getForeignKeys().entrySet()) {
 				ForeignKey<?> fk = fkEntry.getValue();
 				if (!entityDescriptors.containsKey(fk.getForeignEntity())) {
 					throw new UnknownFKException(ed.getEntityClass(), fk);

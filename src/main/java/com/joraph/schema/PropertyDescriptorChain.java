@@ -1,12 +1,11 @@
 package com.joraph.schema;
 
-import static java.util.Objects.requireNonNull;
-
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
 
 /**
  * A chain of {@link PropertyDescriptor}s so that one may use
@@ -14,58 +13,30 @@ import java.lang.reflect.Method;
  */
 public class PropertyDescriptorChain {
 
-	private PropertyDescriptor[] chain;
-	private String path;
+	private Function<Object, ?>[] chain;
 
 	/**
 	 * Creates a {@link PropertyDescriptorChain} from the given class using
 	 * the given path.
 	 * @param path the path
 	 * @param rootClass the root object
-	 * @throws IntrospectionException
 	 */
-	public PropertyDescriptorChain(String path, Class<?> rootClass)
-			throws IntrospectionException {
-		this.path = path;
-
-		String[] parts = path.split("\\.");
-		this.chain = new PropertyDescriptor[parts.length];
-		Class<?> clazz = rootClass;
-		for (int i=0; i<parts.length; i++) {
-			this.chain[i] = findPropertyDescriptor(parts[i], clazz);
-			clazz = this.chain[i].getPropertyType();
-		}
-
+	public PropertyDescriptorChain(Function<Object, ?>[] chain) {
+		this.chain = chain;
 		if (chain.length<=0) {
 			throw new IllegalStateException("chain.length<=0");
 		}
 	}
 
 	/**
-	 * A quick and dirty method for finding properties on a class.  This method
-	 * isn't as strict as the default {@link PropertyDescriptor} constructor
-	 * in that it allows for setters to have a return value.
-	 * @param propertyName the property name
-	 * @param clazz the class that the property belongs to
-	 * @return the descriptor
-	 * @throws IntrospectionException
+	 * Creates a {@link PropertyDescriptorChain} from the given class using
+	 * the given path.
+	 * @param path the path
+	 * @param rootClass the root object
 	 */
-	private static PropertyDescriptor findPropertyDescriptor(String propertyName, Class<?> clazz)
-			throws IntrospectionException {
-		for (PropertyDescriptor pd : Introspector.getBeanInfo(clazz).getPropertyDescriptors()) {
-			if (pd.getName().equals(propertyName)) {
-				return pd;
-			}
-		}
-		throw new IntrospectionException("Property "+propertyName+" not found on "+clazz.getName());
-	}
-
-	/**
-	 * Returns the path that this chain takes.
-	 * @return the path
-	 */
-	public String getPath() {
-		return path;
+	@SuppressWarnings("unchecked")
+	public <T> PropertyDescriptorChain(Function<T, ?> accessor) {
+		this(new Function[] { accessor });
 	}
 
 	/**
@@ -73,9 +44,6 @@ public class PropertyDescriptorChain {
 	 * @param obj the root object
 	 * @param failOnNullsInChain whether or not to fail on nulls in a chain
 	 * @return the value, or null
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
-	 * @throws InvocationTargetException
 	 * @throws IllegalStateException if {@code failOnNullsInChain} and a non terminating
 	 * link in the chain is null
 	 */
@@ -85,9 +53,7 @@ public class PropertyDescriptorChain {
 			InvocationTargetException {
 		Object ret = obj;
 		for (int i=0; i<chain.length; i++) {
-			Method readMethod = requireNonNull(
-					chain[i].getReadMethod(), "Read method required"+chain[i]);
-			ret = readMethod.invoke(obj);
+			ret = chain[i].apply(obj);
 			obj = ret;
 			if (obj==null && i<chain.length-1) {
 				if (failOnNullsInChain) {
@@ -100,41 +66,51 @@ public class PropertyDescriptorChain {
 		return ret;
 	}
 
+	@Override
+	public String toString() {
+		return Arrays.toString(chain);
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(chain);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PropertyDescriptorChain other = (PropertyDescriptorChain) obj;
+		if (!Arrays.equals(chain, other.chain))
+			return false;
+		return true;
+	}
+
 	/**
-	 * Writes the value to the property descriptor chain.
-	 * @param obj the root object
-	 * @param value the value to write
-	 * @param failOnNullsInChain whether or not to fail on nulls in a chain
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
-	 * @throws InvocationTargetException
-	 * @throws IllegalStateException if {@code failOnNullsInChain} and a non terminating
-	 * link in the chain is null
+	 * Builder for this object.
 	 */
-	public void write(Object obj, Object value, boolean failOnNullsInChain)
-			throws IllegalAccessException,
-			IllegalArgumentException,
-			InvocationTargetException {
-		Method writedMethod = null;
-		for (int i=0; i<chain.length; i++) {
-			if (i!=chain.length-1) {
-				Method readMethod = requireNonNull(
-						chain[i].getReadMethod(), "Read method required for "+chain[i]);
-				obj = readMethod.invoke(obj);
-				if (obj==null && i<chain.length-1) {
-					if (failOnNullsInChain) {
-						throw new IllegalStateException("Null link found in chain");
-					} else {
-						return;
-					}
-				}
-			} else {
-				writedMethod = requireNonNull(
-						chain[i].getWriteMethod(), "Write method required for "+chain[i]);
-				
-			}
+	public static class Builder {
+
+		private List<Function<Object, ?>> accessors = new ArrayList<>();
+
+		@SuppressWarnings("unchecked")
+		public <T> Builder addAccessor(Function<T, ?> accessor) {
+			this.accessors.add((Function<Object, ?>)accessor);
+			return this;
 		}
-		writedMethod.invoke(obj, value);
+
+		@SuppressWarnings("unchecked")
+		public PropertyDescriptorChain build() {
+			return new PropertyDescriptorChain(accessors.stream()
+					.toArray(Function[]::new));
+		}
 	}
 
 }

@@ -32,9 +32,11 @@ public class BaseProperty<T>
 		this.descriptor = requireNonNull(descriptor, "descriptor must not be null");
 	}
 
-	@Override
-	public String getName() {
-		return descriptor.getPath();
+	/**
+	 * @return descriptor the descriptor
+	 */
+	protected PropertyDescriptorChain getDescriptor() {
+		return this.descriptor;
 	}
 
 	@Override
@@ -43,16 +45,6 @@ public class BaseProperty<T>
 		try {
 			assert(descriptor != null);
 			return (T)descriptor.read(obj, false);
-		} catch (Exception e) {
-			throw new JoraphException(e);
-		}
-	}
-
-	@Override
-	public void write(Object obj, Object value) {
-		try {
-			assert(descriptor != null);
-			descriptor.write(obj, value, false);
 		} catch (Exception e) {
 			throw new JoraphException(e);
 		}

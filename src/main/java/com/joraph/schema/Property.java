@@ -5,12 +5,9 @@ package com.joraph.schema;
  * class's properties.
  * @param <T> the property type
  */
+@FunctionalInterface
 public interface Property<T> {
 
-	String getName();
-
 	T read(Object obj);
-
-	void write(Object obj, T value);
 
 }

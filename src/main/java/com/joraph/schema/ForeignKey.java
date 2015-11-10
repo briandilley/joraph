@@ -14,11 +14,11 @@ public class ForeignKey<T extends Serializable>
 	private Class<?> entityClass;
 	private Class<?> foreignEntity;
 
-	public ForeignKey(String propertyName, Class<?> entityClass, Class<?> foreignEntity)
+	public ForeignKey(Class<?> entityClass, Class<?> foreignEntity, PropertyDescriptorChain chain)
 		throws IntrospectionException {
 		this.entityClass = entityClass;
 		this.foreignEntity = foreignEntity;
-		super.setDescriptor(new PropertyDescriptorChain(propertyName, entityClass));
+		super.setDescriptor(chain);
 	}
 
 	/**
@@ -38,7 +38,7 @@ public class ForeignKey<T extends Serializable>
 	@Override
 	public String toString() {
 		return entityClass.getName()
-			+"."+getName()+"->"
+			+"."+getDescriptor()+"->"
 			+foreignEntity.getName();
 	}
 

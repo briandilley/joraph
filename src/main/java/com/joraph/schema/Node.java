@@ -63,18 +63,6 @@ public class Node {
 	}
 
 	/**
-	 * Returns the foreign key names.
-	 * @return the name
-	 */
-	public Set<String> getForeignKeyNames() {
-		Set<String> ret = new HashSet<>();
-		for (ForeignKey<?> fk : foreignKeys) {
-			ret.add(fk.getName());
-		}
-		return ret;
-	}
-
-	/**
 	 * Visits the children of this node.
 	 * @param visitor the visitor
 	 * @return the node
@@ -114,8 +102,8 @@ public class Node {
 	 */
 	public Set<Node> getChildren() {
 		Set<Node> ret = new HashSet<>();
-		for (String name : getForeignKeyNames()) {
-			ret.add(child(name));
+		for (ForeignKey<?> fk : getForeignKeys()) {
+			ret.add(child(fk));
 		}
 		return ret;
 	}
@@ -147,9 +135,9 @@ public class Node {
 	 * @param propertyName the name
 	 * @return the child
 	 */
-	public Node child(String propertyName) {
+	public Node child(ForeignKey<?> prop) {
 		for (ForeignKey<?> fk : foreignKeys) {
-			if (fk.getName().equals(propertyName)) {
+			if (fk.equals(prop)) {
 				Class<?> foreignClass = fk.getForeignEntity();
 				return new Node(
 					this, schema,

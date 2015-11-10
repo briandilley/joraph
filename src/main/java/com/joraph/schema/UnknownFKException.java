@@ -18,7 +18,7 @@ public class UnknownFKException
 	 * @param fk the foreign key that is unknown
 	 */
 	public UnknownFKException(Class<?> entityClass, ForeignKey<?> fk) {
-		super("Unknown FK: "+entityClass.getName()+"."+fk.getName()+" -> "+fk.getForeignEntity().getName());
+		super("Unknown FK: "+entityClass.getName()+"."+fk+" -> "+fk.getForeignEntity().getName());
 		this.entityClass = entityClass;
 		this.fk = fk;
 	}

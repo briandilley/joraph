@@ -6,7 +6,6 @@ import java.util.function.Function;
 public class BasicCompositeKey {
 
 	public static final Function<Object[], BasicCompositeKey> CONVERTER = BasicCompositeKey::new;
-	public static final Function<BasicCompositeKey, Object[]> CONVERTER_R = BasicCompositeKey::getParts;
 
 	private Object[] objects;
 
