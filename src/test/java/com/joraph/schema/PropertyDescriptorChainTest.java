@@ -14,7 +14,7 @@ public class PropertyDescriptorChainTest {
 		Person person = new Person();
 
 		PropertyDescriptorChain chain = new PropertyDescriptorChain.Builder()
-				.addAccessor(Person::getId)
+				.add(Person::getId)
 				.build();
 
 		assertNull(chain.read(person, false));
@@ -32,8 +32,8 @@ public class PropertyDescriptorChainTest {
 		Person megatron = new Person();
 
 		PropertyDescriptorChain firstNameChain = new PropertyDescriptorChain.Builder()
-				.addAccessor(Person::getName)
-				.addAccessor(Name::getFirstName)
+				.add(Person::getName)
+				.add(Name::getFirstName)
 				.build();
 
 		firstNameChain.read(megatron, true);
@@ -46,8 +46,8 @@ public class PropertyDescriptorChainTest {
 		Person megatron = new Person();
 
 		PropertyDescriptorChain firstNameChain = new PropertyDescriptorChain.Builder()
-				.addAccessor(Person::getName)
-				.addAccessor(Name::getFirstName)
+				.add(Person::getName)
+				.add(Name::getFirstName)
 				.build();
 
 		assertNull(firstNameChain.read(megatron, false));
@@ -73,15 +73,15 @@ public class PropertyDescriptorChainTest {
 
 
 		PropertyDescriptorChain firstNameChain = new PropertyDescriptorChain.Builder()
-				.addAccessor(Person::getName)
-				.addAccessor(Name::getFirstName)
+				.add(Person::getName)
+				.add(Name::getFirstName)
 				.build();
 
 
 		PropertyDescriptorChain friendLastNameChain = new PropertyDescriptorChain.Builder()
-				.addAccessor(Person::getFriend)
-				.addAccessor(Person::getName)
-				.addAccessor(Name::getLastName)
+				.add(Person::getFriend)
+				.add(Person::getName)
+				.add(Name::getLastName)
 				.build();
 
 		assertEquals(megatron.getName().getFirstName(), firstNameChain.read(megatron, true));

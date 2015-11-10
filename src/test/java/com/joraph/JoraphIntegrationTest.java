@@ -286,8 +286,8 @@ public class JoraphIntegrationTest
 
 		getSchema().getEntityDescriptor(Checkout.class)
 			.addForeignKey(User.class, new PropertyDescriptorChain.Builder()
-					.addAccessor(Checkout::getMetaData)
-					.addAccessor(CheckoutMetaData::getLibrarianUserId)
+					.add(Checkout::getMetaData)
+					.add(CheckoutMetaData::getLibrarianUserId)
 					.build());
 
 		getSchema().validate();

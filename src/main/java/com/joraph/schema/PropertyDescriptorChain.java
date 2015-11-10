@@ -15,6 +15,10 @@ public class PropertyDescriptorChain {
 
 	private Function<Object, ?>[] chain;
 
+	public static PropertyDescriptorChain.Builder newChainBuilder() {
+		return new PropertyDescriptorChain.Builder();
+	}
+
 	/**
 	 * Creates a {@link PropertyDescriptorChain} from the given class using
 	 * the given path.
@@ -101,7 +105,7 @@ public class PropertyDescriptorChain {
 		private List<Function<Object, ?>> accessors = new ArrayList<>();
 
 		@SuppressWarnings("unchecked")
-		public <T> Builder addAccessor(Function<T, ?> accessor) {
+		public <T> Builder add(Function<T, ?> accessor) {
 			this.accessors.add((Function<Object, ?>)accessor);
 			return this;
 		}

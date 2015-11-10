@@ -52,8 +52,8 @@ public abstract class AbstractJoraphTest {
 		book.addForeignKey(Genre.class, Book::getGenreId);
 		book.addForeignKey(Library.class, Book::getLibraryId);
 		book.addForeignKey(User.class, new PropertyDescriptorChain.Builder()
-				.addAccessor(Book::getRating)
-				.addAccessor(Rating::getUserId)
+				.add(Book::getRating)
+				.add(Rating::getUserId)
 				.build());
 		
 		EntityDescriptor checkout = schema.addEntityDescriptor(Checkout.class);
