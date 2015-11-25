@@ -1,5 +1,6 @@
 package com.joraph.schema;
 
+import static com.joraph.schema.PropertyDescriptorChain.newChain;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -13,9 +14,7 @@ public class PropertyDescriptorChainTest {
 
 		Person person = new Person();
 
-		PropertyDescriptorChain chain = new PropertyDescriptorChain.Builder()
-				.add(Person::getId)
-				.build();
+		PropertyDescriptorChain<Person, String> chain = new PropertyDescriptorChain<>(Person::getId);
 
 		assertNull(chain.read(person, false));
 		assertNull(chain.read(person, true));
@@ -31,9 +30,8 @@ public class PropertyDescriptorChainTest {
 
 		Person megatron = new Person();
 
-		PropertyDescriptorChain firstNameChain = new PropertyDescriptorChain.Builder()
-				.add(Person::getName)
-				.add(Name::getFirstName)
+		PropertyDescriptorChain<Person, String> firstNameChain = newChain(Person::getName)
+				.andThen(Name::getFirstName)
 				.build();
 
 		firstNameChain.read(megatron, true);
@@ -45,9 +43,8 @@ public class PropertyDescriptorChainTest {
 
 		Person megatron = new Person();
 
-		PropertyDescriptorChain firstNameChain = new PropertyDescriptorChain.Builder()
-				.add(Person::getName)
-				.add(Name::getFirstName)
+		PropertyDescriptorChain<Person, String> firstNameChain = newChain(Person::getName)
+				.andThen(Name::getFirstName)
 				.build();
 
 		assertNull(firstNameChain.read(megatron, false));
@@ -72,16 +69,13 @@ public class PropertyDescriptorChainTest {
 		
 
 
-		PropertyDescriptorChain firstNameChain = new PropertyDescriptorChain.Builder()
-				.add(Person::getName)
-				.add(Name::getFirstName)
+		PropertyDescriptorChain<Person, String> firstNameChain = newChain(Person::getName)
+				.andThen(Name::getFirstName)
 				.build();
 
-
-		PropertyDescriptorChain friendLastNameChain = new PropertyDescriptorChain.Builder()
-				.add(Person::getFriend)
-				.add(Person::getName)
-				.add(Name::getLastName)
+		PropertyDescriptorChain<Person, String> friendLastNameChain = newChain(Person::getFriend)
+				.andThen(Person::getName)
+				.andThen(Name::getLastName)
 				.build();
 
 		assertEquals(megatron.getName().getFirstName(), firstNameChain.read(megatron, true));

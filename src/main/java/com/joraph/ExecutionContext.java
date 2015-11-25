@@ -86,12 +86,12 @@ public class ExecutionContext {
 		assert(schema != null);
 
 		for (Class<?> entityClass : entityClasses) {
-			final EntityDescriptor entityDescriptor = schema.getEntityDescriptor(entityClass);
+			final EntityDescriptor<?> entityDescriptor = schema.getEntityDescriptor(entityClass);
 			if (entityDescriptor == null) {
 				throw new UnknownEntityDescriptorException(entityClass);
 			}
 	
-			Property<?> pk = entityDescriptor.getPrimaryKey();
+			Property<?, ?> pk = entityDescriptor.getPrimaryKey();
 			assert(pk != null);
 			for (Object obj : objects) {
 				if (obj.getClass().equals(entityClass)) {
@@ -120,7 +120,7 @@ public class ExecutionContext {
 				keysToLoad.put(entityClass, new HashSet<Object>());
 			}
 		}
-		for (ForeignKey<?> fk : context.getSchema().describeForeignKeysTo(entityClass)) {
+		for (ForeignKey<?, ?> fk : context.getSchema().describeForeignKeysTo(entityClass)) {
 			for (Object o : objectGraph.getList(fk.getEntityClass())) {
 				Object val = fk.read(o);
 				if (val==null) {

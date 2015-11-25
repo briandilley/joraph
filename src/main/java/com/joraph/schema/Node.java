@@ -10,7 +10,7 @@ public class Node {
 	private Schema schema;
 	private Node parent;
 	private Class<?> entityClass;
-	private Collection<ForeignKey<?>> foreignKeys;
+	private Collection<ForeignKey<?, ?>> foreignKeys;
 	private boolean circular;
 
 	/**
@@ -26,7 +26,7 @@ public class Node {
 		Result visit(Node node);
 	}
 
-	public Node(Node parent, Schema schema, Class<?> entityClass, Collection<ForeignKey<?>> foreignKeys, boolean circular) {
+	public Node(Node parent, Schema schema, Class<?> entityClass, Collection<ForeignKey<?, ?>> foreignKeys, boolean circular) {
 		this.parent 		= parent;
 		this.schema			= schema;
 		this.entityClass 	= entityClass;
@@ -44,7 +44,7 @@ public class Node {
 	/**
 	 * @return the foreignKeys
 	 */
-	public Collection<ForeignKey<?>> getForeignKeys() {
+	public Collection<ForeignKey<?, ?>> getForeignKeys() {
 		return Collections.unmodifiableCollection(foreignKeys);
 	}
 
@@ -102,7 +102,7 @@ public class Node {
 	 */
 	public Set<Node> getChildren() {
 		Set<Node> ret = new HashSet<>();
-		for (ForeignKey<?> fk : getForeignKeys()) {
+		for (ForeignKey<?, ?> fk : getForeignKeys()) {
 			ret.add(child(fk));
 		}
 		return ret;
@@ -135,8 +135,8 @@ public class Node {
 	 * @param propertyName the name
 	 * @return the child
 	 */
-	public Node child(ForeignKey<?> prop) {
-		for (ForeignKey<?> fk : foreignKeys) {
+	public Node child(ForeignKey<?, ?> prop) {
+		for (ForeignKey<?, ?> fk : foreignKeys) {
 			if (fk.equals(prop)) {
 				Class<?> foreignClass = fk.getForeignEntity();
 				return new Node(

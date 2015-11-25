@@ -1,5 +1,7 @@
 package com.joraph;
 
+import static com.joraph.schema.PropertyDescriptorChain.newChain;
+
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -8,7 +10,6 @@ import com.joraph.schema.Author;
 import com.joraph.schema.BasicCompositeKey;
 import com.joraph.schema.Book;
 import com.joraph.schema.Checkout;
-import com.joraph.schema.EntityDescriptor;
 import com.joraph.schema.ErrorBook;
 import com.joraph.schema.FeaturedBook;
 import com.joraph.schema.Genre;
@@ -31,60 +32,59 @@ public abstract class AbstractJoraphTest {
 		throws Exception {
 		schema = new Schema();
 
-		EntityDescriptor author = schema.addEntityDescriptor(Author.class);
-		author.setPrimaryKey(Author::getId);
+		schema.addEntityDescriptor(Author.class)
+			.setPrimaryKey(Author::getId);
 		
-		EntityDescriptor genre = schema.addEntityDescriptor(Genre.class);
-		genre.setPrimaryKey(Genre::getId);
+		schema.addEntityDescriptor(Genre.class)
+			.setPrimaryKey(Genre::getId);
 
-		EntityDescriptor user = schema.addEntityDescriptor(User.class);
-		user.setPrimaryKey(User::getId);
-		user.addForeignKey(Author.class, User::getFavoriteAuthorIds);
+		schema.addEntityDescriptor(User.class)
+			.setPrimaryKey(User::getId)
+			.addForeignKey(Author.class, User::getFavoriteAuthorIds);
 
-		EntityDescriptor library = schema.addEntityDescriptor(Library.class);
-		library.setPrimaryKey(Library::getId);
-		library.addForeignKey(User.class, Library::getLibrarianUserId);
+		schema.addEntityDescriptor(Library.class)
+			.setPrimaryKey(Library::getId)
+			.addForeignKey(User.class, Library::getLibrarianUserId);
 		
-		EntityDescriptor book = schema.addEntityDescriptor(Book.class);
-		book.setPrimaryKey(Book::getId);
-		book.addForeignKey(Author.class, Book::getAuthorId);
-		book.addForeignKey(Author.class, Book::getCoAuthorId);
-		book.addForeignKey(Genre.class, Book::getGenreId);
-		book.addForeignKey(Library.class, Book::getLibraryId);
-		book.addForeignKey(User.class, new PropertyDescriptorChain.Builder()
-				.add(Book::getRating)
-				.add(Rating::getUserId)
+		schema.addEntityDescriptor(Book.class)
+			.setPrimaryKey(Book::getId)
+			.addForeignKey(Author.class, Book::getAuthorId)
+			.addForeignKey(Author.class, Book::getCoAuthorId)
+			.addForeignKey(Genre.class, Book::getGenreId)
+			.addForeignKey(Library.class, Book::getLibraryId)
+			.addForeignKey(User.class, newChain(Book::getRating)
+				.andThen(Rating::getUserId)
 				.build());
 		
-		EntityDescriptor checkout = schema.addEntityDescriptor(Checkout.class);
-		checkout.setPrimaryKey(Checkout::getId);
-		checkout.addForeignKey(User.class, Checkout::getUserId);
-		checkout.addForeignKey(Library.class, Checkout::getLibraryId);
-		checkout.addForeignKey(Book.class, Checkout::getBookId);
+		schema.addEntityDescriptor(Checkout.class)
+			.setPrimaryKey(Checkout::getId)
+			.addForeignKey(User.class, Checkout::getUserId)
+			.addForeignKey(Library.class, Checkout::getLibraryId)
+			.addForeignKey(Book.class, Checkout::getBookId);
 		
-		EntityDescriptor similarBook = schema.addEntityDescriptor(SimilarBook.class);
-		similarBook.setPrimaryKey(SimilarBook::getId);
-		similarBook.addForeignKey(Book.class, SimilarBook::getBookId);
-		similarBook.addForeignKey(Book.class, SimilarBook::getSimilarBookId);
+		schema.addEntityDescriptor(SimilarBook.class)
+			.setPrimaryKey(SimilarBook::getId)
+			.addForeignKey(Book.class, SimilarBook::getBookId)
+			.addForeignKey(Book.class, SimilarBook::getSimilarBookId);
 
-		EntityDescriptor featuredBook = schema.addEntityDescriptor(FeaturedBook.class);
+		schema.addEntityDescriptor(FeaturedBook.class)
 		/* purposefully set this way */
-		featuredBook.setPrimaryKey(FeaturedBook::getBookId);
-		featuredBook.addForeignKey(Book.class, FeaturedBook::getBookId);
-		featuredBook.addForeignKey(User.class, FeaturedBook::getFeaturedById);
+			.setPrimaryKey(FeaturedBook::getBookId)
+			.addForeignKey(Book.class, FeaturedBook::getBookId)
+			.addForeignKey(User.class, FeaturedBook::getFeaturedById);
 
 		/* follows */
 		schema.addEntityDescriptor(UserFollow.class)
 			.setPrimaryKey(BasicCompositeKey.CONVERTER,
-					new PropertyDescriptorChain(UserFollow::getFromUserId),
-					new PropertyDescriptorChain(UserFollow::getToUserId))
+					new PropertyDescriptorChain<>(UserFollow::getFromUserId),
+					new PropertyDescriptorChain<>(UserFollow::getToUserId))
 			.addForeignKey(User.class, UserFollow::getFromUserId)
 			.addForeignKey(User.class, UserFollow::getToUserId);
 
 		/* this entity should have no EntityLoader defined */
-		EntityDescriptor errorBook = schema.addEntityDescriptor(ErrorBook.class);
-		errorBook.setPrimaryKey(ErrorBook::getBookId);
-		errorBook.addForeignKey(ErrorBook.class, ErrorBook::getAnotherErrorBookId);
+		schema.addEntityDescriptor(ErrorBook.class)
+			.setPrimaryKey(ErrorBook::getBookId)
+			.addForeignKey(ErrorBook.class, ErrorBook::getAnotherErrorBookId);
 
 		schema.validate();
 	}

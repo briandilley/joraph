@@ -10,16 +10,16 @@ import org.junit.Test;
 
 public class CompositeKeyTest {
 
-	private CompositeKey<CPK> key;
+	private CompositeKey<UserFollow, CPK> key;
 
 	public Function<Object[], CPK> CONVERTER = (a) -> new CPK(a[0].toString(), a[1].toString());
 
 	@Before
 	public void setUp()
 			throws Exception {
-		key = new CompositeKey<CompositeKeyTest.CPK>(CONVERTER,
-				new PropertyDescriptorChain(UserFollow::getFromUserId),
-				new PropertyDescriptorChain(UserFollow::getToUserId));
+		key = new CompositeKey<UserFollow, CompositeKeyTest.CPK>(CONVERTER,
+				new PropertyDescriptorChain<>(UserFollow::getFromUserId),
+				new PropertyDescriptorChain<>(UserFollow::getToUserId));
 	}
 
 	@Test

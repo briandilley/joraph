@@ -25,7 +25,7 @@ public class Schema {
 		};
 
 	private boolean validated = false;
-	private final Map<Class<?>, EntityDescriptor> entityDescriptors = new HashMap<>();
+	private final Map<Class<?>, EntityDescriptor<?>> entityDescriptors = new HashMap<>();
 
 	private void dirty() {
 		this.validated = false;
@@ -52,15 +52,16 @@ public class Schema {
 	 * @param entityClass the entity class
 	 * @return the descriptor for the class, or null if no descriptor exists for it
 	 */
-	public EntityDescriptor getEntityDescriptor(Class<?> entityClass) {
-		return this.entityDescriptors.get(entityClass);
+	@SuppressWarnings("unchecked")
+	public <T> EntityDescriptor<T> getEntityDescriptor(Class<T> entityClass) {
+		return (EntityDescriptor<T>)this.entityDescriptors.get(entityClass);
 	}
 
 	/**
 	 * Adds an entity descriptor to the schema.
 	 * @param entityDescriptor the entity descriptor to add
 	 */
-	public void addEntityDescriptor(EntityDescriptor entityDescriptor) {
+	public void addEntityDescriptor(EntityDescriptor<?> entityDescriptor) {
 		this.dirty();
 		this.entityDescriptors.put(entityDescriptor.getEntityClass(), entityDescriptor);
 	}
@@ -72,9 +73,9 @@ public class Schema {
 	 * @return the {@link com.joraph.schema.EntityDescriptor} created as a wrapper and
 	 * added to the schema
 	 */
-	public EntityDescriptor addEntityDescriptor(Class<?> entityClass) {
+	public <T> EntityDescriptor<T> addEntityDescriptor(Class<T> entityClass) {
 		this.dirty();
-		EntityDescriptor ret = new EntityDescriptor(entityClass);
+		EntityDescriptor<T> ret = new EntityDescriptor<>(entityClass);
 		addEntityDescriptor(ret);
 		return ret;
 	}
@@ -84,8 +85,8 @@ public class Schema {
 	 * @param entityClass the entity class
 	 * @return the foreign keys configured for that class
 	 */
-	public Collection<ForeignKey<?>> describeForeignKeysFrom(Class<?> entityClass) {
-		EntityDescriptor ed = entityDescriptors.get(entityClass);
+	public Collection<ForeignKey<?, ?>> describeForeignKeysFrom(Class<?> entityClass) {
+		EntityDescriptor<?> ed = getEntityDescriptor(entityClass);
 		return Collections.unmodifiableCollection(ed.getForeignKeys().values());
 	}
 
@@ -96,9 +97,9 @@ public class Schema {
 	 * @return all of the foreign keys which exist from one entity class to
 	 *         another or an empty collection if no such relationships exist
 	 */
-	public Collection<ForeignKey<?>> describeForeignKeys(Class<?> fromEntityClass, Class<?> toEntityClass) {
-		 Collection<ForeignKey<?>> ret = new ArrayList<>();
-		 for (ForeignKey<?> fk : describeForeignKeysFrom(fromEntityClass)) {
+	public Collection<ForeignKey<?, ?>> describeForeignKeys(Class<?> fromEntityClass, Class<?> toEntityClass) {
+		 Collection<ForeignKey<?, ?>> ret = new ArrayList<>();
+		 for (ForeignKey<?, ?> fk : describeForeignKeysFrom(fromEntityClass)) {
 			 if (fk.getForeignEntity().equals(toEntityClass)) {
 				 ret.add(fk);
 			 }
@@ -111,9 +112,9 @@ public class Schema {
 	 * @param toEntityClass the entity class
 	 * @return foreign keys that point to an entity class
 	 */
-	public Collection<ForeignKey<?>> describeForeignKeysTo(Class<?> toEntityClass) {
-		 Collection<ForeignKey<?>> ret = new ArrayList<>();
-		 for (ForeignKey<?> fk : describeForeignKeys()) {
+	public Collection<ForeignKey<?, ?>> describeForeignKeysTo(Class<?> toEntityClass) {
+		 Collection<ForeignKey<?, ?>> ret = new ArrayList<>();
+		 for (ForeignKey<?, ?> fk : describeForeignKeys()) {
 			 if (fk.getForeignEntity().equals(toEntityClass)) {
 				 ret.add(fk);
 			 }
@@ -125,10 +126,10 @@ public class Schema {
 	 * Describes all of the foreign keys that have been configured.
 	 * @return all of the configured foreign keys
 	 */
-	public Collection<ForeignKey<?>> describeForeignKeys() {
-		 Collection<ForeignKey<?>> ret = new ArrayList<>();
+	public Collection<ForeignKey<?, ?>> describeForeignKeys() {
+		 Collection<ForeignKey<?, ?>> ret = new ArrayList<>();
 		 for (Class<?> fromEntityClass : describeEntities()) {
-			 for (ForeignKey<?> fk : describeForeignKeysFrom(fromEntityClass)) {
+			 for (ForeignKey<?, ?> fk : describeForeignKeysFrom(fromEntityClass)) {
 				 ret.add(fk);
 			 }
 		 }
@@ -146,7 +147,7 @@ public class Schema {
 			throw new JoraphException("Circular dependency detected on "+node.getEntityClass());
 		}
 		graph.addEntity(node.getEntityClass());
-		for (ForeignKey<?> fk : node.getForeignKeys()) {
+		for (ForeignKey<?, ?> fk : node.getForeignKeys()) {
 			graph.addEdge(node.getEntityClass(), fk.getForeignEntity());
 			graph(node.child(fk), graph);
 		}
@@ -178,8 +179,8 @@ public class Schema {
 	public void validate() {
 
 		// check each entity descriptor
-		for (Entry<Class<?>, EntityDescriptor> entry : entityDescriptors.entrySet()) {
-			EntityDescriptor ed = entry.getValue();
+		for (Entry<Class<?>, EntityDescriptor<?>> entry : entityDescriptors.entrySet()) {
+			EntityDescriptor<?> ed = entry.getValue();
 
 			// check pk
 			if (ed.getPrimaryKey()==null) {
@@ -187,8 +188,9 @@ public class Schema {
 			}
 
 			// check FKs
-			for (Entry<PropertyDescriptorChain, ForeignKey<?>> fkEntry : ed.getForeignKeys().entrySet()) {
-				ForeignKey<?> fk = fkEntry.getValue();
+			Map<PropertyDescriptorChain<?, ?>, ForeignKey<?, ?>> fks = ed.getForeignKeys();
+			for (Entry<PropertyDescriptorChain<?, ?>, ForeignKey<?, ?>> fkEntry : fks.entrySet()) {
+				ForeignKey<?, ?> fk = fkEntry.getValue();
 				if (!entityDescriptors.containsKey(fk.getForeignEntity())) {
 					throw new UnknownFKException(ed.getEntityClass(), fk);
 				}

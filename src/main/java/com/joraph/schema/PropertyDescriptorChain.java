@@ -11,12 +11,12 @@ import java.util.function.Function;
  * A chain of {@link PropertyDescriptor}s so that one may use
  * dot notation to dig deep into an object graph.
  */
-public class PropertyDescriptorChain {
+public class PropertyDescriptorChain<T, R> {
 
 	private Function<Object, ?>[] chain;
 
-	public static PropertyDescriptorChain.Builder newChainBuilder() {
-		return new PropertyDescriptorChain.Builder();
+	public static <T, R> Builder<T, R> newChain(Function<T, R> accessor) {
+		return Builder.newChain(accessor);
 	}
 
 	/**
@@ -39,7 +39,7 @@ public class PropertyDescriptorChain {
 	 * @param rootClass the root object
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> PropertyDescriptorChain(Function<T, ?> accessor) {
+	public PropertyDescriptorChain(Function<T, R> accessor) {
 		this(new Function[] { accessor });
 	}
 
@@ -51,15 +51,15 @@ public class PropertyDescriptorChain {
 	 * @throws IllegalStateException if {@code failOnNullsInChain} and a non terminating
 	 * link in the chain is null
 	 */
-	public Object read(Object obj, boolean failOnNullsInChain)
+	@SuppressWarnings("unchecked")
+	public R read(T obj, boolean failOnNullsInChain)
 			throws IllegalAccessException,
 			IllegalArgumentException,
 			InvocationTargetException {
 		Object ret = obj;
 		for (int i=0; i<chain.length; i++) {
-			ret = chain[i].apply(obj);
-			obj = ret;
-			if (obj==null && i<chain.length-1) {
+			ret = chain[i].apply(ret);
+			if (ret==null && i<chain.length-1) {
 				if (failOnNullsInChain) {
 					throw new IllegalStateException("Null link found in chain");
 				} else {
@@ -67,7 +67,7 @@ public class PropertyDescriptorChain {
 				}
 			}
 		}
-		return ret;
+		return (R)ret;
 	}
 
 	@Override
@@ -91,7 +91,7 @@ public class PropertyDescriptorChain {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		PropertyDescriptorChain other = (PropertyDescriptorChain) obj;
+		PropertyDescriptorChain<?,?> other = (PropertyDescriptorChain<?,?>) obj;
 		if (!Arrays.equals(chain, other.chain))
 			return false;
 		return true;
@@ -100,21 +100,28 @@ public class PropertyDescriptorChain {
 	/**
 	 * Builder for this object.
 	 */
-	public static class Builder {
+	public static class Builder<T, R> {
 
-		private List<Function<Object, ?>> accessors = new ArrayList<>();
+		private List<Function<?, ?>> accessors = new ArrayList<>();
 
-		@SuppressWarnings("unchecked")
-		public <T> Builder add(Function<T, ?> accessor) {
-			this.accessors.add((Function<Object, ?>)accessor);
-			return this;
+		public static <T, R> Builder<T, R> newChain(Function<T, R> accessor) {
+			Builder<T, R> ret = new Builder<>();
+			ret.accessors.add(accessor);
+			return ret;
 		}
 
 		@SuppressWarnings("unchecked")
-		public PropertyDescriptorChain build() {
-			return new PropertyDescriptorChain(accessors.stream()
+		public <RR> Builder<T, RR> andThen(Function<R, RR> accessor) {
+			this.accessors.add(accessor);
+			return (Builder<T, RR>)this;
+		}
+
+		@SuppressWarnings("unchecked")
+		public PropertyDescriptorChain<T, R> build() {
+			return new PropertyDescriptorChain<>(accessors.stream()
 					.toArray(Function[]::new));
 		}
+
 	}
 
 }

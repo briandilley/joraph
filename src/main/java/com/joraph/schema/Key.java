@@ -1,21 +1,19 @@
 package com.joraph.schema;
 
-import java.io.Serializable;
-
 /**
  * A key property.
  * @param <T> the property type
  */
-public class Key<T extends Serializable>
-		extends BaseProperty<T>
-		implements Property<T> {
+public class Key<T, R>
+		extends BaseProperty<T, R>
+		implements Property<T, R> {
 
 	/**
 	 * Creates the key.
 	 * @param propertyName the property name
 	 * @param entityClass the entity class
 	 */
-	public Key(PropertyDescriptorChain chain) {
+	public Key(PropertyDescriptorChain<T, R> chain) {
 		super.setDescriptor(chain);
 	}
 

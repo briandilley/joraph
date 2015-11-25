@@ -8,10 +8,10 @@ import com.joraph.JoraphException;
  * Base class for {@code Property}.
  * @param <T> the property type
  */
-public class BaseProperty<T>
-	implements Property<T> {
+public class BaseProperty<T, R>
+	implements Property<T, R> {
 
-	private PropertyDescriptorChain descriptor;
+	private PropertyDescriptorChain<T, R> descriptor;
 
 	/**
 	 */
@@ -21,30 +21,29 @@ public class BaseProperty<T>
 	/**
 	 * @param descriptor the descriptor to set
 	 */
-	public BaseProperty(PropertyDescriptorChain descriptor) {
-		this.descriptor = descriptor;
+	public BaseProperty(PropertyDescriptorChain<T, R> descriptor) {
+		setDescriptor(descriptor);
 	}
 
 	/**
 	 * @param descriptor the descriptor to set
 	 */
-	protected void setDescriptor(PropertyDescriptorChain descriptor) {
+	protected void setDescriptor(PropertyDescriptorChain<T, R> descriptor) {
 		this.descriptor = requireNonNull(descriptor, "descriptor must not be null");
 	}
 
 	/**
 	 * @return descriptor the descriptor
 	 */
-	protected PropertyDescriptorChain getDescriptor() {
+	protected PropertyDescriptorChain<T, R> getDescriptor() {
 		return this.descriptor;
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public T read(Object obj) {
+	public R read(Object obj) {
 		try {
-			assert(descriptor != null);
-			return (T)descriptor.read(obj, false);
+			return descriptor.read((T)obj, false);
 		} catch (Exception e) {
 			throw new JoraphException(e);
 		}

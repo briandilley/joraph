@@ -40,9 +40,9 @@ public class ObjectGraph {
 	@SuppressWarnings("unchecked")
 	public <T> Set<T> getIds(Class<?> type) {
 		assert( schema != null );
-		EntityDescriptor descriptor = schema.getEntityDescriptor(type);
+		EntityDescriptor<?> descriptor = schema.getEntityDescriptor(type);
 		assert( descriptor != null );
-		Property<?> pk = descriptor.getPrimaryKey();
+		Property<?, ?> pk = descriptor.getPrimaryKey();
 		assert( pk != null );
 
 		Set<T> ret = new HashSet<>();

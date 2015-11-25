@@ -1,20 +1,19 @@
 package com.joraph.schema;
 
 import java.beans.IntrospectionException;
-import java.io.Serializable;
 
 /**
  * A foreign key property.
  * @param <T> the ID type
  */
-public class ForeignKey<T extends Serializable>
-	extends BaseProperty<T>
-	implements Property<T> {
+public class ForeignKey<T, R>
+	extends BaseProperty<T, R>
+	implements Property<T, R> {
 
-	private Class<?> entityClass;
+	private Class<T> entityClass;
 	private Class<?> foreignEntity;
 
-	public ForeignKey(Class<?> entityClass, Class<?> foreignEntity, PropertyDescriptorChain chain)
+	public ForeignKey(Class<T> entityClass, Class<?> foreignEntity, PropertyDescriptorChain<T, R> chain)
 		throws IntrospectionException {
 		this.entityClass = entityClass;
 		this.foreignEntity = foreignEntity;
@@ -24,7 +23,7 @@ public class ForeignKey<T extends Serializable>
 	/**
 	 * @return the entityClass
 	 */
-	public Class<?> getEntityClass() {
+	public Class<T> getEntityClass() {
 		return entityClass;
 	}
 
@@ -61,7 +60,7 @@ public class ForeignKey<T extends Serializable>
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		ForeignKey<?> other = (ForeignKey<?>)obj;
+		ForeignKey<?, ?> other = (ForeignKey<?, ?>)obj;
 		if (entityClass == null) {
 			if (other.entityClass != null)
 				return false;

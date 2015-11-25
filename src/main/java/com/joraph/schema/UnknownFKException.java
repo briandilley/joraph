@@ -10,14 +10,14 @@ public class UnknownFKException
 	extends JoraphException {
 
 	private final Class<?> entityClass;
-	private final ForeignKey<?> fk;
+	private final ForeignKey<?, ?> fk;
 
 	/**
 	 * Creates a new instance of UnknownFKException.
 	 * @param entityClass the entity class
 	 * @param fk the foreign key that is unknown
 	 */
-	public UnknownFKException(Class<?> entityClass, ForeignKey<?> fk) {
+	public UnknownFKException(Class<?> entityClass, ForeignKey<?, ?> fk) {
 		super("Unknown FK: "+entityClass.getName()+"."+fk+" -> "+fk.getForeignEntity().getName());
 		this.entityClass = entityClass;
 		this.fk = fk;
@@ -33,7 +33,7 @@ public class UnknownFKException
 	/**
 	 * @return the fk
 	 */
-	public ForeignKey<?> getFk() {
+	public ForeignKey<?, ?> getFk() {
 		return fk;
 	}
 

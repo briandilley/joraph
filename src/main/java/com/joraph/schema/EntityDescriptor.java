@@ -11,31 +11,31 @@ import com.joraph.CollectionUtil;
 /**
  * Metadata about an entity class.
  */
-public class EntityDescriptor {
+public class EntityDescriptor<T> {
 
-	private final Class<?> entityClass;
-	private Property<?> primaryKey;
-	private Map<PropertyDescriptorChain, ForeignKey<?>> foreignKeys = new HashMap<>();
+	private final Class<T> entityClass;
+	private Property<T, ?> primaryKey;
+	private Map<PropertyDescriptorChain<T, ?>, ForeignKey<T, ?>> foreignKeys = new HashMap<>();
 
 	/**
 	 * Creates a new instance of EntityDescriptor.
 	 * @param entityClass the entity class
 	 */
-	public EntityDescriptor(Class<?> entityClass) {
+	public EntityDescriptor(Class<T> entityClass) {
 		this.entityClass = entityClass;
 	}
 
 	/**
 	 * @return the entityClass
 	 */
-	public Class<?> getEntityClass() {
+	public Class<T> getEntityClass() {
 		return entityClass;
 	}
 
 	/**
 	 * @return the primaryKey
 	 */
-	public Property<?> getPrimaryKey() {
+	public Property<T, ?> getPrimaryKey() {
 		return primaryKey;
 	}
 
@@ -44,9 +44,9 @@ public class EntityDescriptor {
 	 * @throws IntrospectionException on error
 	 * @return this
 	 */
-	public <T> EntityDescriptor setPrimaryKey(Function<T, ?> fun)
+	public <RR> EntityDescriptor<T> setPrimaryKey(Function<T, RR> fun)
 		throws IntrospectionException {
-		this.primaryKey = new Key<>(new PropertyDescriptorChain(fun));
+		this.primaryKey = new Key<>(new PropertyDescriptorChain<T, RR>(fun));
 		return this;
 	}
 
@@ -59,11 +59,16 @@ public class EntityDescriptor {
 	 * @return
 	 * @throws IntrospectionException
 	 */
-	public <T> EntityDescriptor setPrimaryKey(
-			Function<Object[], T> converter, PropertyDescriptorChain first, PropertyDescriptorChain... remaining)
+	@SafeVarargs
+	@SuppressWarnings("unchecked") 
+	public final EntityDescriptor<T> setPrimaryKey(
+			Function<Object[], ?> converter,
+			PropertyDescriptorChain<T, ?> first,
+			PropertyDescriptorChain<T, ?>... remaining)
 		throws IntrospectionException {
-		this.primaryKey = new CompositeKey<T>(converter, CollectionUtil.asStream(first, remaining)
-				.toArray(PropertyDescriptorChain[]::new));
+		PropertyDescriptorChain<T, ?>[] chains = CollectionUtil.asStream(first, remaining)
+				.toArray(PropertyDescriptorChain[]::new);
+		this.primaryKey = new CompositeKey<>(converter, chains);
 		return this;
 	}
 
@@ -76,7 +81,10 @@ public class EntityDescriptor {
 	 * @return
 	 * @throws IntrospectionException
 	 */
-	public <T> EntityDescriptor setPrimaryKey(PropertyDescriptorChain first, PropertyDescriptorChain... remaining)
+	@SafeVarargs
+	public final EntityDescriptor<T> setPrimaryKey(
+			PropertyDescriptorChain<T, ?> first,
+			PropertyDescriptorChain<T, ?>... remaining)
 		throws IntrospectionException {
 		return setPrimaryKey(BasicCompositeKey.CONVERTER, first, remaining);
 	}
@@ -84,7 +92,7 @@ public class EntityDescriptor {
 	/**
 	 * @return the foreignKeys
 	 */
-	public Map<PropertyDescriptorChain, ForeignKey<?>> getForeignKeys() {
+	public Map<PropertyDescriptorChain<?, ?>, ForeignKey<?, ?>> getForeignKeys() {
 		return Collections.unmodifiableMap(foreignKeys);
 	}
 
@@ -93,8 +101,8 @@ public class EntityDescriptor {
 	 * @param propertyName the name
 	 * @return the key
 	 */
-	public ForeignKey<?> getForeignKey(Function<Object, ?> accessor) {
-		return foreignKeys.get(new PropertyDescriptorChain(accessor));
+	public ForeignKey<T, ?> getForeignKey(Function<Object, ?> accessor) {
+		return foreignKeys.get(new PropertyDescriptorChain<>(accessor));
 	}
 
 	/**
@@ -105,9 +113,9 @@ public class EntityDescriptor {
 	 * @throws IntrospectionException on error
 	 * @return this
 	 */
-	public <T> EntityDescriptor addForeignKey(Class<?> foreignEntity, Function<T, ?> accessor)
+	public EntityDescriptor<T> addForeignKey(Class<?> foreignEntity, Function<T, ?> accessor)
 		throws IntrospectionException {
-		addForeignKey(foreignEntity, true, new PropertyDescriptorChain(accessor));
+		addForeignKey(foreignEntity, true, new PropertyDescriptorChain<>(accessor));
 		return this;
 	}
 
@@ -119,9 +127,9 @@ public class EntityDescriptor {
 	 * @throws IntrospectionException on error
 	 * @return this
 	 */
-	public <T> EntityDescriptor addForeignKey(Class<?> foreignEntity, boolean eagar, Function<T, ?> accessor)
+	public EntityDescriptor<T> addForeignKey(Class<?> foreignEntity, boolean eagar, Function<T, ?> accessor)
 		throws IntrospectionException {
-		return addForeignKey(foreignEntity, eagar, new PropertyDescriptorChain(accessor));
+		return addForeignKey(foreignEntity, eagar, new PropertyDescriptorChain<>(accessor));
 	}
 
 	/**
@@ -132,7 +140,7 @@ public class EntityDescriptor {
 	 * @throws IntrospectionException on error
 	 * @return this
 	 */
-	public <T> EntityDescriptor addForeignKey(Class<?> foreignEntity, PropertyDescriptorChain accessor)
+	public EntityDescriptor<T> addForeignKey(Class<?> foreignEntity, PropertyDescriptorChain<T, ?> accessor)
 		throws IntrospectionException {
 		return addForeignKey(foreignEntity, true, accessor);
 	}
@@ -145,7 +153,7 @@ public class EntityDescriptor {
 	 * @throws IntrospectionException on error
 	 * @return this
 	 */
-	public <T> EntityDescriptor addForeignKey(Class<?> foreignEntity, boolean eagar, PropertyDescriptorChain accessor)
+	public EntityDescriptor<T> addForeignKey(Class<?> foreignEntity, boolean eagar, PropertyDescriptorChain<T, ?> accessor)
 			throws IntrospectionException {
 		this.foreignKeys.put(accessor, new ForeignKey<>(entityClass, foreignEntity, accessor));
 		return this;

@@ -32,17 +32,17 @@ public class SchemaTest {
 	@Test(expected=UnknownFKException.class)
 	public void testUnknownFKException()
 		throws Exception {
-		EntityDescriptor author = schema.addEntityDescriptor(Author.class);
-		author.setPrimaryKey(Author::getId);
-		author.addForeignKey(Book.class, Author::getId);
+		schema.addEntityDescriptor(Author.class)
+				.setPrimaryKey(Author::getId)
+				.addForeignKey(Book.class, Author::getId);
 		schema.validate();
 	}
 
 	@Test
 	public void testValidateSingleEntity()
 		throws Exception {
-		EntityDescriptor author = schema.addEntityDescriptor(Author.class);
-		author.setPrimaryKey(Author::getId);
+		schema.addEntityDescriptor(Author.class)
+				.setPrimaryKey(Author::getId);
 		assertFalse(schema.isValidated());
 		schema.validate();
 		assertTrue(schema.isValidated());
@@ -51,16 +51,16 @@ public class SchemaTest {
 	@Test
 	public void testLargeSchema()
 		throws Exception {
-		EntityDescriptor author = schema.addEntityDescriptor(Author.class);
-		author.setPrimaryKey(Author::getId);
+		schema.addEntityDescriptor(Author.class)
+			.setPrimaryKey(Author::getId);
 
-		EntityDescriptor genre = schema.addEntityDescriptor(Genre.class);
-		genre.setPrimaryKey(Genre::getId);
+		schema.addEntityDescriptor(Genre.class)
+			.setPrimaryKey(Genre::getId);
 
-		EntityDescriptor book = schema.addEntityDescriptor(Book.class);
-		book.setPrimaryKey(Book::getId);
-		book.addForeignKey(Author.class, Book::getAuthorId);
-		book.addForeignKey(Genre.class, Book::getGenreId);
+		schema.addEntityDescriptor(Book.class)
+			.setPrimaryKey(Book::getId)
+			.addForeignKey(Author.class, Book::getAuthorId)
+			.addForeignKey(Genre.class, Book::getGenreId);
 
 		assertFalse(schema.isValidated());
 		schema.validate();
@@ -70,15 +70,15 @@ public class SchemaTest {
 	@Test
 	public void testDirty()
 		throws Exception {
-		EntityDescriptor author = schema.addEntityDescriptor(Author.class);
-		author.setPrimaryKey(Author::getId);
+		schema.addEntityDescriptor(Author.class)
+			.setPrimaryKey(Author::getId);
 
 		assertFalse(schema.isValidated());
 		schema.validate();
 		assertTrue(schema.isValidated());
 
-		EntityDescriptor genre = schema.addEntityDescriptor(Genre.class);
-		genre.setPrimaryKey(Genre::getId);
+		schema.addEntityDescriptor(Genre.class)
+			.setPrimaryKey(Genre::getId);
 
 		assertFalse(schema.isValidated());
 		schema.validate();

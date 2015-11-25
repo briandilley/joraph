@@ -6,8 +6,8 @@ package com.joraph.schema;
  * @param <T> the property type
  */
 @FunctionalInterface
-public interface Property<T> {
+public interface Property<T, R> {
 
-	T read(Object obj);
+	R read(Object obj);
 
 }

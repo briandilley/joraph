@@ -1,5 +1,6 @@
 package com.joraph;
 
+import static com.joraph.schema.PropertyDescriptorChain.newChain;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -27,7 +28,6 @@ import com.joraph.schema.CheckoutMetaData;
 import com.joraph.schema.FeaturedBook;
 import com.joraph.schema.Genre;
 import com.joraph.schema.Library;
-import com.joraph.schema.PropertyDescriptorChain;
 import com.joraph.schema.Rating;
 import com.joraph.schema.SimilarBook;
 import com.joraph.schema.User;
@@ -285,9 +285,8 @@ public class JoraphIntegrationTest
 			throws Exception {
 
 		getSchema().getEntityDescriptor(Checkout.class)
-			.addForeignKey(User.class, new PropertyDescriptorChain.Builder()
-					.add(Checkout::getMetaData)
-					.add(CheckoutMetaData::getLibrarianUserId)
+			.addForeignKey(User.class, newChain(Checkout::getMetaData)
+					.andThen(CheckoutMetaData::getLibrarianUserId)
 					.build());
 
 		getSchema().validate();

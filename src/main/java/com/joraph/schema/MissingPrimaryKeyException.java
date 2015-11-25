@@ -9,13 +9,13 @@ import com.joraph.JoraphException;
 public class MissingPrimaryKeyException
 	extends JoraphException {
 
-	private final EntityDescriptor entityDescriptor;
+	private final EntityDescriptor<?> entityDescriptor;
 
 	/**
 	 * Creates a new instance of MissingPrimaryKeyException
 	 * @param entityDescriptor the entity descriptor for which the primary key is absent
 	 */
-	public MissingPrimaryKeyException(EntityDescriptor entityDescriptor) {
+	public MissingPrimaryKeyException(EntityDescriptor<?> entityDescriptor) {
 		super(entityDescriptor.getEntityClass().getName()+" is missing a primary key");
 		this.entityDescriptor = entityDescriptor;
 	}
@@ -23,7 +23,7 @@ public class MissingPrimaryKeyException
 	/**
 	 * @return the entityDescriptor
 	 */
-	public EntityDescriptor getEntityDescriptor() {
+	public EntityDescriptor<?> getEntityDescriptor() {
 		return entityDescriptor;
 	}
 
