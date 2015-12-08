@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -17,7 +19,9 @@ import com.joraph.schema.Schema;
 /**
  * A class that holds results.
  */
-public class ObjectGraph {
+public class ObjectGraph
+		implements Cloneable,
+		Iterable<Entry<Class<?>, Map<Object, Object>>> {
 
 	private Map<Class<?>, Map<Object, Object>> results;
 	private Schema schema;
@@ -30,6 +34,40 @@ public class ObjectGraph {
 	public ObjectGraph(Schema schema) {
 		this.results = new HashMap<>();
 		this.schema = schema;
+	}
+
+	@Override
+	protected ObjectGraph clone()
+			throws CloneNotSupportedException {
+		ObjectGraph ret = new ObjectGraph(schema);
+		this.copyGraphTo(ret);
+		return ret;
+	}
+
+	@Override
+	public Iterator<Entry<Class<?>, Map<Object, Object>>> iterator() {
+		return results.entrySet().iterator();
+	}
+
+	/**
+	 * Copy this {@link ObjectGraph}'s results to the
+	 * given {@link ObjectGraph}.
+	 * @param objectGraph the destination
+	 */
+	public void copyGraphTo(ObjectGraph destinationObjectGraph) {
+		for (Entry<Class<?>, Map<Object, Object>> entry : this) {
+			entry.getValue().putAll(destinationObjectGraph.results
+					.computeIfAbsent(entry.getKey(), __-> new HashMap<>()));
+		}
+	}
+
+	/**
+	 * Copy the given {@link ObjectGraph}'s results to the
+	 * this {@link ObjectGraph}.
+	 * @param objectGraph the source
+	 */
+	public void copyGraphFrom(ObjectGraph objectGraph) {
+		objectGraph.copyGraphTo(this);
 	}
 
 	/**
