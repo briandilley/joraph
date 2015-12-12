@@ -1,4 +1,4 @@
-package com.joraph;
+package com.joraph.loader;
 
 import java.util.List;
 

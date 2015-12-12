@@ -20,6 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.joraph.debug.JoraphDebug;
+import com.joraph.loader.EntityLoader;
 import com.joraph.schema.Author;
 import com.joraph.schema.BasicCompositeKey;
 import com.joraph.schema.Book;
@@ -30,6 +31,7 @@ import com.joraph.schema.Genre;
 import com.joraph.schema.Library;
 import com.joraph.schema.Rating;
 import com.joraph.schema.SimilarBook;
+import com.joraph.schema.UnknownEntityDescriptorException;
 import com.joraph.schema.User;
 import com.joraph.schema.UserFollow;
 

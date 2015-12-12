@@ -1,4 +1,6 @@
-package com.joraph;
+package com.joraph.loader;
+
+import com.joraph.JoraphException;
 
 @SuppressWarnings("serial")
 public class UnconfiguredLoaderException

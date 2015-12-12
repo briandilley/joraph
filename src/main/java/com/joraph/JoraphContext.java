@@ -11,6 +11,7 @@ import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.joraph.loader.EntityLoader;
 import com.joraph.plan.ExecutionPlan;
 import com.joraph.plan.ExecutionPlanner;
 import com.joraph.schema.Schema;

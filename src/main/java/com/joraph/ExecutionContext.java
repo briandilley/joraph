@@ -9,9 +9,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import com.joraph.debug.DebugInfo;
 import com.joraph.debug.JoraphDebug;
+import com.joraph.loader.EntityLoader;
+import com.joraph.loader.UnconfiguredLoaderException;
 import com.joraph.plan.ExecutionPlan;
 import com.joraph.plan.GatherForeignKeysTo;
 import com.joraph.plan.LoadEntities;
@@ -21,6 +24,7 @@ import com.joraph.schema.EntityDescriptor;
 import com.joraph.schema.ForeignKey;
 import com.joraph.schema.Property;
 import com.joraph.schema.Schema;
+import com.joraph.schema.UnknownEntityDescriptorException;
 
 /**
  * An execution context which brings together a {@link com.joraph.JoraphContext},
@@ -156,7 +160,22 @@ public class ExecutionContext {
 
 		long start = System.currentTimeMillis();
 
-		List<?> objects = loader.load(ids);
+		List<?> objects;
+
+		try {
+			objects = loader.load(ids);
+		} catch(Throwable t) {
+			throw new JoraphException(
+					"Error invoking loader: "+loader.toString()
+					+" with ids: "+String.join(", ", ids.stream()
+							.map(Object::toString)
+							.limit(5)
+							.collect(Collectors.toList()))
+					+((ids.size() > 5)
+							? "... and "+(ids.size()-5)+" more"
+							: ""),
+				t);
+		}
 
 		JoraphDebug.addLoaderDebug(
 				entityClass,
