@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -47,6 +49,17 @@ public class ObjectGraph
 	@Override
 	public Iterator<Entry<Class<?>, Map<Object, Object>>> iterator() {
 		return results.entrySet().iterator();
+	}
+
+	/**
+	 * Returns the graph type key for the given entity class.
+	 * @param entityClass the entity class
+	 * @return the key
+	 */
+	public Class<?> getGraphTypeKey(Class<?> entityClass) {
+		return (schema!=null)
+				? schema.getGraphTypeKey(entityClass)
+				: entityClass;
 	}
 
 	/**
@@ -97,12 +110,23 @@ public class ObjectGraph
 	 * @param value
 	 */
 	public void addResult(Class<?> type, Object id, Object value) {
+		final Class<?> graphTypeKey = getGraphTypeKey(type);
 		synchronized (results) {
-			if (!results.containsKey(type)) {
-				results.put(type, new HashMap<>());
+			if (!results.containsKey(graphTypeKey)) {
+				results.put(graphTypeKey, new HashMap<>());
 			}
 		}
-		results.get(type).put(id, value);
+		results.get(graphTypeKey).put(id, value);
+	}
+
+	/**
+	 * Returns a {@link Function} that delegates to
+	 * {@link #has(Class, Object)} for the given type.
+	 * @param type the type
+	 * @return the function
+	 */
+	public Predicate<? super Object> hasFunction(final Class<?> type) {
+		return (id) -> has(type, id);
 	}
 
 	/**
@@ -113,11 +137,22 @@ public class ObjectGraph
 	 * @return
 	 */
 	public boolean has(Class<?> type, Object id) {
-		Map<Object, Object> map = results.get(type);
+		final Class<?> graphTypeKey = getGraphTypeKey(type);
+		Map<Object, Object> map = results.get(graphTypeKey);
 		if (map==null) {
 			return false;
 		}
 		return map.containsKey(id);
+	}
+
+	/**
+	 * Returns a {@link Function} that delegates to
+	 * {@link #get(Class, Object)} for the given type.
+	 * @param type the type
+	 * @return the function
+	 */
+	public <T> Function<? super Object, T> getFunction(final Class<T> type) {
+		return (id) -> get(type, id);
 	}
 
 	/**
@@ -129,7 +164,8 @@ public class ObjectGraph
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> T get(Class<T> type, Object id) {
-		Map<Object, Object> map = results.get(type);
+		final Class<?> graphTypeKey = getGraphTypeKey(type);
+		Map<Object, Object> map = results.get(graphTypeKey);
 		if (map==null) {
 			return null;
 		}
@@ -143,7 +179,8 @@ public class ObjectGraph
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> Map<Object, T> getMap(Class<T> type) {
-		Map<Object, Object> map = results.get(type);
+		final Class<?> graphTypeKey = getGraphTypeKey(type);
+		Map<Object, Object> map = results.get(graphTypeKey);
 		return map!=null
 				? (Map<Object, T>)map
 				: new HashMap<Object, T>();
@@ -184,6 +221,16 @@ public class ObjectGraph
 	public <I> Stream<I> streamIds(Class<?> type, Class<I> idClass) {
 		return getMap(type).keySet().stream()
 				.map(idClass::cast);
+	}
+
+	/**
+	 * Returns a {@link Function} that delegates to
+	 * {@link #getList(Class, Object)} for the given type.
+	 * @param type the type
+	 * @return the function
+	 */
+	public <T, I> Function<Collection<I>, List<T>> getListFunction(final Class<T> type) {
+		return (ids) -> getList(type, ids);
 	}
 
 	/**

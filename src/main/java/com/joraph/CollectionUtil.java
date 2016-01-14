@@ -1,6 +1,7 @@
 package com.joraph;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -70,6 +71,26 @@ public class CollectionUtil {
 		Set<T> ret = new HashSet<>();
 		if (itr!=null) {
 			itr.forEach(ret::add);
+		}
+		return ret;
+	}
+
+	/**
+	 * Converts an object to a set of objects, taking into
+	 * consideration whether or not it's already a collection
+	 * or array.
+	 * @param val the object
+	 * @return the Set
+	 */
+	@SuppressWarnings("unchecked")
+	public static Set<Object> convertToSet(Object val) {
+		Set<Object> ret;
+		if (Collection.class.isInstance(val)) {
+			ret = new HashSet<>((Collection<Object>)val);
+		} else if (val.getClass().isArray()) {
+			ret = asSet((Object[])val);
+		} else {
+			ret = asSet(val);
 		}
 		return ret;
 	}

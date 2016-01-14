@@ -1,13 +1,15 @@
 package com.joraph.schema;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.joraph.JoraphException;
 
@@ -49,6 +51,18 @@ public class Schema {
 	}
 
 	/**
+	 * Returns the graph type key for the given entity class.
+	 * @param entityClass the entity class
+	 * @return the key
+	 */
+	public Class<?> getGraphTypeKey(Class<?> entityClass) {
+		return Optional.ofNullable(getEntityDescriptor(entityClass))
+				.map(EntityDescriptor::getGraphKey)
+				.map(Class.class::cast)
+				.orElse(entityClass);
+	}
+
+	/**
 	 * @param entityClass the entity class
 	 * @return the descriptor for the class, or null if no descriptor exists for it
 	 */
@@ -81,16 +95,6 @@ public class Schema {
 	}
 
 	/**
-	 * Describes the foreign keys configured for a specified class.
-	 * @param entityClass the entity class
-	 * @return the foreign keys configured for that class
-	 */
-	public Collection<ForeignKey<?, ?>> describeForeignKeysFrom(Class<?> entityClass) {
-		EntityDescriptor<?> ed = getEntityDescriptor(entityClass);
-		return Collections.unmodifiableCollection(ed.getForeignKeys().values());
-	}
-
-	/**
 	 * Describes the foreign keys from one class to another, if any exist.
 	 * @param fromEntityClass the from entity class
 	 * @param toEntityClass the to entity class
@@ -98,13 +102,22 @@ public class Schema {
 	 *         another or an empty collection if no such relationships exist
 	 */
 	public Collection<ForeignKey<?, ?>> describeForeignKeys(Class<?> fromEntityClass, Class<?> toEntityClass) {
-		 Collection<ForeignKey<?, ?>> ret = new ArrayList<>();
-		 for (ForeignKey<?, ?> fk : describeForeignKeysFrom(fromEntityClass)) {
-			 if (fk.getForeignEntity().equals(toEntityClass)) {
-				 ret.add(fk);
-			 }
-		 }
-		 return Collections.unmodifiableCollection(ret);
+		return describeForeignKeysFrom(fromEntityClass).stream()
+				.filter((fk) -> fk.getForeignEntity().equals(toEntityClass))
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Describes the foreign keys configured for a specified class.
+	 * @param entityClass the entity class
+	 * @return the foreign keys configured for that class
+	 */
+	public Collection<ForeignKey<?, ?>> describeForeignKeysFrom(Class<?> entityClass) {
+		EntityDescriptor<?> entityDescriptor = getEntityDescriptor(entityClass);
+		return Stream.concat(
+					entityDescriptor.getForeignKeys().values().stream(),
+					entityDescriptor.getGrapForeignKeys().values().stream())
+				.collect(Collectors.toList());
 	}
 
 	/**
@@ -113,13 +126,15 @@ public class Schema {
 	 * @return foreign keys that point to an entity class
 	 */
 	public Collection<ForeignKey<?, ?>> describeForeignKeysTo(Class<?> toEntityClass) {
-		 Collection<ForeignKey<?, ?>> ret = new ArrayList<>();
-		 for (ForeignKey<?, ?> fk : describeForeignKeys()) {
-			 if (fk.getForeignEntity().equals(toEntityClass)) {
-				 ret.add(fk);
-			 }
-		 }
-		 return Collections.unmodifiableCollection(ret);
+		return Stream.concat(
+					entityDescriptors.values().stream()
+						.map(EntityDescriptor::getForeignKeys),
+					entityDescriptors.values().stream()
+						.map(EntityDescriptor::getGrapForeignKeys))
+				.map(Map::values)
+				.flatMap(Collection::stream)
+				.filter((fk) -> fk.getForeignEntity().equals(toEntityClass))
+				.collect(Collectors.toList());
 	}
 
 	/**
@@ -127,13 +142,23 @@ public class Schema {
 	 * @return all of the configured foreign keys
 	 */
 	public Collection<ForeignKey<?, ?>> describeForeignKeys() {
-		 Collection<ForeignKey<?, ?>> ret = new ArrayList<>();
-		 for (Class<?> fromEntityClass : describeEntities()) {
-			 for (ForeignKey<?, ?> fk : describeForeignKeysFrom(fromEntityClass)) {
-				 ret.add(fk);
-			 }
-		 }
-		 return Collections.unmodifiableCollection(ret);
+		return entityDescriptors.values().stream()
+				.map(EntityDescriptor::getForeignKeys)
+				.map(Map::values)
+				.flatMap(Collection::stream)
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Describes all of the foreign keys that have been configured.
+	 * @return all of the configured foreign keys
+	 */
+	public Collection<ForeignKey<?, ?>> describeGraphForeignKeys() {
+		return entityDescriptors.values().stream()
+				.map(EntityDescriptor::getGrapForeignKeys)
+				.map(Map::values)
+				.flatMap(Collection::stream)
+				.collect(Collectors.toList());
 	}
 
 	public Graph<Class<?>> graph(Class<?> startClass) {

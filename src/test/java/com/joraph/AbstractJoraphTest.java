@@ -2,10 +2,6 @@ package com.joraph;
 
 import static com.joraph.schema.PropertyDescriptorChain.newChain;
 
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.joraph.schema.Author;
 import com.joraph.schema.BasicCompositeKey;
 import com.joraph.schema.Book;
@@ -19,12 +15,10 @@ import com.joraph.schema.Rating;
 import com.joraph.schema.Schema;
 import com.joraph.schema.SimilarBook;
 import com.joraph.schema.User;
+import com.joraph.schema.UserEx;
 import com.joraph.schema.UserFollow;
 
 public abstract class AbstractJoraphTest {
-
-	public static Function<Object[], String> STRING_CONCAT_CONVERTER = (a) -> Stream.of(a).map(String.class::cast).collect(Collectors.joining("|"));
-	public static Function<String, Object[]> STRING_CONCAT_CONVERTER_R = (a) -> a.split("|");
 
 	private Schema schema;
 
@@ -39,8 +33,14 @@ public abstract class AbstractJoraphTest {
 			.setPrimaryKey(Genre::getId);
 
 		schema.addEntityDescriptor(User.class)
+			.setGraphKey(User.class)
 			.setPrimaryKey(User::getId)
 			.addForeignKey(Author.class, User::getFavoriteAuthorIds);
+
+		schema.addEntityDescriptor(UserEx.class)
+			.setGraphKey(User.class)
+			.setPrimaryKey(UserEx::getId)
+			.addForeignKey(Author.class, UserEx::getFavoriteAuthorIds);
 
 		schema.addEntityDescriptor(Library.class)
 			.setPrimaryKey(Library::getId)

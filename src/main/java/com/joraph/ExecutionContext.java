@@ -2,13 +2,15 @@ package com.joraph;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.joraph.debug.DebugInfo;
@@ -34,8 +36,8 @@ public class ExecutionContext {
 
 	private final JoraphContext context;
 	private final Query query;
-	private final Map<Class<?>, Set<Object>> keysToLoad;
 	private final ObjectGraph objectGraph;
+	private final KeysToLoad keysToLoad;
 	private ExecutionPlan plan;
 
 	/**
@@ -49,12 +51,11 @@ public class ExecutionContext {
 	public ExecutionContext(JoraphContext context, Query query) {
 		this.context		= context;
 		this.query 			= query;
-		this.keysToLoad		= new HashMap<>();
+		this.keysToLoad		= new KeysToLoad();
 
 		this.objectGraph = query.hasExistingGraph()
 				? query.getExistingGraph()
 				: new ObjectGraph(context.getSchema());
-
 		
 		addToResults(query.getRootObjects(), query.getEntityClasses());
 	}
@@ -69,6 +70,8 @@ public class ExecutionContext {
 		if (plan!=null) {
 			return objectGraph;
 		}
+
+		keysToLoad.clear();
 
 		plan = context.plan(query.getEntityClasses());
 		for (Operation op : plan.getOperations()) {
@@ -89,19 +92,17 @@ public class ExecutionContext {
 		final Schema schema = context.getSchema();
 		assert(schema != null);
 
-		for (Class<?> entityClass : entityClasses) {
-			final EntityDescriptor<?> entityDescriptor = schema.getEntityDescriptor(entityClass);
+		for (Object object : objects) {
+			if (object==null) {
+				continue;
+			}
+			final EntityDescriptor<?> entityDescriptor = schema.getEntityDescriptor(object.getClass());
 			if (entityDescriptor == null) {
-				throw new UnknownEntityDescriptorException(entityClass);
+				throw new UnknownEntityDescriptorException(object.getClass());
 			}
-	
-			Property<?, ?> pk = entityDescriptor.getPrimaryKey();
-			assert(pk != null);
-			for (Object obj : objects) {
-				if (obj.getClass().equals(entityClass)) {
-					objectGraph.addResult(entityClass, pk.read(obj), obj);
-				}
-			}
+
+			final Property<?, ?> pk = entityDescriptor.getPrimaryKey();
+			objectGraph.addResult(entityDescriptor.getGraphKey(), pk.read(object), object);
 		}
 	}
 
@@ -117,39 +118,25 @@ public class ExecutionContext {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private void gatherValuesForForeignKeysTo(Class<?> entityClass) {
-		synchronized (this.keysToLoad) {
-			if (!keysToLoad.containsKey(entityClass)) {
-				keysToLoad.put(entityClass, new HashSet<Object>());
-			}
-		}
+
+		final EntityDescriptor<?> entityDescriptor = context.getSchema().getEntityDescriptor(entityClass);
+
 		for (ForeignKey<?, ?> fk : context.getSchema().describeForeignKeysTo(entityClass)) {
-			for (Object o : objectGraph.getList(fk.getEntityClass())) {
-				Object val = fk.read(o);
-				if (val==null) {
-					continue;
-				}
-				Set<Object> ids;
-				if (Collection.class.isInstance(val)) {
-					ids = new HashSet<>((Collection<Object>)val);
-				} else if (val.getClass().isArray()) {
-					ids = CollectionUtil.asSet((Object[])val);
-				} else {
-					ids = CollectionUtil.asSet(val);
-				}
-				for (Object id : ids) {
-					if (id==null || objectGraph.get(entityClass, id)!=null) {
-						continue;
-					}
-					keysToLoad.get(entityClass).add(id);
-				}
-			}
+			objectGraph.stream(fk.getEntityClass())
+					.filter((o) -> o.getClass().equals(fk.getEntityClass()))
+					.map(fk::read)
+					.filter(Objects::nonNull)
+					.map(CollectionUtil::convertToSet)
+					.flatMap(Set::stream)
+					.filter(Objects::nonNull)
+					.filter(objectGraph.hasFunction(entityDescriptor.getEntityClass()).negate())
+					.forEach(keysToLoad.getAddKeyFunction(entityClass));
 		}
 	}
 
 	private void loadEntities(Class<?> entityClass) {
-		Set<Object> ids = keysToLoad.get(entityClass);
+		Set<Object> ids = keysToLoad.getKeys(entityClass);
 		if (ids == null || ids.isEmpty()) {
 			return;
 		}
@@ -184,7 +171,7 @@ public class ExecutionContext {
 
 		addToResults(objects, CollectionUtil.asSet(entityClass));
 
-		keysToLoad.get(entityClass).clear();
+		keysToLoad.removeKeys(entityClass, ids);
 	}
 
 	private void runInParallel(List<Operation> ops) {
@@ -236,6 +223,32 @@ public class ExecutionContext {
 	 */
 	public ExecutionPlan getPlan() {
 		return plan;
+	}
+
+	/**
+	 * Simple class for managing the keys that need to be loaded.
+	 */
+	private static class KeysToLoad {
+		private final Map<Class<?>, Set<Object>> map = new ConcurrentHashMap<>();
+		private Consumer<Object> getAddKeyFunction(Class<?> entityClass) {
+			return (id) -> addKey(entityClass, id);
+		}
+		private void addKey(Class<?> entityClass, Object id) {
+			entitySet(entityClass).add(id);
+		}
+		private void removeKeys(Class<?> entityClass, Collection<Object> ids) {
+			entitySet(entityClass).removeAll(ids);
+		}
+		private Set<Object> getKeys(Class<?> entityClass) {
+			return entitySet(entityClass);
+		}
+		private Set<Object> entitySet(Class<?> entityClass) {
+			return map.computeIfAbsent(entityClass, __ ->
+					Collections.newSetFromMap(new ConcurrentHashMap<>()));
+		}
+		private void clear() {
+			map.clear();
+		}
 	}
 
 }

@@ -8,6 +8,10 @@ _User_
 id		pk
 name
 
+_UserEx_
+id		pk
+name
+
 _Author_
 id		pk
 name

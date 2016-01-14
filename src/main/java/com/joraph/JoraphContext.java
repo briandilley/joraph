@@ -246,7 +246,11 @@ public class JoraphContext {
 	 * @return the loader
 	 */
 	public EntityLoader<?> getLoader(Class<?> entityClass) {
-		return loaders.get(entityClass);
+		EntityLoader<?> ret = loaders.get(entityClass);
+		if (ret==null) {
+			ret = loaders.get(getSchema().getGraphTypeKey(entityClass));
+		}
+		return ret;
 	}
 
 	/**
