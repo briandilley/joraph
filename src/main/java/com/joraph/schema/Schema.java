@@ -220,6 +220,19 @@ public class Schema {
 					throw new UnknownFKException(ed.getEntityClass(), fk);
 				}
 			}
+
+			// check Graph FKs
+			fks = ed.getGrapForeignKeys();
+			for (Entry<PropertyDescriptorChain<?, ?>, ForeignKey<?, ?>> fkEntry : fks.entrySet()) {
+				ForeignKey<?, ?> fk = fkEntry.getValue();
+				if (!entityDescriptors.containsKey(fk.getForeignEntity())) {
+					throw new UnknownFKException(ed.getEntityClass(), fk);
+				}
+				entityDescriptors.values().stream()
+						.filter((d) -> d.getGraphKey().equals(fk.getEntityClass()))
+						.findAny()
+						.orElseThrow(()->new UnknownFKException(ed.getEntityClass(), fk));
+			}
 		}
 
 		// good to go
