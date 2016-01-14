@@ -38,7 +38,7 @@ public class SchemaTest {
 		schema.validate();
 	}
 
-	@Test(expected=UnknownFKException.class)
+	@Test(expected=UnknownGraphFKException.class)
 	public void testUnknownGraphFKException()
 		throws Exception {
 		schema.addEntityDescriptor(Author.class)

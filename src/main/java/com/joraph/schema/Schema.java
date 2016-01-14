@@ -225,13 +225,10 @@ public class Schema {
 			fks = ed.getGrapForeignKeys();
 			for (Entry<PropertyDescriptorChain<?, ?>, ForeignKey<?, ?>> fkEntry : fks.entrySet()) {
 				ForeignKey<?, ?> fk = fkEntry.getValue();
-				if (!entityDescriptors.containsKey(fk.getForeignEntity())) {
-					throw new UnknownFKException(ed.getEntityClass(), fk);
-				}
 				entityDescriptors.values().stream()
-						.filter((d) -> d.getGraphKey().equals(fk.getEntityClass()))
+						.filter((d) -> d.getGraphKey().equals(fk.getForeignEntity()))
 						.findAny()
-						.orElseThrow(()->new UnknownFKException(ed.getEntityClass(), fk));
+						.orElseThrow(()->new UnknownGraphFKException(ed.getEntityClass(), fk));
 			}
 		}
 
