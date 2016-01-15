@@ -5,8 +5,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -56,7 +56,7 @@ public class Schema {
 	 * @return the key
 	 */
 	public Class<?> getGraphTypeKey(Class<?> entityClass) {
-		return Optional.ofNullable(getEntityDescriptor(entityClass))
+		return Optional.ofNullable(entityDescriptors.get(entityClass))
 				.map(EntityDescriptor::getGraphKey)
 				.map(Class.class::cast)
 				.orElse(entityClass);
@@ -66,9 +66,14 @@ public class Schema {
 	 * @param entityClass the entity class
 	 * @return the descriptor for the class, or null if no descriptor exists for it
 	 */
-	@SuppressWarnings("unchecked")
-	public <T> EntityDescriptor<T> getEntityDescriptor(Class<T> entityClass) {
-		return (EntityDescriptor<T>)this.entityDescriptors.get(entityClass);
+	public EntityDescriptorCollection getEntityDescriptors(Class<?> entityClass) {
+		return this.entityDescriptors.values().stream()
+				.filter((ed) -> ed.getEntityClass().equals(entityClass)
+					|| ed.getGraphKey().equals(entityClass))
+				.collect(
+						EntityDescriptorCollection::new,
+						EntityDescriptorCollection::add,
+						EntityDescriptorCollection::addAll);
 	}
 
 	/**
@@ -113,10 +118,10 @@ public class Schema {
 	 * @return the foreign keys configured for that class
 	 */
 	public Collection<ForeignKey<?, ?>> describeForeignKeysFrom(Class<?> entityClass) {
-		EntityDescriptor<?> entityDescriptor = getEntityDescriptor(entityClass);
-		return Stream.concat(
-					entityDescriptor.getForeignKeys().values().stream(),
-					entityDescriptor.getGrapForeignKeys().values().stream())
+		return getEntityDescriptors(entityClass).stream()
+				.flatMap((entityDescriptor) -> Stream.concat(
+						entityDescriptor.getForeignKeys().values().stream(),
+						entityDescriptor.getGrapForeignKeys().values().stream()))
 				.collect(Collectors.toList());
 	}
 

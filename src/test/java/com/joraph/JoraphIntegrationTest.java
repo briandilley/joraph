@@ -21,20 +21,27 @@ import org.junit.Test;
 
 import com.joraph.debug.JoraphDebug;
 import com.joraph.loader.EntityLoader;
+import com.joraph.plan.ExecutionPlan;
 import com.joraph.schema.Author;
+import com.joraph.schema.AuthorMessage;
 import com.joraph.schema.BasicCompositeKey;
 import com.joraph.schema.Book;
+import com.joraph.schema.BookMessage;
 import com.joraph.schema.Checkout;
 import com.joraph.schema.CheckoutMetaData;
 import com.joraph.schema.FeaturedBook;
 import com.joraph.schema.Genre;
+import com.joraph.schema.LatestMessage;
 import com.joraph.schema.Library;
+import com.joraph.schema.Message;
+import com.joraph.schema.MessagePair;
 import com.joraph.schema.Rating;
 import com.joraph.schema.SimilarBook;
 import com.joraph.schema.UnknownEntityDescriptorException;
 import com.joraph.schema.User;
 import com.joraph.schema.UserEx;
 import com.joraph.schema.UserFollow;
+import com.joraph.schema.UserMessage;
 
 public class JoraphIntegrationTest
 		extends AbstractJoraphTest {
@@ -57,6 +64,7 @@ public class JoraphIntegrationTest
 		context.addLoader(SimilarBook.class, 	new TestLoader<>(SimilarBook.class));
 		context.addLoader(FeaturedBook.class,   new TestLoader<>(Book.class));
 		context.addLoader(UserFollow.class,   	new TestLoader<>(UserFollow.class));
+		context.addLoader(Message.class,   		new TestLoader<>(Message.class));
 	}
 
 	@After
@@ -111,8 +119,8 @@ public class JoraphIntegrationTest
 	@Test
 	public void testSimpleObjectGraphWithDifferentGraphTypeKeys() {
 
-		getSchema().getEntityDescriptor(Book.class).setGraphKey(String.class);
-		getSchema().getEntityDescriptor(Author.class).setGraphKey(Integer.class);
+		getSchema().getEntityDescriptors(Book.class).findFirstByEntityClass(Book.class).get().setGraphKey(String.class);
+		getSchema().getEntityDescriptors(Author.class).findFirstByEntityClass(Author.class).get().setGraphKey(Integer.class);
 
 		Book book1 = values.get(Book.class, "book1");
 
@@ -139,6 +147,31 @@ public class JoraphIntegrationTest
 
 		assertNull(objectGraph.get(Library.class, "library2"));
 
+	}
+
+	@Test
+	public void testPolyMorphicLoading() {
+
+		ExecutionPlan plan = context.plan(CollectionUtil.asSet(MessagePair.class));
+		assertNotNull(plan);
+		System.out.println(plan.toString());
+
+		MessagePair messagePair = values.get(MessagePair.class, new BasicCompositeKey("usermessage1", "bookmessage4"));
+
+		ObjectGraph objectGraph = context.execute(MessagePair.class, messagePair);
+		assertNotNull(objectGraph);
+
+		assertNotNull(objectGraph.get(UserMessage.class, "usermessage1"));
+		assertEquals("usermessage1", objectGraph.get(UserMessage.class, "usermessage1").getId());
+
+		assertNotNull(objectGraph.get(BookMessage.class, "bookmessage4"));
+		assertEquals("bookmessage4", objectGraph.get(BookMessage.class, "bookmessage4").getId());
+
+		assertNotNull(objectGraph.get(Message.class, "usermessage1"));
+		assertEquals("usermessage1", objectGraph.get(Message.class, "usermessage1").getId());
+
+		assertNotNull(objectGraph.get(User.class, "user1"));
+		assertEquals("user1", objectGraph.get(User.class, "user1").getId());
 	}
 
 	@Test
@@ -354,7 +387,9 @@ public class JoraphIntegrationTest
 	public void testDeepForeignKeys()
 			throws Exception {
 
-		getSchema().getEntityDescriptor(Checkout.class)
+		getSchema().getEntityDescriptors(Checkout.class)
+			.findFirstByEntityClass(Checkout.class)
+			.get()
 			.addForeignKey(User.class, newChain(Checkout::getMetaData)
 					.andThen(CheckoutMetaData::getLibrarianUserId)
 					.build());
@@ -471,6 +506,35 @@ public class JoraphIntegrationTest
 			addResult(User.class, "user4", new UserEx()
 				.setId("user4")
 				.setName("User 4"));
+
+			addResult(LatestMessage.class, "latestMessage1", new LatestMessage()
+					.setId("latestMessage1")
+					.setLatestMessageId("usermessage1"));
+
+			addResult(MessagePair.class, new BasicCompositeKey("usermessage1", "bookmessage4"), new MessagePair()
+					.setLeft("usermessage1")
+					.setRight("bookmessage4"));
+
+			addResult(Message.class, "usermessage1", new UserMessage()
+					.setId("usermessage1")
+					.setPayload("message 1")
+					.setUserId("user1"));
+			addResult(Message.class, "usermessage2", new UserMessage()
+					.setId("usermessage2")
+					.setPayload("message 2")
+					.setUserId("user2"));
+			addResult(Message.class, "authormessage3", new AuthorMessage()
+					.setId("authormessage3")
+					.setPayload("message 3")
+					.setAuthorId("author2"));
+			addResult(Message.class, "bookmessage4", new BookMessage()
+					.setId("bookmessage4")
+					.setPayload("message 4")
+					.setBookId("book2"));
+			addResult(Message.class, "bookmessage5", new BookMessage()
+					.setId("bookmessage5")
+					.setPayload("message 5")
+					.setBookId("book1"));
 			
 			// user1 follows: user2
 			// user2 follows: user1, user3

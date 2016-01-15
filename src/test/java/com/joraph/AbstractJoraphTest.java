@@ -1,15 +1,21 @@
 package com.joraph;
 
+import static com.joraph.schema.PropertyDescriptorChain.buildChain;
 import static com.joraph.schema.PropertyDescriptorChain.newChain;
 
 import com.joraph.schema.Author;
+import com.joraph.schema.AuthorMessage;
 import com.joraph.schema.BasicCompositeKey;
 import com.joraph.schema.Book;
+import com.joraph.schema.BookMessage;
 import com.joraph.schema.Checkout;
 import com.joraph.schema.ErrorBook;
 import com.joraph.schema.FeaturedBook;
 import com.joraph.schema.Genre;
+import com.joraph.schema.LatestMessage;
 import com.joraph.schema.Library;
+import com.joraph.schema.Message;
+import com.joraph.schema.MessagePair;
 import com.joraph.schema.PropertyDescriptorChain;
 import com.joraph.schema.Rating;
 import com.joraph.schema.Schema;
@@ -17,6 +23,7 @@ import com.joraph.schema.SimilarBook;
 import com.joraph.schema.User;
 import com.joraph.schema.UserEx;
 import com.joraph.schema.UserFollow;
+import com.joraph.schema.UserMessage;
 
 public abstract class AbstractJoraphTest {
 
@@ -66,6 +73,31 @@ public abstract class AbstractJoraphTest {
 			.setPrimaryKey(SimilarBook::getId)
 			.addForeignKey(Book.class, SimilarBook::getBookId)
 			.addForeignKey(Book.class, SimilarBook::getSimilarBookId);
+
+
+		schema.addEntityDescriptor(LatestMessage.class)
+			.setPrimaryKey(LatestMessage::getId)
+			.addGraphForeignKey(Message.class, LatestMessage::getLatestMessageId);
+
+		schema.addEntityDescriptor(MessagePair.class)
+			.setPrimaryKey(buildChain(MessagePair::getLeft), buildChain(MessagePair::getRight))
+			.addGraphForeignKey(Message.class, MessagePair::getLeft)
+			.addGraphForeignKey(Message.class, MessagePair::getRight);
+
+		schema.addEntityDescriptor(UserMessage.class)
+			.setGraphKey(Message.class)
+			.setPrimaryKey(UserMessage::getId)
+			.addForeignKey(User.class, UserMessage::getUserId);
+
+		schema.addEntityDescriptor(BookMessage.class)
+			.setGraphKey(Message.class)
+			.setPrimaryKey(BookMessage::getId)
+			.addForeignKey(Book.class, BookMessage::getBookId);
+
+		schema.addEntityDescriptor(AuthorMessage.class)
+			.setGraphKey(Message.class)
+			.setPrimaryKey(AuthorMessage::getId)
+			.addForeignKey(Author.class, AuthorMessage::getAuthorId);
 
 		schema.addEntityDescriptor(FeaturedBook.class)
 		/* purposefully set this way */

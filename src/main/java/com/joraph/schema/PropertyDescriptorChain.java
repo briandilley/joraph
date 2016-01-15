@@ -19,6 +19,10 @@ public class PropertyDescriptorChain<T, R> {
 		return Builder.newChain(accessor);
 	}
 
+	public static <T, R>PropertyDescriptorChain<T, R> buildChain(Function<T, R> accessor) {
+		return Builder.newChain(accessor).build();
+	}
+
 	/**
 	 * Creates a {@link PropertyDescriptorChain} from the given class using
 	 * the given path.

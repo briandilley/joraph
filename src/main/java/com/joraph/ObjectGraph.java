@@ -3,7 +3,6 @@ package com.joraph;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +13,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.joraph.schema.EntityDescriptor;
 import com.joraph.schema.Property;
 import com.joraph.schema.Schema;
 
@@ -90,17 +88,14 @@ public class ObjectGraph
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> Set<T> getIds(Class<?> type) {
-		assert( schema != null );
-		EntityDescriptor<?> descriptor = schema.getEntityDescriptor(type);
-		assert( descriptor != null );
-		Property<?, ?> pk = descriptor.getPrimaryKey();
-		assert( pk != null );
-
-		Set<T> ret = new HashSet<>();
-		for (Object o : getList(type)) {
-			ret.add((T)pk.read(o));
-		}
-		return ret;
+		return schema.getEntityDescriptors(type).stream()
+				.flatMap((entityDescriptor) -> {
+					Property<?, ?> pk = entityDescriptor.getPrimaryKey();
+					return getList(entityDescriptor.getEntityClass()).stream()
+							.map(pk::read);
+				})
+				.map((o) -> (T)o)
+				.collect(Collectors.toSet());
 	}
 
 	/**

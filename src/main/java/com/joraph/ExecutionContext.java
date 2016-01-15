@@ -23,7 +23,6 @@ import com.joraph.plan.LoadEntities;
 import com.joraph.plan.Operation;
 import com.joraph.plan.ParallelOperation;
 import com.joraph.schema.EntityDescriptor;
-import com.joraph.schema.ForeignKey;
 import com.joraph.schema.Property;
 import com.joraph.schema.Schema;
 import com.joraph.schema.UnknownEntityDescriptorException;
@@ -96,10 +95,9 @@ public class ExecutionContext {
 			if (object==null) {
 				continue;
 			}
-			final EntityDescriptor<?> entityDescriptor = schema.getEntityDescriptor(object.getClass());
-			if (entityDescriptor == null) {
-				throw new UnknownEntityDescriptorException(object.getClass());
-			}
+			final EntityDescriptor<?> entityDescriptor = schema.getEntityDescriptors(object.getClass())
+					.findFirstByEntityClass(object.getClass())
+					.orElseThrow(() -> new UnknownEntityDescriptorException(object.getClass()));
 
 			final Property<?, ?> pk = entityDescriptor.getPrimaryKey();
 			objectGraph.addResult(entityDescriptor.getGraphKey(), pk.read(object), object);
@@ -120,19 +118,18 @@ public class ExecutionContext {
 
 	private void gatherValuesForForeignKeysTo(Class<?> entityClass) {
 
-		final EntityDescriptor<?> entityDescriptor = context.getSchema().getEntityDescriptor(entityClass);
+		context.getSchema().getEntityDescriptors(entityClass).stream()
+				.flatMap((entityDescriptor) -> context.getSchema().describeForeignKeysTo(entityClass).stream()
+						.flatMap((fk) -> objectGraph.stream(fk.getEntityClass())
+								.filter((o) -> o.getClass().equals(fk.getEntityClass()))
+								.map(fk::read)
+								.filter(Objects::nonNull)
+								.map(CollectionUtil::convertToSet)
+								.flatMap(Set::stream)
+								.filter(Objects::nonNull)
+								.filter(objectGraph.hasFunction(entityDescriptor.getEntityClass()).negate())))
+				.forEach(keysToLoad.getAddKeyFunction(entityClass));
 
-		for (ForeignKey<?, ?> fk : context.getSchema().describeForeignKeysTo(entityClass)) {
-			objectGraph.stream(fk.getEntityClass())
-					.filter((o) -> o.getClass().equals(fk.getEntityClass()))
-					.map(fk::read)
-					.filter(Objects::nonNull)
-					.map(CollectionUtil::convertToSet)
-					.flatMap(Set::stream)
-					.filter(Objects::nonNull)
-					.filter(objectGraph.hasFunction(entityDescriptor.getEntityClass()).negate())
-					.forEach(keysToLoad.getAddKeyFunction(entityClass));
-		}
 	}
 
 	private void loadEntities(Class<?> entityClass) {
