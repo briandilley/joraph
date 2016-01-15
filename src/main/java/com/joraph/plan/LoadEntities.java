@@ -29,9 +29,14 @@ public class LoadEntities
 	public String explain() {
 		StringBuilder ret = new StringBuilder()
 			.append(" - ")
-			.append(getClass().getSimpleName())
+			.append("(").append(explainCost()).append(") ").append(getClass().getSimpleName())
 			.append(" load ").append(entityClass.getName());
 		return ret.toString();
+	}
+
+	@Override
+	public double cost() {
+		return 1f;
 	}
 
 	@Override

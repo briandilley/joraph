@@ -8,4 +8,16 @@ public interface Operation {
 	 */
 	String explain();
 
+	/**
+	 * Returns the estimated cost of the {@link Operation}.
+	 * @return the estimated cost
+	 */
+	default double cost() {
+		return 1f;
+	}
+
+	default String explainCost() {
+		return String.format("%.3f", cost());
+	}
+
 }

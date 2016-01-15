@@ -46,7 +46,7 @@ public class ExecutionPlanner {
 
 		// get the schema
 		Schema schema = context.getSchema();
-		ExecutionPlan plan = new ExecutionPlan();
+		ExecutionPlan plan = new ExecutionPlan(entityClasses);
 
 		// for each entity
 		for (Class<?> entityClass : entityClasses) {

@@ -22,9 +22,14 @@ public class GatherForeignKeysTo
 	public String explain() {
 		return new StringBuilder()
 			.append(" - ")
-			.append(getClass().getSimpleName())
+			.append("(").append(explainCost()).append(") ").append(getClass().getSimpleName())
 			.append(" gather fks to ").append(entityClass.getName())
 			.toString();
+	}
+
+	@Override
+	public double cost() {
+		return 0.1f;
 	}
 
 	/**

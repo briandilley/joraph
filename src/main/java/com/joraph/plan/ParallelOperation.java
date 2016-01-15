@@ -16,7 +16,7 @@ public class ParallelOperation
 	public String explain() {
 		StringBuilder ret = new StringBuilder()
 			.append(" - ")
-			.append(getClass().getSimpleName())
+			.append("(").append(explainCost()).append(") ").append(getClass().getSimpleName())
 			.append(" in parallel: [\n");
 		for (int i=0; i<operations.size(); i++) {
 			ret.append("    ").append(operations.get(i).explain());
@@ -27,6 +27,14 @@ public class ParallelOperation
 		}
 		return ret.append("   ]")
 			.toString();
+	}
+
+	@Override
+	public double cost() {
+		return operations.stream()
+				.mapToDouble(Operation::cost)
+				.sum()
+			+ operations.size() * 0.1d;
 	}
 
 	/**

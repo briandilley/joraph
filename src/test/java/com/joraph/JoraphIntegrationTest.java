@@ -172,6 +172,12 @@ public class JoraphIntegrationTest
 
 		assertNotNull(objectGraph.get(User.class, "user1"));
 		assertEquals("user1", objectGraph.get(User.class, "user1").getId());
+
+		assertNotNull(objectGraph.get(Book.class, "book2"));
+		assertEquals("book2", objectGraph.get(Book.class, "book2").getId());
+
+		assertNotNull(objectGraph.get(Author.class, "author3"));
+		assertEquals("author3", objectGraph.get(Author.class, "author3").getId());
 	}
 
 	@Test
@@ -508,50 +514,50 @@ public class JoraphIntegrationTest
 				.setName("User 4"));
 
 			addResult(LatestMessage.class, "latestMessage1", new LatestMessage()
-					.setId("latestMessage1")
-					.setLatestMessageId("usermessage1"));
+				.setId("latestMessage1")
+				.setLatestMessageId("usermessage1"));
 
 			addResult(MessagePair.class, new BasicCompositeKey("usermessage1", "bookmessage4"), new MessagePair()
-					.setLeft("usermessage1")
-					.setRight("bookmessage4"));
+				.setLeft("usermessage1")
+				.setRight("bookmessage4"));
 
 			addResult(Message.class, "usermessage1", new UserMessage()
-					.setId("usermessage1")
-					.setPayload("message 1")
-					.setUserId("user1"));
+				.setId("usermessage1")
+				.setPayload("message 1")
+				.setUserId("user1"));
 			addResult(Message.class, "usermessage2", new UserMessage()
-					.setId("usermessage2")
-					.setPayload("message 2")
-					.setUserId("user2"));
+				.setId("usermessage2")
+				.setPayload("message 2")
+				.setUserId("user2"));
 			addResult(Message.class, "authormessage3", new AuthorMessage()
-					.setId("authormessage3")
-					.setPayload("message 3")
-					.setAuthorId("author2"));
+				.setId("authormessage3")
+				.setPayload("message 3")
+				.setAuthorId("author2"));
 			addResult(Message.class, "bookmessage4", new BookMessage()
-					.setId("bookmessage4")
-					.setPayload("message 4")
-					.setBookId("book2"));
+				.setId("bookmessage4")
+				.setPayload("message 4")
+				.setBookId("book2"));
 			addResult(Message.class, "bookmessage5", new BookMessage()
-					.setId("bookmessage5")
-					.setPayload("message 5")
-					.setBookId("book1"));
+				.setId("bookmessage5")
+				.setPayload("message 5")
+				.setBookId("book1"));
 			
 			// user1 follows: user2
 			// user2 follows: user1, user3
 			// user3 follows: user1
 
 			addResult(UserFollow.class, new BasicCompositeKey("user1", "user2"),
-					new UserFollow("user1", "user2"));
+				new UserFollow("user1", "user2"));
 			addResult(UserFollow.class, new BasicCompositeKey("user2", "user1"),
-					new UserFollow("user2", "user1"));
+				new UserFollow("user2", "user1"));
 			addResult(UserFollow.class, new BasicCompositeKey("user3", "user1"),
-					new UserFollow("user3", "user1"));
+				new UserFollow("user3", "user1"));
 			addResult(UserFollow.class, new BasicCompositeKey("user2", "user3"),
-					new UserFollow("user2", "user3"));
+				new UserFollow("user2", "user3"));
 			addResult(UserFollow.class, new BasicCompositeKey("user3", "user4"),
-					new UserFollow("user3", "user4"));
+				new UserFollow("user3", "user4"));
 			addResult(UserFollow.class, new BasicCompositeKey("user3", "user2"),
-					new UserFollow("user3", "user2"));
+				new UserFollow("user3", "user2"));
 
 			addResult(Genre.class, "genre1", new Genre()
 				.setId("genre1")
