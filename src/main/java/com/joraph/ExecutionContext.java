@@ -11,12 +11,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import com.joraph.debug.DebugInfo;
 import com.joraph.debug.JoraphDebug;
-import com.joraph.loader.EntityLoader;
-import com.joraph.loader.UnconfiguredLoaderException;
 import com.joraph.plan.ExecutionPlan;
 import com.joraph.plan.GatherForeignKeysTo;
 import com.joraph.plan.LoadEntities;
@@ -120,6 +117,7 @@ public class ExecutionContext {
 
 		context.getSchema().getEntityDescriptors(entityClass).stream()
 				.flatMap((entityDescriptor) -> context.getSchema().describeForeignKeysTo(entityClass).stream()
+						.filter((fk) -> fk.shouldLoad(query.getArguments()))
 						.flatMap((fk) -> objectGraph.stream(fk.getEntityClass())
 								.filter((o) -> o.getClass().equals(fk.getEntityClass()))
 								.map(fk::read)
@@ -137,37 +135,10 @@ public class ExecutionContext {
 		if (ids == null || ids.isEmpty()) {
 			return;
 		}
-		final EntityLoader<?> loader = context.getLoader(entityClass);
-		if (loader == null) {
-			throw new UnconfiguredLoaderException(entityClass);
-		}
 
-		long start = System.currentTimeMillis();
-
-		List<?> objects;
-
-		try {
-			objects = loader.load(ids);
-		} catch(Throwable t) {
-			throw new JoraphException(
-					"Error invoking loader: "+loader.toString()
-					+" with ids: "+String.join(", ", ids.stream()
-							.map(Object::toString)
-							.limit(5)
-							.collect(Collectors.toList()))
-					+((ids.size() > 5)
-							? "... and "+(ids.size()-5)+" more"
-							: ""),
-				t);
-		}
-
-		JoraphDebug.addLoaderDebug(
-				entityClass,
-				System.currentTimeMillis()-start,
-				ids, objects);
-
+		List<?> objects = context.getLoaderContext().load(
+				entityClass, query.getArguments(), ids);
 		addToResults(objects, CollectionUtil.asSet(entityClass));
-
 		keysToLoad.removeKeys(entityClass, ids);
 	}
 

@@ -38,15 +38,6 @@ public class SchemaTest {
 		schema.validate();
 	}
 
-	@Test(expected=UnknownGraphFKException.class)
-	public void testUnknownGraphFKException()
-		throws Exception {
-		schema.addEntityDescriptor(Author.class)
-				.setPrimaryKey(Author::getId)
-				.addGraphForeignKey(Book.class, Author::getId);
-		schema.validate();
-	}
-
 	@Test
 	public void testValidateSingleEntity()
 		throws Exception {

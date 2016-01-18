@@ -9,7 +9,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.joraph.JoraphException;
 
@@ -119,9 +118,8 @@ public class Schema {
 	 */
 	public Collection<ForeignKey<?, ?>> describeForeignKeysFrom(Class<?> entityClass) {
 		return getEntityDescriptors(entityClass).stream()
-				.flatMap((entityDescriptor) -> Stream.concat(
-						entityDescriptor.getForeignKeys().values().stream(),
-						entityDescriptor.getGrapForeignKeys().values().stream()))
+				.flatMap((entityDescriptor) ->
+						entityDescriptor.getForeignKeys().values().stream())
 				.collect(Collectors.toList());
 	}
 
@@ -131,11 +129,8 @@ public class Schema {
 	 * @return foreign keys that point to an entity class
 	 */
 	public Collection<ForeignKey<?, ?>> describeForeignKeysTo(Class<?> toEntityClass) {
-		return Stream.concat(
-					entityDescriptors.values().stream()
-						.map(EntityDescriptor::getForeignKeys),
-					entityDescriptors.values().stream()
-						.map(EntityDescriptor::getGrapForeignKeys))
+		return entityDescriptors.values().stream()
+				.map(EntityDescriptor::getForeignKeys)
 				.map(Map::values)
 				.flatMap(Collection::stream)
 				.filter((fk) -> fk.getForeignEntity().equals(toEntityClass))
@@ -149,18 +144,6 @@ public class Schema {
 	public Collection<ForeignKey<?, ?>> describeForeignKeys() {
 		return entityDescriptors.values().stream()
 				.map(EntityDescriptor::getForeignKeys)
-				.map(Map::values)
-				.flatMap(Collection::stream)
-				.collect(Collectors.toList());
-	}
-
-	/**
-	 * Describes all of the foreign keys that have been configured.
-	 * @return all of the configured foreign keys
-	 */
-	public Collection<ForeignKey<?, ?>> describeGraphForeignKeys() {
-		return entityDescriptors.values().stream()
-				.map(EntityDescriptor::getGrapForeignKeys)
 				.map(Map::values)
 				.flatMap(Collection::stream)
 				.collect(Collectors.toList());
@@ -221,19 +204,11 @@ public class Schema {
 			Map<PropertyDescriptorChain<?, ?>, ForeignKey<?, ?>> fks = ed.getForeignKeys();
 			for (Entry<PropertyDescriptorChain<?, ?>, ForeignKey<?, ?>> fkEntry : fks.entrySet()) {
 				ForeignKey<?, ?> fk = fkEntry.getValue();
-				if (!entityDescriptors.containsKey(fk.getForeignEntity())) {
-					throw new UnknownFKException(ed.getEntityClass(), fk);
-				}
-			}
-
-			// check Graph FKs
-			fks = ed.getGrapForeignKeys();
-			for (Entry<PropertyDescriptorChain<?, ?>, ForeignKey<?, ?>> fkEntry : fks.entrySet()) {
-				ForeignKey<?, ?> fk = fkEntry.getValue();
 				entityDescriptors.values().stream()
-						.filter((d) -> d.getGraphKey().equals(fk.getForeignEntity()))
+						.filter((d) -> d.getEntityClass().equals(fk.getForeignEntity())
+								|| d.getGraphKey().equals(fk.getForeignEntity()))
 						.findAny()
-						.orElseThrow(()->new UnknownGraphFKException(ed.getEntityClass(), fk));
+						.orElseThrow(() -> new UnknownFKException(ed.getEntityClass(), fk));
 			}
 		}
 

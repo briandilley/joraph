@@ -1,5 +1,7 @@
 package com.joraph;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -13,6 +15,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.joraph.schema.EntityDescriptor;
+import com.joraph.schema.EntityDescriptorCollection;
 import com.joraph.schema.Property;
 import com.joraph.schema.Schema;
 
@@ -96,6 +100,38 @@ public class ObjectGraph
 				})
 				.map((o) -> (T)o)
 				.collect(Collectors.toSet());
+	}
+
+	/**
+	 * Adds a result.
+	 * @param type
+	 * @param id
+	 * @param value
+	 */
+	public void addResult(Object value) {
+		requireNonNull(schema, "schema is required");
+		Class<?> entityClass = value.getClass();
+
+		EntityDescriptorCollection col = schema.getEntityDescriptors(entityClass);
+		if (col.isEmpty()) {
+			throw new IllegalArgumentException("EntityDescriptor for "+entityClass.getName()+" not found");
+		}
+
+		Property<?, ?> pk = col.findFirstByEntityClass(entityClass)
+				.map(EntityDescriptor::getPrimaryKey)
+				.orElse(null);
+
+		if (pk==null) {
+			pk = col.findFirstByGraphKey(entityClass)
+					.map(EntityDescriptor::getPrimaryKey)
+					.orElse(null);
+		}
+
+		if (pk==null) {
+			throw new IllegalArgumentException("Primary key for "+entityClass.getName()+" not found");
+		}
+
+		addResult(value.getClass(), pk.read(value), value);
 	}
 
 	/**

@@ -1,6 +1,7 @@
 package com.joraph.debug;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,7 +28,7 @@ public class DebugInfo {
 	}
 
 	public void addLoaderDebug(
-			Class<?> entityClass, Long loaderTimeMillis, Set<Object> ids, List<?> objects) {
+			Class<?> entityClass, Long loaderTimeMillis, Collection<?> ids, List<?> objects) {
 		LoaderDebug loaderDebug = new LoaderDebug();
 		loaderDebug.setEntityClass(entityClass);
 		loaderDebug.setLoadedEntityCount(objects.size());

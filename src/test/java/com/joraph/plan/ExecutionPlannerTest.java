@@ -1,6 +1,7 @@
 package com.joraph.plan;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
@@ -15,28 +16,32 @@ import com.joraph.schema.Book;
 import com.joraph.schema.Checkout;
 import com.joraph.schema.Genre;
 import com.joraph.schema.Library;
+import com.joraph.schema.Schema;
 import com.joraph.schema.User;
 
 public class ExecutionPlannerTest
 		extends AbstractJoraphTest {
 
+	private Schema schema;
 	private JoraphContext context;
 	private ExecutionPlanner planner;
 
 	@Before
 	public void setUp()
 			throws Exception {
-		super.setupSchema();
-		context = new JoraphContext(getSchema());
-		planner = new ExecutionPlanner(context);
+		schema		= setupSchema(new Schema());
+		context 	= new JoraphContext(schema);
+		planner		= new ExecutionPlanner(context);
 	}
 
 	@After
 	public void tearDown()
 			throws Exception {
-		super.tearDownSchema();
+		schema = null;
 		planner = null;
+		context = null;
 	}
+
 
 	@Test
 	public void testPlan_Checkout() {
@@ -57,16 +62,15 @@ public class ExecutionPlannerTest
 		assertTrue(ops.get(4).equals(new GatherForeignKeysTo(Library.class)));
 		assertTrue(ops.get(5).equals(new LoadEntities(Library.class)));
 
-		assertTrue(ops.get(6).equals(new GatherForeignKeysTo(User.class)));
-		assertTrue(ops.get(7).equals(new LoadEntities(User.class)));
-
-		assertTrue(ops.get(8).equals(new GatherForeignKeysTo(Author.class)));
-		assertTrue(ops.get(9).equals(new GatherForeignKeysTo(Genre.class)));
+		assertTrue(ops.get(6).equals(new GatherForeignKeysTo(Author.class)));
+		assertTrue(ops.get(7).equals(new GatherForeignKeysTo(Genre.class)));
+		assertTrue(ops.get(8).equals(new GatherForeignKeysTo(User.class)));
 
 		ParallelOperation parallelOperation = new ParallelOperation();
 		parallelOperation.getOperations().add(new LoadEntities(Author.class));
 		parallelOperation.getOperations().add(new LoadEntities(Genre.class));
-		assertTrue(ops.get(10).equals(parallelOperation));
+		parallelOperation.getOperations().add(new LoadEntities(User.class));
+		assertTrue(ops.get(9).equals(parallelOperation));
 
 	}
 

@@ -1,18 +1,9 @@
 package com.joraph.schema;
 
 public class FeaturedBook {
-	private String id;
+
 	private String bookId;
 	private String featuredById;
-
-	public FeaturedBook setId(String id) {
-		this.id = id;
-		return this;
-	}
-
-	public String getId() {
-		return id;
-	}
 
 	public String getBookId() {
 		return bookId;

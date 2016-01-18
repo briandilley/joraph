@@ -10,20 +10,15 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.joraph.debug.JoraphDebug;
-import com.joraph.loader.EntityLoader;
 import com.joraph.plan.ExecutionPlan;
 import com.joraph.schema.Author;
-import com.joraph.schema.AuthorMessage;
 import com.joraph.schema.BasicCompositeKey;
 import com.joraph.schema.Book;
 import com.joraph.schema.BookMessage;
@@ -31,12 +26,10 @@ import com.joraph.schema.Checkout;
 import com.joraph.schema.CheckoutMetaData;
 import com.joraph.schema.FeaturedBook;
 import com.joraph.schema.Genre;
-import com.joraph.schema.LatestMessage;
 import com.joraph.schema.Library;
 import com.joraph.schema.Message;
 import com.joraph.schema.MessagePair;
-import com.joraph.schema.Rating;
-import com.joraph.schema.SimilarBook;
+import com.joraph.schema.Schema;
 import com.joraph.schema.UnknownEntityDescriptorException;
 import com.joraph.schema.User;
 import com.joraph.schema.UserEx;
@@ -46,40 +39,39 @@ import com.joraph.schema.UserMessage;
 public class JoraphIntegrationTest
 		extends AbstractJoraphTest {
 
+	private Schema schema;
+	private ObjectGraph testDb;
 	private JoraphContext context;
-	private ObjectGraph values;
 
 	@Before
 	public void setUp()
 			throws Exception {
-		super.setupSchema();
-		initDb();
-		context = new JoraphContext(getSchema());
-		context.addLoader(Author.class, 		new TestLoader<>(Author.class));
-		context.addLoader(Book.class, 			new TestLoader<>(Book.class));
-		context.addLoader(Checkout.class, 		new TestLoader<>(Checkout.class));
-		context.addLoader(Genre.class, 			new TestLoader<>(Genre.class));
-		context.addLoader(Library.class, 		new TestLoader<>(Library.class));
-		context.addLoader(User.class, 			new TestLoader<>(User.class));
-		context.addLoader(SimilarBook.class, 	new TestLoader<>(SimilarBook.class));
-		context.addLoader(FeaturedBook.class,   new TestLoader<>(Book.class));
-		context.addLoader(UserFollow.class,   	new TestLoader<>(UserFollow.class));
-		context.addLoader(Message.class,   		new TestLoader<>(Message.class));
+		schema		= setupSchema(new Schema());
+		testDb		= setupTestDb(new ObjectGraph());
+		context 	= new JoraphContext(schema);
+		setupLoaders(testDb, context);
 	}
 
 	@After
 	public void tearDown()
 			throws Exception {
-		super.tearDownSchema();
+		schema = null;
+		testDb = null;
 		context = null;
 	}
 
 	@Test
 	public void testSimpleObjectGraph() {
 
-		Book book1 = values.get(Book.class, "book1");
+		Book book1 = testDb.get(Book.class, "book1");
+		User user1 = testDb.get(User.class, "user1");
 
-		ObjectGraph objectGraph = context.execute(Book.class, Arrays.asList(book1));
+		Query q = new Query(Book.class, User.class)
+				.withRootObject(book1, user1);
+
+		System.out.println(context.plan(q));
+
+		ObjectGraph objectGraph = context.execute(q);
 		assertNotNull(objectGraph);
 
 		assertNotNull(objectGraph.get(Book.class, "book1"));
@@ -101,8 +93,8 @@ public class JoraphIntegrationTest
 	@Test
 	public void testLoadFromGraphTypeKey() {
 
-		UserFollow user3_user4 = values.get(UserFollow.class, new BasicCompositeKey("user3", "user4"));
-		UserFollow user3_user2 = values.get(UserFollow.class, new BasicCompositeKey("user3", "user2"));
+		UserFollow user3_user4 = testDb.get(UserFollow.class, new BasicCompositeKey("user3", "user4"));
+		UserFollow user3_user2 = testDb.get(UserFollow.class, new BasicCompositeKey("user3", "user2"));
 
 		ObjectGraph objectGraph = context.execute(UserFollow.class,
 				Arrays.asList(user3_user4, user3_user2));
@@ -119,10 +111,10 @@ public class JoraphIntegrationTest
 	@Test
 	public void testSimpleObjectGraphWithDifferentGraphTypeKeys() {
 
-		getSchema().getEntityDescriptors(Book.class).findFirstByEntityClass(Book.class).get().setGraphKey(String.class);
-		getSchema().getEntityDescriptors(Author.class).findFirstByEntityClass(Author.class).get().setGraphKey(Integer.class);
+		schema.getEntityDescriptors(Book.class).findFirstByEntityClass(Book.class).get().setGraphKey(String.class);
+		schema.getEntityDescriptors(Author.class).findFirstByEntityClass(Author.class).get().setGraphKey(Integer.class);
 
-		Book book1 = values.get(Book.class, "book1");
+		Book book1 = testDb.get(Book.class, "book1");
 
 		ObjectGraph objectGraph = context.execute(Book.class, Arrays.asList(book1));
 		assertNotNull(objectGraph);
@@ -156,7 +148,7 @@ public class JoraphIntegrationTest
 		assertNotNull(plan);
 		System.out.println(plan.toString());
 
-		MessagePair messagePair = values.get(MessagePair.class, new BasicCompositeKey("usermessage1", "bookmessage4"));
+		MessagePair messagePair = testDb.get(MessagePair.class, new BasicCompositeKey("usermessage1", "bookmessage4"));
 
 		ObjectGraph objectGraph = context.execute(MessagePair.class, messagePair);
 		assertNotNull(objectGraph);
@@ -183,7 +175,7 @@ public class JoraphIntegrationTest
 	@Test
 	public void testDeepObjectsAreLoaded() {
 
-		Book book1 = values.get(Book.class, "book2"); // BOOK 2 !
+		Book book1 = testDb.get(Book.class, "book2"); // BOOK 2 !
 
 		ObjectGraph objectGraph = context.execute(Book.class, Arrays.asList(book1));
 		assertNotNull(objectGraph);
@@ -196,8 +188,8 @@ public class JoraphIntegrationTest
 	@Test
 	public void testSimpleObjectGraph_MultipleRoots() {
 
-		Book book1 = values.get(Book.class, "book1");
-		User user1 = values.get(User.class, "user1");
+		Book book1 = testDb.get(Book.class, "book1");
+		User user1 = testDb.get(User.class, "user1");
 
 		ObjectGraph objectGraph = context.executeForObjects(Arrays.asList(book1, user1));
 		assertNotNull(objectGraph);
@@ -207,10 +199,6 @@ public class JoraphIntegrationTest
 
 		assertNotNull(objectGraph.get(User.class, "user1"));
 		assertEquals("user1", objectGraph.get(User.class, "user1").getId());
-
-		assertNotNull(objectGraph.get(User.class, "user1"));
-		assertEquals("author1", objectGraph.get(Author.class, "author1").getId());
-		assertEquals("author2", objectGraph.get(Author.class, "author2").getId());
 
 		assertNotNull(objectGraph.get(Author.class, "author3"));
 		assertEquals("author3", objectGraph.get(Author.class, "author3").getId());
@@ -228,8 +216,8 @@ public class JoraphIntegrationTest
 	@Test
 	public void testLessSimpleObjectGraph() {
 
-		Book book1 = values.get(Book.class, "book1");
-		Book book2 = values.get(Book.class, "book2");
+		Book book1 = testDb.get(Book.class, "book1");
+		Book book2 = testDb.get(Book.class, "book2");
 
 		ObjectGraph objectGraph = context.execute(Book.class, Arrays.asList(book1, book2));
 		assertNotNull(objectGraph);
@@ -286,7 +274,7 @@ public class JoraphIntegrationTest
 	@Test
 	public void testCheckout() {
 
-		Checkout checkout1 = values.get(Checkout.class, "checkout1");
+		Checkout checkout1 = testDb.get(Checkout.class, "checkout1");
 
 		ObjectGraph objectGraph = context.execute(Checkout.class, Arrays.asList(checkout1));
 		assertNotNull(objectGraph);
@@ -321,10 +309,11 @@ public class JoraphIntegrationTest
 
 	@Test
 	public void testFeaturedBook() throws Exception {
-		final FeaturedBook featuredBook1 = values.get(FeaturedBook.class, "featuredBook1");
+		final FeaturedBook featuredBook1 = testDb.get(FeaturedBook.class, "book1");
 
 		final ObjectGraph objectGraph = context.execute(FeaturedBook.class, featuredBook1);
 
+		assertNotNull(objectGraph.get(FeaturedBook.class, "book1"));
 		assertNotNull(objectGraph.get(Book.class, "book1"));
 		assertEquals("book1", objectGraph.get(Book.class, "book1").getId());
 	}
@@ -351,7 +340,7 @@ public class JoraphIntegrationTest
 	@Test
 	public void testSupplementExistingGraph() {
 
-		User user1 = values.get(User.class, "user1");
+		User user1 = testDb.get(User.class, "user1");
 
 		ObjectGraph objectGraph = context.execute(User.class, user1);
 		assertNotNull(objectGraph);
@@ -393,15 +382,15 @@ public class JoraphIntegrationTest
 	public void testDeepForeignKeys()
 			throws Exception {
 
-		getSchema().getEntityDescriptors(Checkout.class)
+		schema.getEntityDescriptors(Checkout.class)
 			.findFirstByEntityClass(Checkout.class)
 			.get()
 			.addForeignKey(User.class, newChain(Checkout::getMetaData)
 					.andThen(CheckoutMetaData::getLibrarianUserId)
 					.build());
 
-		getSchema().validate();
-		assertTrue(getSchema().isValidated());
+		schema.validate();
+		assertTrue(schema.isValidated());
 
 		 Checkout checkout = new Checkout()
 		 	.setId("checkout1")
@@ -419,7 +408,7 @@ public class JoraphIntegrationTest
 	@Test
 	public void testDebugInfoIsNotCollected() {
 
-		Book book1 = values.get(Book.class, "book1");
+		Book book1 = testDb.get(Book.class, "book1");
 		context.execute(Book.class, Arrays.asList(book1));
 		assertFalse(JoraphDebug.hasDebugInfo());
 	}
@@ -429,7 +418,7 @@ public class JoraphIntegrationTest
 
 		JoraphDebug.startDebug();
 
-		Book book1 = values.get(Book.class, "book1");
+		Book book1 = testDb.get(Book.class, "book1");
 		ObjectGraph objectGraph = context.execute(Book.class, Arrays.asList(book1));
 
 		assertTrue(JoraphDebug.hasDebugInfo());
@@ -446,8 +435,8 @@ public class JoraphIntegrationTest
 
 		JoraphDebug.startDebug();
 
-		Book book1 = values.get(Book.class, "book1");
-		Author author1 = values.get(Author.class, "author1");
+		Book book1 = testDb.get(Book.class, "book1");
+		Author author1 = testDb.get(Author.class, "author1");
 		ObjectGraph objectGraph = context.execute(Book.class, Arrays.asList(book1));
 		ObjectGraph objectGraph2 = context.execute(Author.class, Arrays.asList(author1));
 
@@ -466,148 +455,5 @@ public class JoraphIntegrationTest
 //	public void testErrorBookWhenAttemptingToLoad() throws Exception {
 //		context.execute(ErrorBook.class, new ErrorBook().setAnotherErrorBookId("another-error-book-id"));
 //	}
-
-	public class TestLoader<T>
-			implements EntityLoader<T> {
-
-		private Class<T> entityClass;
-
-		public TestLoader(Class<T> entityClass) {
-			this.entityClass = entityClass;
-		}
-
-		@Override
-		public List<T> load(Iterable<?> ids) {
-			Collection<?> idCollection = StreamSupport.stream(ids.spliterator(), false)
-					.collect(Collectors.toList());
-			return values.getList(entityClass, idCollection);
-		}
-		
-	}
-
-	private void initDb() {
-		values = new ObjectGraph() {{
-
-			addResult(Author.class, "author1", new Author()
-				.setId("author1")
-				.setName("Author 1"));
-			addResult(Author.class, "author2", new Author()
-				.setId("author2")
-				.setName("Author 2"));
-			addResult(Author.class, "author3", new Author()
-				.setId("author3")
-				.setName("Author 3"));
-
-			addResult(User.class, "user1", new User()
-				.setId("user1")
-				.setName("User 1")
-				.setFavoriteAuthorIds(CollectionUtil.asList("author1", "author2")));
-			addResult(User.class, "user2", new User()
-				.setId("user2")
-				.setName("User 2"));
-			addResult(User.class, "user3", new UserEx()
-				.setId("user3")
-				.setName("User 3")
-				.setFavoriteAuthorIds(CollectionUtil.asList("author3", "author1")));
-			addResult(User.class, "user4", new UserEx()
-				.setId("user4")
-				.setName("User 4"));
-
-			addResult(LatestMessage.class, "latestMessage1", new LatestMessage()
-				.setId("latestMessage1")
-				.setLatestMessageId("usermessage1"));
-
-			addResult(MessagePair.class, new BasicCompositeKey("usermessage1", "bookmessage4"), new MessagePair()
-				.setLeft("usermessage1")
-				.setRight("bookmessage4"));
-
-			addResult(Message.class, "usermessage1", new UserMessage()
-				.setId("usermessage1")
-				.setPayload("message 1")
-				.setUserId("user1"));
-			addResult(Message.class, "usermessage2", new UserMessage()
-				.setId("usermessage2")
-				.setPayload("message 2")
-				.setUserId("user2"));
-			addResult(Message.class, "authormessage3", new AuthorMessage()
-				.setId("authormessage3")
-				.setPayload("message 3")
-				.setAuthorId("author2"));
-			addResult(Message.class, "bookmessage4", new BookMessage()
-				.setId("bookmessage4")
-				.setPayload("message 4")
-				.setBookId("book2"));
-			addResult(Message.class, "bookmessage5", new BookMessage()
-				.setId("bookmessage5")
-				.setPayload("message 5")
-				.setBookId("book1"));
-			
-			// user1 follows: user2
-			// user2 follows: user1, user3
-			// user3 follows: user1
-
-			addResult(UserFollow.class, new BasicCompositeKey("user1", "user2"),
-				new UserFollow("user1", "user2"));
-			addResult(UserFollow.class, new BasicCompositeKey("user2", "user1"),
-				new UserFollow("user2", "user1"));
-			addResult(UserFollow.class, new BasicCompositeKey("user3", "user1"),
-				new UserFollow("user3", "user1"));
-			addResult(UserFollow.class, new BasicCompositeKey("user2", "user3"),
-				new UserFollow("user2", "user3"));
-			addResult(UserFollow.class, new BasicCompositeKey("user3", "user4"),
-				new UserFollow("user3", "user4"));
-			addResult(UserFollow.class, new BasicCompositeKey("user3", "user2"),
-				new UserFollow("user3", "user2"));
-
-			addResult(Genre.class, "genre1", new Genre()
-				.setId("genre1")
-				.setName("Genre 1"));
-			addResult(Genre.class, "genre2", new Genre()
-				.setId("genre2")
-				.setName("Genre 2"));
-			addResult(Genre.class, "genre3", new Genre()
-				.setId("genre3")
-				.setName("Genre 3"));
-
-			addResult(Library.class, "library1", new Library()
-				.setId("library1")
-				.setName("Library 1")
-				.setLibrarianUserId("user3"));
-			addResult(Library.class, "library2", new Library()
-				.setId("library2")
-				.setName("Library 2")
-				.setLibrarianUserId("user1"));
-
-			addResult(Book.class, "book1", new Book()
-				.setId("book1")
-				.setName("Book 1")
-				.setAuthorId("author3")
-				.setGenreId("genre2")
-				.setLibraryId("library1"));
-			addResult(Book.class, "book2", new Book()
-				.setId("book2")
-				.setName("Book 2")
-				.setAuthorId("author2")
-				.setCoAuthorId("author3")
-				.setGenreId("genre1")
-				.setLibraryId("library1")
-				.setRating(new Rating()
-					.setRating(4.20f)
-					.setUserId("user1")));
-
-			addResult(Checkout.class, "checkout1", new Checkout()
-				.setId("checkout1")
-				.setBookId("book2")
-				.setLibraryId("library1")
-				.setUserId("user2"));
-
-			addResult(FeaturedBook.class, "featuredBook1", new FeaturedBook()
-				.setId("featuredBook1")
-				.setBookId("book1")
-				.setFeaturedById("user3"));
-
-		}};
-	}
-
 
 }

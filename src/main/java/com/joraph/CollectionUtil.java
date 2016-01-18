@@ -54,6 +54,9 @@ public class CollectionUtil {
 	 * @return the list
 	 */
 	public static <T> List<T> toList(Iterable<T> itr) {
+		if (List.class.isInstance(itr)) {
+			return (List<T>)itr;
+		}
 		List<T> ret = new ArrayList<>();
 		if (itr!=null) {
 			itr.forEach(ret::add);
@@ -68,6 +71,9 @@ public class CollectionUtil {
 	 * @return the list
 	 */
 	public static <T> Set<T> toSet(Iterable<T> itr) {
+		if (Set.class.isInstance(itr)) {
+			return (Set<T>)itr;
+		}
 		Set<T> ret = new HashSet<>();
 		if (itr!=null) {
 			itr.forEach(ret::add);
@@ -84,6 +90,9 @@ public class CollectionUtil {
 	 */
 	@SuppressWarnings("unchecked")
 	public static Set<Object> convertToSet(Object val) {
+		if (Set.class.isInstance(val)) {
+			return (Set<Object>)val;
+		}
 		Set<Object> ret;
 		if (Collection.class.isInstance(val)) {
 			ret = new HashSet<>((Collection<Object>)val);

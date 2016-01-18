@@ -1,13 +1,26 @@
 package com.joraph;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Query {
 
 	private Set<Class<?>> entityClasses;
 	private Set<?> rootObjects;
 	private ObjectGraph existingGraph;
+	private Object argumentProvider;
+
+	public Query() {
+		
+	}
+
+	public Query(Class<?>... entityClasses) {
+		withEntityClasses(Arrays.stream(entityClasses)
+				.collect(Collectors.toSet()));
+	}
+
 
 	/**
 	 * @return the entityClasses
@@ -36,10 +49,25 @@ public class Query {
 	}
 
 	/**
+	 * @return the argumentProvider
+	 */
+	public Object getArguments() {
+		return argumentProvider;
+	}
+
+	/**
 	 * @return the rootObjects
 	 */
 	public Set<?> getRootObjects() {
 		return rootObjects;
+	}
+
+	/**
+	 * @param rootObjects the rootObjects to set
+	 */
+	public Query withRootObject(Object... rootObjects) {
+		return withRootObjects(Arrays.stream(rootObjects)
+				.collect(Collectors.toSet()));
 	}
 
 	/**
@@ -69,6 +97,14 @@ public class Query {
 	 */
 	public Query withExistingGraph(ObjectGraph existingGraph) {
 		this.existingGraph = existingGraph;
+		return this;
+	}
+
+	/**
+	 * @param argumentProvider
+	 */
+	public Query withArguments(Object argumentProvider) {
+		this.argumentProvider = argumentProvider;
 		return this;
 	}
 

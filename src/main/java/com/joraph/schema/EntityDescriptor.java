@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import com.joraph.CollectionUtil;
 
@@ -19,7 +20,6 @@ public class EntityDescriptor<T> {
 	private Class<?> graphKey;
 	private Property<T, ?> primaryKey;
 	private Map<PropertyDescriptorChain<T, ?>, ForeignKey<T, ?>> foreignKeys = new HashMap<>();
-	private Map<PropertyDescriptorChain<T, ?>, ForeignKey<T, ?>> graphForeignKeys = new HashMap<>();
 
 	/**
 	 * Creates a new instance of EntityDescriptor.
@@ -116,25 +116,27 @@ public class EntityDescriptor<T> {
 	public Map<PropertyDescriptorChain<?, ?>, ForeignKey<?, ?>> getForeignKeys() {
 		return Collections.unmodifiableMap(foreignKeys);
 	}
-	 
+
 	/**
-	 * @return the graphForeignKeys
+	 * Creates a builder for adding a foreign key.
+	 * @param foreignEntity the foreign entity
+	 * @return this
 	 */
-	public Map<PropertyDescriptorChain<?, ?>, ForeignKey<?, ?>> getGrapForeignKeys() {
-		return Collections.unmodifiableMap(graphForeignKeys);
+	public ForeignKeyBuilder<?, T> addForeignKey(Class<?> foreignEntity)
+			throws IntrospectionException {
+		return new ForeignKeyBuilder<>(this, foreignEntity);
 	}
 
 	/**
 	 * Adds a foreign key.
 	 * @param propertyName the property name
 	 * @param foreignEntity the foreign entity
-	 * @param eagar whether or not it's an eager relationship
 	 * @throws IntrospectionException on error
 	 * @return this
 	 */
 	public EntityDescriptor<T> addForeignKey(Class<?> foreignEntity, Function<T, ?> accessor)
 			throws IntrospectionException {
-		addForeignKey(foreignEntity, true, new PropertyDescriptorChain<>(accessor));
+		addForeignKey(foreignEntity, new PropertyDescriptorChain<>(accessor), null, null);
 		return this;
 	}
 
@@ -142,39 +144,38 @@ public class EntityDescriptor<T> {
 	 * Adds a foreign key.
 	 * @param propertyName the property name
 	 * @param foreignEntity the foreign entity
-	 * @param eagar whether or not it's an eager relationship
 	 * @throws IntrospectionException on error
 	 * @return this
 	 */
-	public EntityDescriptor<T> addForeignKey(Class<?> foreignEntity, boolean eagar, Function<T, ?> accessor)
+	public <A> EntityDescriptor<T> addForeignKey(Class<?> foreignEntity, Function<T, ?> accessor, Class<A> argumentClass, Predicate<A> loadPredicate)
 			throws IntrospectionException {
-		return addForeignKey(foreignEntity, eagar, new PropertyDescriptorChain<>(accessor));
+		return addForeignKey(foreignEntity, new PropertyDescriptorChain<>(accessor), argumentClass, loadPredicate);
 	}
 
 	/**
 	 * Adds a foreign key.
 	 * @param propertyName the property name
 	 * @param foreignEntity the foreign entity
-	 * @param eagar whether or not it's an eager relationship
 	 * @throws IntrospectionException on error
 	 * @return this
 	 */
 	public EntityDescriptor<T> addForeignKey(Class<?> foreignEntity, PropertyDescriptorChain<T, ?> accessor)
 			throws IntrospectionException {
-		return addForeignKey(foreignEntity, true, accessor);
+		return addForeignKey(foreignEntity, accessor, null, null);
 	}
 
 	/**
 	 * Adds a foreign key.
 	 * @param propertyName the property name
 	 * @param foreignEntity the foreign entity
-	 * @param eagar whether or not it's an eager relationship
+	 * @param argumentPredicate an argument predicate for determining when
+	 * to load the foreign key
 	 * @throws IntrospectionException on error
 	 * @return this
 	 */
-	public EntityDescriptor<T> addForeignKey(Class<?> foreignEntity, boolean eagar, PropertyDescriptorChain<T, ?> accessor)
+	public <A> EntityDescriptor<T> addForeignKey(Class<?> foreignEntity, PropertyDescriptorChain<T, ?> accessor, Class<A> argumentClass, Predicate<A> argumentPredicate)
 			throws IntrospectionException {
-		this.foreignKeys.put(accessor, new ForeignKey<>(entityClass, foreignEntity, accessor));
+		this.foreignKeys.put(accessor, new ForeignKey<>(entityClass, foreignEntity, argumentClass, argumentPredicate, accessor));
 		return this;
 	}
 
@@ -187,67 +188,41 @@ public class EntityDescriptor<T> {
 		return foreignKeys.get(new PropertyDescriptorChain<>(accessor));
 	}
 
-	/**
-	 * Adds a graph foreign key.
-	 * @param propertyName the property name
-	 * @param foreignEntity the foreign entity
-	 * @param eagar whether or not it's an eager relationship
-	 * @throws IntrospectionException on error
-	 * @return this
-	 */
-	public EntityDescriptor<T> addGraphForeignKey(Class<?> foreignEntity, Function<T, ?> accessor)
-			throws IntrospectionException {
-		addGraphForeignKey(foreignEntity, true, new PropertyDescriptorChain<>(accessor));
-		return this;
-	}
 
-	/**
-	 * Adds a graph foreign key.
-	 * @param propertyName the property name
-	 * @param foreignEntity the foreign entity
-	 * @param eagar whether or not it's an eager relationship
-	 * @throws IntrospectionException on error
-	 * @return this
-	 */
-	public EntityDescriptor<T> addGraphForeignKey(Class<?> foreignEntity, boolean eagar, Function<T, ?> accessor)
-			throws IntrospectionException {
-		return addGraphForeignKey(foreignEntity, eagar, new PropertyDescriptorChain<>(accessor));
-	}
+	public class ForeignKeyBuilder<A, TT> {
 
-	/**
-	 * Adds a graph foreign key.
-	 * @param propertyName the property name
-	 * @param foreignEntity the foreign entity
-	 * @param eagar whether or not it's an eager relationship
-	 * @throws IntrospectionException on error
-	 * @return this
-	 */
-	public EntityDescriptor<T> addGraphForeignKey(Class<?> foreignEntity, PropertyDescriptorChain<T, ?> accessor)
-			throws IntrospectionException {
-		return addGraphForeignKey(foreignEntity, true, accessor);
-	}
+		private EntityDescriptor<TT> entity;
+		private Class<?> foreignEntity;
+		private PropertyDescriptorChain<TT, ?> accessor;
+		private Class<A> argumentClass;
+		private Predicate<A> argumentPredicate;
 
-	/**
-	 * Adds a graph foreign key.
-	 * @param propertyName the property name
-	 * @param foreignEntity the foreign entity
-	 * @param eagar whether or not it's an eager relationship
-	 * @throws IntrospectionException on error
-	 * @return this
-	 */
-	public EntityDescriptor<T> addGraphForeignKey(Class<?> foreignEntity, boolean eagar, PropertyDescriptorChain<T, ?> accessor)
-			throws IntrospectionException {
-		this.graphForeignKeys.put(accessor, new ForeignKey<>(entityClass, foreignEntity, accessor));
-		return this;
-	}
+		private ForeignKeyBuilder(EntityDescriptor<TT> entity, Class<?> foreignEntity) {
+			this.entity = entity;
+			this.foreignEntity = foreignEntity;
+		}
 
-	/**
-	 * Returns a graph {@link ForeignKey} by name.
-	 * @param propertyName the name
-	 * @return the key
-	 */
-	public ForeignKey<T, ?> getGraphForeignKey(Function<Object, ?> accessor) {
-		return graphForeignKeys.get(new PropertyDescriptorChain<>(accessor));
+		public ForeignKeyBuilder<A, TT> withAccessor(PropertyDescriptorChain<TT, ?> accessor) {
+			this.accessor = accessor;
+			return this;
+		}
+
+		public ForeignKeyBuilder<A, TT> withAccessor(Function<TT, ?> accessor) {
+			return withAccessor(new PropertyDescriptorChain<>(accessor));
+		}
+
+		@SuppressWarnings("unchecked")
+		public <A2> ForeignKeyBuilder<A2, TT> withPredicate(Class<A2> argumentClass, Predicate<A2> argumentPredicate) {
+			this.argumentClass = (Class<A>)argumentClass;
+			this.argumentPredicate = (Predicate<A>)argumentPredicate;
+			return (ForeignKeyBuilder<A2, TT>)this;
+		}
+
+		public EntityDescriptor<TT> add()
+				throws IntrospectionException {
+			return entity.addForeignKey(foreignEntity, accessor, argumentClass, argumentPredicate);
+		}
+
 	}
 
 }

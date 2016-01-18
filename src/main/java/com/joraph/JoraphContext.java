@@ -11,7 +11,7 @@ import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import com.joraph.loader.EntityLoader;
+import com.joraph.loader.EntityLoaderContext;
 import com.joraph.plan.ExecutionPlan;
 import com.joraph.plan.ExecutionPlanner;
 import com.joraph.schema.Schema;
@@ -25,7 +25,7 @@ public class JoraphContext {
 	private Schema schema;
 	private ExecutionPlanner planner;
 	private Map<Set<Class<?>>, ExecutionPlan> cachedPlans;
-	private Map<Class<?>, EntityLoader<?>> loaders;
+	private EntityLoaderContext loaderContext;
 	private ExecutorService executorService;
 	private long parallelExecutorDefaultTimeoutMillis = TimeUnit.SECONDS.toMillis(30);
 
@@ -46,17 +46,16 @@ public class JoraphContext {
 		this.schema 		= schema;
 		this.planner		= new ExecutionPlanner(this);
 		this.cachedPlans	= new HashMap<>();
-		this.loaders		= new HashMap<>();
+		this.loaderContext	= new EntityLoaderContext();
 		setParallelExecutorCount(parallelExecutorCount);
 	}
 
 	/**
-	 * Adds a loader.
-	 * @param entityClass the class
-	 * @param loader the loader
+	 * Returns the configurd {@link EntityLoaderContext}.
+	 * @return the {@link EntityLoaderContext}
 	 */
-	public void addLoader(Class<?> entityClass, EntityLoader<?> loader) {
-		this.loaders.put(entityClass, loader);
+	public EntityLoaderContext getLoaderContext() {
+		return loaderContext;
 	}
 
 	/**
@@ -229,7 +228,7 @@ public class JoraphContext {
 	public <T> ObjectGraph supplement(
 			ObjectGraph existingGraph, Class<?> entityType, Object firstId, Object... ids) {
 
-		List<?> objects = getLoader(entityType).load(CollectionUtil.asList(firstId, ids));
+		List<?> objects = loaderContext.load(entityType, CollectionUtil.asList(firstId, ids));
 		if (objects==null || objects.isEmpty()) {
 			return existingGraph;
 		}
@@ -238,19 +237,6 @@ public class JoraphContext {
 				.withEntityClass(entityType)
 				.withRootObjects(objects)
 				.withExistingGraph(existingGraph));
-	}
-
-	/**
-	 * Returns the loader for an entity class.
-	 * @param entityClass the class
-	 * @return the loader
-	 */
-	public EntityLoader<?> getLoader(Class<?> entityClass) {
-		EntityLoader<?> ret = loaders.get(entityClass);
-		if (ret==null) {
-			ret = loaders.get(getSchema().getGraphTypeKey(entityClass));
-		}
-		return ret;
 	}
 
 	/**
@@ -267,6 +253,16 @@ public class JoraphContext {
 		ret = planner.plan(entityClasses);
 		cachedPlans.put(entityClasses, ret);
 		return ret;
+	}
+
+	/**
+	 * Returns an execution plan for loading the given entity.
+	 * @param entityClass
+	 * @param ids
+	 * @return
+	 */
+	public ExecutionPlan plan(Query query) {
+		return plan(query.getEntityClasses());
 	}
 
 	public Schema getSchema() {
