@@ -6,12 +6,12 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.joraph.loader.MissingLoaderArgumentException;
 import com.joraph.schema.Author;
 import com.joraph.schema.Book;
 import com.joraph.schema.FeaturedBook;
@@ -55,9 +55,9 @@ public class LoaderIntegrationTest
 	@Test
 	public void testLoadWithPredicateLoader() {
 
-		TestArgs arguments = new TestArgs();
-		arguments.setLoadFavoriteAuthors(true);
-		arguments.setLoadFavoriteLibraries(true);
+		TestArgs argument = new TestArgs();
+		argument.setLoadFavoriteAuthors(true);
+		argument.setLoadFavoriteLibraries(true);
 
 		UserFavorites userFavorites1 = testDb.get(UserFavorites.class, "user1");
 		assertNotNull(userFavorites1);
@@ -66,7 +66,7 @@ public class LoaderIntegrationTest
 
 		ObjectGraph objectGraph = context.execute(new Query(UserFavorites.class)
 				.withRootObject(userFavorites1, userFavorites2)
-				.withArguments(arguments));
+				.withArgument(argument));
 		assertNotNull(objectGraph);
 
 		assertNotNull(objectGraph.get(UserFavorites.class, "user1"));
@@ -84,12 +84,12 @@ public class LoaderIntegrationTest
 		assertNotNull(objectGraph.get(Library.class, "library2"));
 
 
-		arguments.setLoadFavoriteAuthors(false);
-		arguments.setLoadFavoriteLibraries(true);
+		argument.setLoadFavoriteAuthors(false);
+		argument.setLoadFavoriteLibraries(true);
 
 		objectGraph = context.execute(new Query(UserFavorites.class)
 				.withRootObject(userFavorites1, userFavorites2)
-				.withArguments(arguments));
+				.withArgument(argument));
 		assertNotNull(objectGraph);
 
 		assertNotNull(objectGraph.get(UserFavorites.class, "user1"));
@@ -107,12 +107,12 @@ public class LoaderIntegrationTest
 		assertNotNull(objectGraph.get(Library.class, "library2"));
 
 
-		arguments.setLoadFavoriteAuthors(false);
-		arguments.setLoadFavoriteLibraries(false);
+		argument.setLoadFavoriteAuthors(false);
+		argument.setLoadFavoriteLibraries(false);
 
 		objectGraph = context.execute(new Query(UserFavorites.class)
 				.withRootObject(userFavorites1, userFavorites2)
-				.withArguments("Test"));
+				.withArgument("Test"));
 		assertNotNull(objectGraph);
 
 		assertNotNull(objectGraph.get(UserFavorites.class, "user1"));
@@ -134,63 +134,52 @@ public class LoaderIntegrationTest
 	@Test
 	public void testLoadWithLoadersThatRequireAdditionalArguments() {
 
-		TestArgs arguments = new TestArgs();
+		context.getLoaderContext()
+			.addLoader(Book.class)
+				.withArgument(TestArgs.class, TestArgs::incrementAndGetArg1)
+				.withListFunction(this::loadBooks)
+				.add()
+			.addLoader(Author.class)
+				.withArgument(TestArgs.class, TestArgs::incrementAndGetArg2)
+				.withListFunction(this::loadAuthors)
+				.add();
 
-		context.getLoaderContext().addLoader(Book.class, this::loadBooks, TestArgs.class, TestArgs::incrementAndGetArg1);
-		context.getLoaderContext().addLoader(Author.class, this::loadAuthors, TestArgs.class, TestArgs::incrementAndGetArg2);
+		TestArgs argument = new TestArgs();
 
 		FeaturedBook featuredBook1 = testDb.get(FeaturedBook.class, "book1");
 		assertNotNull(featuredBook1);
 
 		ObjectGraph objectGraph = context.execute(new Query(FeaturedBook.class)
 				.withRootObject(featuredBook1)
-				.withArguments(arguments));
+				.withArgument(argument));
 		assertNotNull(objectGraph);
 
 		assertNotNull(objectGraph.get(FeaturedBook.class, "book1"));
 		assertNotNull(objectGraph.get(Book.class, "book1"));
 		assertEquals("book1", objectGraph.get(Book.class, "book1").getId());
-		assertTrue(arguments.getArg1().get() > 0);
-		assertTrue(arguments.getArg2().get() > 0);
+		assertTrue(argument.getArg1().get() > 0);
+		assertTrue(argument.getArg2().get() > 0);
 
 	}
 
-	@Test
-	public void testLoadWithLoadersThatRequireAdditionalArgumentsPassesNullWhenUnavailable() {
-
-		AtomicBoolean bookLoaderCalled = new AtomicBoolean(false);
-		AtomicBoolean authorLoaderCalled = new AtomicBoolean(false);
+	@Test(expected=MissingLoaderArgumentException.class)
+	public void testLoadWithLoadersThatRequireAdditionalArgumentsThrowsExceptionWhenArgumentsNotSpecified() {
 
 		context.getLoaderContext()
 			.addLoader(Book.class)
 				.withArgument(TestArgs.class, TestArgs::incrementAndGetArg1)
-				.withFunction((String arg, Iterable<?> ids) -> {
-					bookLoaderCalled.set(true);
-					assertNull(arg);
-					return loadBooks(null, ids);
-				})
+				.withListFunction(this::loadBooks)
 				.add()
 			.addLoader(Author.class)
 				.withArgument(TestArgs.class, TestArgs::incrementAndGetArg2)
-				.withFunction((Integer arg, Iterable<?> ids) -> {
-					authorLoaderCalled.set(true);
-					assertNull(arg);
-					return loadAuthors(null, ids);
-				})
+				.withListFunction(this::loadAuthors)
 				.add();
 
 		FeaturedBook featuredBook1 = testDb.get(FeaturedBook.class, "book1");
 		assertNotNull(featuredBook1);
 
-		ObjectGraph objectGraph = context.execute(new Query(FeaturedBook.class)
+		context.execute(new Query(FeaturedBook.class)
 				.withRootObject(featuredBook1));
-		assertNotNull(objectGraph);
-
-		assertNotNull(objectGraph.get(FeaturedBook.class, "book1"));
-		assertNotNull(objectGraph.get(Book.class, "book1"));
-		assertEquals("book1", objectGraph.get(Book.class, "book1").getId());
-		assertTrue(bookLoaderCalled.get());
-		assertTrue(authorLoaderCalled.get());
 
 	}
 

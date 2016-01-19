@@ -189,7 +189,7 @@ public class Schema {
 	/**
 	 * Validates the {@link Schema}.
 	 */
-	public void validate() {
+	public Schema validate() {
 
 		// check each entity descriptor
 		for (Entry<Class<?>, EntityDescriptor<?>> entry : entityDescriptors.entrySet()) {
@@ -214,6 +214,7 @@ public class Schema {
 
 		// good to go
 		this.validated = true;
+		return this;
 	}
 
 }

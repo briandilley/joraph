@@ -14,7 +14,7 @@ public class Key<T, R>
 	 * @param entityClass the entity class
 	 */
 	public Key(PropertyDescriptorChain<T, R> chain) {
-		super.setDescriptor(chain);
+		super.setPropertyChain(chain);
 	}
 
 }

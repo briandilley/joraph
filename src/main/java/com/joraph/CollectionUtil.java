@@ -19,7 +19,7 @@ public class CollectionUtil {
 	 * @param supplier
 	 * @return
 	 */
-	public static <T, C extends Collection<T>> C collection(Iterable<? extends T> itr, Supplier<C> supplier) {
+	public static <T, C extends Collection<T>> C collection(Iterable<T> itr, Supplier<C> supplier) {
 		return StreamSupport.stream(itr.spliterator(), false)
 				.collect(supplier, Collection::add, Collection::addAll);
 	}
@@ -30,7 +30,7 @@ public class CollectionUtil {
 	 * @param supplier
 	 * @return
 	 */
-	public static <T> T[] array(Iterable<? extends T> itr, IntFunction<T[]> supplier) {
+	public static <T> T[] array(Iterable<T> itr, IntFunction<T[]> supplier) {
 		return StreamSupport.stream(itr.spliterator(), false)
 				.toArray(supplier);
 	}

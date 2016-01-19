@@ -1,11 +1,19 @@
 package com.joraph.loader;
 
+import static com.joraph.loader.LoaderFunction.ofArrayArray;
+import static com.joraph.loader.LoaderFunction.ofArrayItr;
+import static com.joraph.loader.LoaderFunction.ofItrArray;
+import static com.joraph.loader.LoaderFunction.ofItrItr;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -18,41 +26,21 @@ import com.joraph.debug.JoraphDebug;
 
 public class EntityLoaderContext {
 
-	private Map<Class<?>, EntityLoaderDescriptor<?, ?>> loaders = new HashMap<>();
+	private Map<Class<?>, EntityLoaderDescriptor<?, ?, ?>> loaders = new HashMap<>();
 
 	/**
-	 * Utility function for turning array arguments into
-	 * @param args
-	 * @return
+	 * Adds a loader.
 	 */
-	public static <T, I> Function<Iterable<? extends I>, List<? extends T>> args(
-			Function<I[], List<? extends T>> function,
-			IntFunction<I[]> supplier) {
-		return (ids) -> function.apply(CollectionUtil.array(ids, supplier));
-	}
-
-	/**
-	 * Utility function for turning array arguments into
-	 * @param args
-	 * @return
-	 */
-	public static <T, I, C extends Collection<I>> Function<Iterable<? extends I>, List<? extends T>> args(
-			Function<I[], List<? extends T>> function,
-			Supplier<C> supplier) {
-		return (ids) -> function.apply(CollectionUtil.collection(ids, supplier));
-	}
-
-	/**
-	 * Creates a builder for adding a loader.
-	 */
-	public <T> Builder<?, ?, T> addLoader(Class<? super T> entityClass) {
-		return new Builder<>(entityClass);
+	public <T> EntityLoaderDescriptorBuilder<?, ?, ?, T> addLoader(Class<T> entityClass) {
+		return new EntityLoaderDescriptorBuilder<>(this, entityClass);
 	}
 
 	/**
 	 * Adds a loader.
 	 */
-	public <T> EntityLoaderContext addLoader(Class<? super T> entityClass, EntityLoaderDescriptor<?, T> loader) {
+	public <T> EntityLoaderContext addLoader(
+			Class<? super T> entityClass,
+			EntityLoaderDescriptor<?, ?, ?> loader) {
 		this.loaders.put(entityClass, loader);
 		return this;
 	}
@@ -60,26 +48,20 @@ public class EntityLoaderContext {
 	/**
 	 * Adds a loader.
 	 */
-	public <T> EntityLoaderContext addLoader(Class<? super T> entityClass, LoaderFunction<?, T> loader) {
+	public <A, I, R> EntityLoaderContext addLoader(
+			Class<R> entityClass,
+			LoaderFunction<A, I, R> loader) {
 		return addLoader(entityClass, new EntityLoaderDescriptor<>(entityClass, null, loader));
 	}
 
 	/**
 	 * Adds a loader.
 	 */
-	public <T> EntityLoaderContext addLoader(Class<? super T> entityClass, Function<Iterable<?>, List<? extends T>> function) {
-		return addLoader(entityClass, EntityLoaderDescriptor.of(entityClass, function));
-	}
-
-	/**
-	 * Adds a loader.
-	 */
-	public <A, T, AA> EntityLoaderContext addLoader(
-			Class<? super T> entityClass,
-			BiFunction<AA, Iterable<?>, List<? extends T>> function,
-			Class<? super A> argumentClass,
-			Function<A, AA> argumentExtractor) {
-		return addLoader(entityClass, EntityLoaderDescriptor.of(entityClass, function, argumentClass, argumentExtractor));
+	public <A, I, R> EntityLoaderContext addLoader(
+			Class<R> entityClass,
+			Class<A> argumentClass,
+			LoaderFunction<A, I, R> loader) {
+		return addLoader(entityClass, new EntityLoaderDescriptor<>(entityClass, argumentClass, loader));
 	}
 
 	/**
@@ -88,10 +70,9 @@ public class EntityLoaderContext {
 	 * @return the loader
 	 */
 	@SuppressWarnings("unchecked")
-	public <A, T> LoaderFunction<A, T> getLoader(Class<T> entityClass) {
+	public <A, I, R> EntityLoaderDescriptor<A, I, R> getLoader(Class<R> entityClass) {
 		return Optional.ofNullable(loaders.get(entityClass))
-				.map((d)->(EntityLoaderDescriptor<A, T>)d)
-				.map(EntityLoaderDescriptor::getLoader)
+				.map((d)->(EntityLoaderDescriptor<A, I, R>)d)
 				.orElseThrow(() -> new UnconfiguredLoaderException(entityClass));
 	}
 
@@ -103,7 +84,7 @@ public class EntityLoaderContext {
 	 * @throws UnconfiguredLoaderException if a loader wasn't found
 	 * @throws JoraphException when a loader throws an exception
 	 */
-	public <A, T> List<? extends T> load(Class<T> entityClass, Iterable<?> ids) {
+	public <A, I, R> List<R> load(Class<R> entityClass, Iterable<I> ids) {
 		return load(entityClass, null, ids);
 	}
 
@@ -114,16 +95,33 @@ public class EntityLoaderContext {
 	 * @param ids the ids to load
 	 * @return the loaded entities
 	 * @throws UnconfiguredLoaderException if a loader wasn't found
+	 * @throws MissingLoaderArgumentException if a loader expected an argument that wasn't provided
 	 * @throws JoraphException when a loader throws an exception
 	 */
-	public <A, T> List<? extends T> load(Class<T> entityClass, A argumentProvider, Iterable<?> ids) {
+	public <A, I, R> List<R> load(Class<R> entityClass, List<Object> arguments, Iterable<I> ids) {
 
-		final LoaderFunction<A, T> loader = getLoader(entityClass);
-		final List<?> idsToLoad = CollectionUtil.toList(ids);
-		final long start = System.currentTimeMillis();
+		final EntityLoaderDescriptor<A, I, R> loader = getLoader(entityClass);
+		if (loader.requiresAdditionalArguments()
+				&& (arguments == null || arguments.isEmpty())) {
+			throw new MissingLoaderArgumentException(loader);
+		}
+
+		final A argument;
+		if (loader.requiresAdditionalArguments()) {
+			argument = arguments.stream()
+					.filter(loader.getArgumentClass()::isInstance)
+					.map(loader.getArgumentClass()::cast)
+					.findFirst()
+					.orElseThrow(() -> new MissingLoaderArgumentException(loader));
+		} else {
+			argument = null;
+		}
+
+		final List<I> idsToLoad = CollectionUtil.toList(ids);
 
 		try {
-			List<? extends T> objects = loader.load(argumentProvider, idsToLoad);
+			final long start = System.currentTimeMillis();
+			List<R> objects = loader.getLoader().load(argument, idsToLoad);
 			JoraphDebug.addLoaderDebug(
 					entityClass,
 					System.currentTimeMillis()-start,
@@ -146,43 +144,105 @@ public class EntityLoaderContext {
 
 	}
 
-	public class Builder<A, AA, T> {
 
-		private Class<? super T> entityClass;
-		private BiFunction<AA, Iterable<?>, List<? extends T>> biFunction;
-		private Function<Iterable<?>, List<? extends T>> function;
-		private Class<? super A> argumentClass;
+
+	@SuppressWarnings("unchecked")
+	public static class EntityLoaderDescriptorBuilder<A, AA, I, R> {
+
+		private EntityLoaderContext context;
+		
+		private Class<R> entityClass;
+		private Class<A> argumentClass;
 		private Function<A, AA> argumentExtractor;
+		private LoaderFunction<A, I, R> loader;
 
-		private Builder(Class<? super T> entityClass) {
+		private EntityLoaderDescriptorBuilder(EntityLoaderContext context, Class<R> entityClass) {
+			this.context = context;
 			this.entityClass = entityClass;
 		}
 
-		@SuppressWarnings("unchecked")
-		public <A2, AA2> Builder<A2, AA2, T> withArgument(Class<? super A2> argumentClass, Function<A2, AA2> argumentExtractor) {
-			this.argumentClass = (Class<? super A>)argumentClass;
-			this.argumentExtractor = (Function<A, AA>)argumentExtractor;
-			return (Builder<A2, AA2, T>)this;
-		}
-
-		public Builder<A, AA, T> withFunction(BiFunction<AA, Iterable<?>, List<? extends T>> function) {
-			this.biFunction = function;
-			return this;
-		}
-
-		public Builder<A, AA, T> withFunction(Function<Iterable<?>, List<? extends T>> function) {
-			this.function = function;
-			return this;
-		}
-
 		public EntityLoaderContext add() {
-			if (function!=null) {
-				return EntityLoaderContext.this.addLoader(entityClass, function);
-			} else if (biFunction!=null) {
-				return EntityLoaderContext.this.addLoader(entityClass, biFunction, argumentClass, argumentExtractor);
+			if (argumentClass!=null) {
+				return context.addLoader(entityClass, argumentClass, loader);
+			} else {
+				return context.addLoader(entityClass, loader);
 			}
-			throw new IllegalStateException("No loader function specified");
 		}
+
+		public <A2, AA2> EntityLoaderDescriptorBuilder<A2, AA2, I, R> withArgument(Class<A2> argumentClass, Function<A2, AA2> argumentExtractor) {
+			EntityLoaderDescriptorBuilder<A2, AA2, I, R> ret = (EntityLoaderDescriptorBuilder<A2, AA2, I, R>)this;
+			ret.argumentClass = argumentClass;
+			ret.argumentExtractor = argumentExtractor;
+			return ret;
+		}
+
+		public EntityLoaderDescriptorBuilder<A, AA, I, R> withLoader(LoaderFunction<A, I, R> loader) {
+			this.loader = loader;
+			return this;
+		}
+
+
+
+		public <I2> EntityLoaderDescriptorBuilder<A, AA, I2, R> withFunction(Function<I2[], Iterable<R>> function, IntFunction<I2[]> arraySupplier) {
+			EntityLoaderDescriptorBuilder<A, AA, I2, R> ret = (EntityLoaderDescriptorBuilder<A, AA, I2, R>)this;
+			return ret.withLoader(ofArrayItr(function, arraySupplier));
+		}
+
+		public <I2> EntityLoaderDescriptorBuilder<A, AA, I2, R> withFunction2(Function<I2[], R[]> function, IntFunction<I2[]> arraySupplier) {
+			EntityLoaderDescriptorBuilder<A, AA, I2, R> ret = (EntityLoaderDescriptorBuilder<A, AA, I2, R>)this;
+			return ret.withLoader(ofArrayArray(function, arraySupplier));
+		}
+
+		public <I2, C extends Collection<I2>> EntityLoaderDescriptorBuilder<A, AA, I2, R> withFunction(Function<C, Iterable<R>> function, Supplier<C> supplier) {
+			EntityLoaderDescriptorBuilder<A, AA, I2, R> ret = (EntityLoaderDescriptorBuilder<A, AA, I2, R>)this;
+			return ret.withLoader(ofItrItr(function, supplier));
+		}
+
+		public <I2, C extends Collection<I2>> EntityLoaderDescriptorBuilder<A, AA, I2, R> withFunction2(Function<C, R[]> function, Supplier<C> supplier) {
+			EntityLoaderDescriptorBuilder<A, AA, I2, R> ret = (EntityLoaderDescriptorBuilder<A, AA, I2, R>)this;
+			return ret.withLoader(ofItrArray(function, supplier));
+		}
+
+		public <I2> EntityLoaderDescriptorBuilder<A, AA, I2, R> withSetFunction(Function<Set<I2>, Iterable<R>> function) {
+			return withFunction(function, HashSet::new);
+		}
+
+		public <I2> EntityLoaderDescriptorBuilder<A, AA, I2, R> withListFunction(Function<List<I2>, Iterable<R>> function) {
+			return withFunction(function, ArrayList::new);
+		}
+
+
+	
+		public <I2> EntityLoaderDescriptorBuilder<A, AA, I2, R> withFunction(BiFunction<AA, I2[], Iterable<R>> function, IntFunction<I2[]> arraySupplier) {
+			EntityLoaderDescriptorBuilder<A, AA, I2, R> ret = (EntityLoaderDescriptorBuilder<A, AA, I2, R>)this;
+			return ret.withLoader(ofArrayItr(function, arraySupplier, argumentExtractor));
+		}
+
+		public <I2> EntityLoaderDescriptorBuilder<A, AA, I2, R> withFunction2(BiFunction<AA, I2[], R[]> function, IntFunction<I2[]> arraySupplier) {
+			EntityLoaderDescriptorBuilder<A, AA, I2, R> ret = (EntityLoaderDescriptorBuilder<A, AA, I2, R>)this;
+			return ret.withLoader(ofArrayArray(function, arraySupplier, argumentExtractor));
+		}
+
+		public <I2, C extends Collection<I2>> EntityLoaderDescriptorBuilder<A, AA, I2, R> withFunction(BiFunction<AA, C, Iterable<R>> function, Supplier<C> supplier) {
+			EntityLoaderDescriptorBuilder<A, AA, I2, R> ret = (EntityLoaderDescriptorBuilder<A, AA, I2, R>)this;
+			return ret.withLoader(ofItrItr(function, supplier, argumentExtractor));
+		}
+
+		public <I2, C extends Collection<I2>> EntityLoaderDescriptorBuilder<A, AA, I2, R> withFunction2(BiFunction<AA, C, R[]> function, Supplier<C> supplier) {
+			EntityLoaderDescriptorBuilder<A, AA, I2, R> ret = (EntityLoaderDescriptorBuilder<A, AA, I2, R>)this;
+			return ret.withLoader(ofItrArray(function, supplier, argumentExtractor));
+		}
+
+		public <I2> EntityLoaderDescriptorBuilder<A, AA, I2, R> withSetFunction(BiFunction<AA, Set<I2>, Iterable<R>> function) {
+			return withFunction(function, HashSet::new);
+		}
+
+		public <I2> EntityLoaderDescriptorBuilder<A, AA, I2, R> withListFunction(BiFunction<AA, List<I2>, Iterable<R>> function) {
+			return withFunction(function, ArrayList::new);
+		}
+
+
 
 	}
+
 }

@@ -1,6 +1,7 @@
 package com.joraph.schema;
 
 import java.beans.IntrospectionException;
+import java.util.List;
 import java.util.function.Predicate;
 
 /**
@@ -15,13 +16,14 @@ public class ForeignKey<T, R>
 	private Class<?> foreignEntity;
 
 	private final Class<?> argumentClass;
-	private final Predicate<?> argumentPredicate;
+	private final Predicate<Object> argumentPredicate;
 
 	public ForeignKey(Class<T> entityClass, Class<?> foreignEntity, PropertyDescriptorChain<T, R> chain)
 		throws IntrospectionException {
 		this(entityClass, foreignEntity, null, null, chain);
 	}
 
+	@SuppressWarnings("unchecked")
 	public ForeignKey(
 			Class<T> entityClass,
 			Class<?> foreignEntity,
@@ -30,10 +32,10 @@ public class ForeignKey<T, R>
 			PropertyDescriptorChain<T, R> chain)
 		throws IntrospectionException {
 		this.entityClass = entityClass;
-		this.argumentPredicate = argumentPredicate;
+		this.argumentPredicate = (Predicate<Object>)argumentPredicate;
 		this.argumentClass = argumentClass;
 		this.foreignEntity = foreignEntity;
-		super.setDescriptor(chain);
+		super.setPropertyChain(chain);
 	}
 
 	/**
@@ -56,23 +58,24 @@ public class ForeignKey<T, R>
 	 * @param arg the query argument
 	 * @return true if it should
 	 */
-	@SuppressWarnings("unchecked")
-	public boolean shouldLoad(Object arg) {
+	public boolean shouldLoad(List<Object> arguments) {
 		if (argumentPredicate == null) {
 			return true;
-		} else if (arg == null) {
+		} else if (arguments == null || arguments.isEmpty()) {
 			return false;
-		} else if (!argumentClass.isInstance(arg)) {
-			return false;
-		} else {
-			return ((Predicate<Object>)argumentPredicate).test(arg);
 		}
+
+		return arguments.stream()
+				.filter(argumentClass::isInstance)
+				.filter(argumentPredicate)
+				.findFirst()
+				.isPresent();
 	}
 
 	@Override
 	public String toString() {
 		return entityClass.getName()
-			+"."+getDescriptor()+"->"
+			+"."+getPropertyChain()+"->"
 			+foreignEntity.getName();
 	}
 
@@ -82,6 +85,8 @@ public class ForeignKey<T, R>
 		int result = 1;
 		result = prime * result
 				+ ((entityClass == null) ? 0 : entityClass.hashCode());
+		result = prime * result
+				+ ((argumentClass == null) ? 0 : argumentClass.hashCode());
 		result = prime * result
 				+ ((foreignEntity == null) ? 0 : foreignEntity.hashCode());
 		return result;
@@ -100,6 +105,11 @@ public class ForeignKey<T, R>
 			if (other.entityClass != null)
 				return false;
 		} else if (!entityClass.equals(other.entityClass))
+			return false;
+		if (argumentClass == null) {
+			if (other.argumentClass != null)
+				return false;
+		} else if (!argumentClass.equals(other.argumentClass))
 			return false;
 		if (foreignEntity == null) {
 			if (other.foreignEntity != null)

@@ -35,7 +35,7 @@ import com.joraph.schema.UserMessage;
 
 public abstract class AbstractJoraphTest {
 
-	protected <A, T> LoaderFunction<A, T> loaderFor(ObjectGraph testDb, Class<T> entityClass) {
+	protected <A, I, R> LoaderFunction<A, I, R> loaderFor(ObjectGraph testDb, Class<R> entityClass) {
 		return (a, ids) -> load(testDb, entityClass, ids);
 	}
 

@@ -1,7 +1,11 @@
 package com.joraph;
 
+import static java.util.Arrays.asList;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -10,7 +14,7 @@ public class Query {
 	private Set<Class<?>> entityClasses;
 	private Set<?> rootObjects;
 	private ObjectGraph existingGraph;
-	private Object argumentProvider;
+	private List<Object> arguments = new ArrayList<>();
 
 	public Query() {
 		
@@ -51,8 +55,8 @@ public class Query {
 	/**
 	 * @return the argumentProvider
 	 */
-	public Object getArguments() {
-		return argumentProvider;
+	public List<Object> getArguments() {
+		return arguments;
 	}
 
 	/**
@@ -101,10 +105,43 @@ public class Query {
 	}
 
 	/**
-	 * @param argumentProvider
+	 * @param arguments
 	 */
-	public Query withArguments(Object argumentProvider) {
-		this.argumentProvider = argumentProvider;
+	public Query withArguments(List<Object> arguments) {
+		this.arguments = new ArrayList<>(arguments);
+		return this;
+	}
+
+	/**
+	 * @param arguments
+	 */
+	public Query withArgument(Object argument) {
+		this.arguments = new ArrayList<>();
+		this.arguments.add(argument);
+		return this;
+	}
+
+	/**
+	 * @param arguments
+	 */
+	public Query addArguments(List<Object> arguments) {
+		this.arguments.addAll(arguments);
+		return this;
+	}
+
+	/**
+	 * @param arguments
+	 */
+	public Query addArgument(Object argument) {
+		this.arguments.add(argument);
+		return this;
+	}
+
+	/**
+	 * @param arguments
+	 */
+	public Query addArguments(Object... arguments) {
+		this.arguments.addAll(asList(arguments));
 		return this;
 	}
 

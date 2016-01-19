@@ -31,8 +31,8 @@ public class ParallelOperation
 	public double cost() {
 		return operations.stream()
 				.mapToDouble(Operation::cost)
-				.sum()
-			+ operations.size() * 0.1d;
+				.max()
+				.orElse(1);
 	}
 
 	/**

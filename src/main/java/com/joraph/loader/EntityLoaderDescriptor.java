@@ -1,49 +1,34 @@
 package com.joraph.loader;
 
-import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Function;
+public class EntityLoaderDescriptor<A, I, R> {
 
-public class EntityLoaderDescriptor<A, T> {
+	private final Class<R> entityClass;
+	private final Class<A> argumentClass;
+	private final LoaderFunction<A, I, R> loader;
 
-	private final Class<? super T> entityClass;
-	private final Class<? super A> argumentClass;
-	private final LoaderFunction<A, T> loader;
-
-	public EntityLoaderDescriptor(Class<? super T> entityClass, Class<? super A> argumentClass, LoaderFunction<A, T> loader) {
+	public EntityLoaderDescriptor(
+			Class<R> entityClass,
+			Class<A> argumentClass,
+			LoaderFunction<A, I, R> loader) {
 		this.entityClass = entityClass;
 		this.argumentClass = argumentClass;
 		this.loader = loader;
 	}
 
-	public Class<? super T> getEntityClass() {
+	public Class<R> getEntityClass() {
 		return entityClass;
 	}
 
-	public Class<? super A> getArgumentClass() {
+	public Class<A> getArgumentClass() {
 		return argumentClass;
 	}
 
-	public LoaderFunction<A, T> getLoader() {
+	public LoaderFunction<A, I, R> getLoader() {
 		return loader;
 	}
 
-	public static <T> EntityLoaderDescriptor<?, T> of(
-			Class<? super T> entityClass,
-			Function<Iterable<?>, List<? extends T>> function) {
-		return new EntityLoaderDescriptor<>(entityClass, null, (arguments, ids) -> function.apply(ids));
-	}
-
-	public static <A, T, AA> EntityLoaderDescriptor<A, T> of(
-			Class<? super T> entityClass,
-			BiFunction<AA, Iterable<?>, List<? extends T>> function,
-			Class<? super A> argumentClass,
-			Function<A, AA> argumentExtractor) {
-		return new EntityLoaderDescriptor<A, T>(entityClass, argumentClass, (arguments, ids) ->
-				function.apply(arguments!=null
-						? argumentExtractor.apply(arguments)
-						: null,
-					ids));
+	public boolean requiresAdditionalArguments() {
+		return argumentClass != null;
 	}
 
 }
