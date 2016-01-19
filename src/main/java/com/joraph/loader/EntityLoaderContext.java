@@ -186,62 +186,74 @@ public class EntityLoaderContext {
 
 
 
-		public <I2> EntityLoaderDescriptorBuilder<A, AA, I2, R> withFunction(Function<I2[], Iterable<R>> function, IntFunction<I2[]> arraySupplier) {
+		public <I2> EntityLoaderDescriptorBuilder<A, AA, I2, R>
+				withArrayItrFunction(Function<I2[], Iterable<R>> function, IntFunction<I2[]> arraySupplier) {
 			EntityLoaderDescriptorBuilder<A, AA, I2, R> ret = (EntityLoaderDescriptorBuilder<A, AA, I2, R>)this;
 			return ret.withLoader(ofArrayItr(function, arraySupplier));
 		}
 
-		public <I2> EntityLoaderDescriptorBuilder<A, AA, I2, R> withFunction2(Function<I2[], R[]> function, IntFunction<I2[]> arraySupplier) {
+		public <I2> EntityLoaderDescriptorBuilder<A, AA, I2, R>
+				withArrayArrayFunction(Function<I2[], R[]> function, IntFunction<I2[]> arraySupplier) {
 			EntityLoaderDescriptorBuilder<A, AA, I2, R> ret = (EntityLoaderDescriptorBuilder<A, AA, I2, R>)this;
 			return ret.withLoader(ofArrayArray(function, arraySupplier));
 		}
 
-		public <I2, C extends Collection<I2>> EntityLoaderDescriptorBuilder<A, AA, I2, R> withFunction(Function<C, Iterable<R>> function, Supplier<C> supplier) {
+		public <I2, C extends Collection<I2>> EntityLoaderDescriptorBuilder<A, AA, I2, R>
+				withItrItrFunction(Function<C, Iterable<R>> function, Supplier<C> supplier) {
 			EntityLoaderDescriptorBuilder<A, AA, I2, R> ret = (EntityLoaderDescriptorBuilder<A, AA, I2, R>)this;
 			return ret.withLoader(ofItrItr(function, supplier));
 		}
 
-		public <I2, C extends Collection<I2>> EntityLoaderDescriptorBuilder<A, AA, I2, R> withFunction2(Function<C, R[]> function, Supplier<C> supplier) {
+		public <I2, C extends Collection<I2>> EntityLoaderDescriptorBuilder<A, AA, I2, R>
+				withItrArrayFunction(Function<C, R[]> function, Supplier<C> supplier) {
 			EntityLoaderDescriptorBuilder<A, AA, I2, R> ret = (EntityLoaderDescriptorBuilder<A, AA, I2, R>)this;
 			return ret.withLoader(ofItrArray(function, supplier));
 		}
 
-		public <I2> EntityLoaderDescriptorBuilder<A, AA, I2, R> withSetFunction(Function<Set<I2>, Iterable<R>> function) {
-			return withFunction(function, HashSet::new);
+		public <I2> EntityLoaderDescriptorBuilder<A, AA, I2, R>
+				withSetFunction(Function<Set<I2>, Iterable<R>> function) {
+			return withItrItrFunction(function, HashSet::new);
 		}
 
-		public <I2> EntityLoaderDescriptorBuilder<A, AA, I2, R> withListFunction(Function<List<I2>, Iterable<R>> function) {
-			return withFunction(function, ArrayList::new);
+		public <I2> EntityLoaderDescriptorBuilder<A, AA, I2, R>
+				withListFunction(Function<List<I2>, Iterable<R>> function) {
+			return withItrItrFunction(function, ArrayList::new);
 		}
 
 
 	
-		public <I2> EntityLoaderDescriptorBuilder<A, AA, I2, R> withFunction(BiFunction<AA, I2[], Iterable<R>> function, IntFunction<I2[]> arraySupplier) {
+		public <I2> EntityLoaderDescriptorBuilder<A, AA, I2, R>
+				withArrayItrBiFunction(BiFunction<AA, I2[], Iterable<R>> function, IntFunction<I2[]> arraySupplier) {
 			EntityLoaderDescriptorBuilder<A, AA, I2, R> ret = (EntityLoaderDescriptorBuilder<A, AA, I2, R>)this;
 			return ret.withLoader(ofArrayItr(function, arraySupplier, argumentExtractor));
 		}
 
-		public <I2> EntityLoaderDescriptorBuilder<A, AA, I2, R> withFunction2(BiFunction<AA, I2[], R[]> function, IntFunction<I2[]> arraySupplier) {
+		public <I2> EntityLoaderDescriptorBuilder<A, AA, I2, R>
+				withArrayArrayBiFunction(BiFunction<AA, I2[], R[]> function, IntFunction<I2[]> arraySupplier) {
 			EntityLoaderDescriptorBuilder<A, AA, I2, R> ret = (EntityLoaderDescriptorBuilder<A, AA, I2, R>)this;
 			return ret.withLoader(ofArrayArray(function, arraySupplier, argumentExtractor));
 		}
 
-		public <I2, C extends Collection<I2>> EntityLoaderDescriptorBuilder<A, AA, I2, R> withFunction(BiFunction<AA, C, Iterable<R>> function, Supplier<C> supplier) {
+		public <I2, C extends Collection<I2>> EntityLoaderDescriptorBuilder<A, AA, I2, R>
+				withItrItrBiFunction(BiFunction<AA, C, Iterable<R>> function, Supplier<C> supplier) {
 			EntityLoaderDescriptorBuilder<A, AA, I2, R> ret = (EntityLoaderDescriptorBuilder<A, AA, I2, R>)this;
 			return ret.withLoader(ofItrItr(function, supplier, argumentExtractor));
 		}
 
-		public <I2, C extends Collection<I2>> EntityLoaderDescriptorBuilder<A, AA, I2, R> withFunction2(BiFunction<AA, C, R[]> function, Supplier<C> supplier) {
+		public <I2, C extends Collection<I2>> EntityLoaderDescriptorBuilder<A, AA, I2, R>
+				withItrArrayBiFunction(BiFunction<AA, C, R[]> function, Supplier<C> supplier) {
 			EntityLoaderDescriptorBuilder<A, AA, I2, R> ret = (EntityLoaderDescriptorBuilder<A, AA, I2, R>)this;
 			return ret.withLoader(ofItrArray(function, supplier, argumentExtractor));
 		}
 
-		public <I2> EntityLoaderDescriptorBuilder<A, AA, I2, R> withSetFunction(BiFunction<AA, Set<I2>, Iterable<R>> function) {
-			return withFunction(function, HashSet::new);
+		public <I2> EntityLoaderDescriptorBuilder<A, AA, I2, R>
+				withSetBiFunction(BiFunction<AA, Set<I2>, Iterable<R>> function) {
+			return withItrItrBiFunction(function, HashSet::new);
 		}
 
-		public <I2> EntityLoaderDescriptorBuilder<A, AA, I2, R> withListFunction(BiFunction<AA, List<I2>, Iterable<R>> function) {
-			return withFunction(function, ArrayList::new);
+		public <I2> EntityLoaderDescriptorBuilder<A, AA, I2, R>
+				withListBiFunction(BiFunction<AA, List<I2>, Iterable<R>> function) {
+			return withItrItrBiFunction(function, ArrayList::new);
 		}
 
 

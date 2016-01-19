@@ -137,11 +137,11 @@ public class LoaderIntegrationTest
 		context.getLoaderContext()
 			.addLoader(Book.class)
 				.withArgument(TestArgs.class, TestArgs::incrementAndGetArg1)
-				.withListFunction(this::loadBooks)
+				.withListBiFunction(this::loadBooks)
 				.add()
 			.addLoader(Author.class)
 				.withArgument(TestArgs.class, TestArgs::incrementAndGetArg2)
-				.withListFunction(this::loadAuthors)
+				.withListBiFunction(this::loadAuthors)
 				.add();
 
 		TestArgs argument = new TestArgs();
@@ -168,11 +168,11 @@ public class LoaderIntegrationTest
 		context.getLoaderContext()
 			.addLoader(Book.class)
 				.withArgument(TestArgs.class, TestArgs::incrementAndGetArg1)
-				.withListFunction(this::loadBooks)
+				.withListBiFunction(this::loadBooks)
 				.add()
 			.addLoader(Author.class)
 				.withArgument(TestArgs.class, TestArgs::incrementAndGetArg2)
-				.withListFunction(this::loadAuthors)
+				.withListBiFunction(this::loadAuthors)
 				.add();
 
 		FeaturedBook featuredBook1 = testDb.get(FeaturedBook.class, "book1");
