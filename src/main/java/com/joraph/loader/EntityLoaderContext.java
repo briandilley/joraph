@@ -1,5 +1,6 @@
 package com.joraph.loader;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -7,6 +8,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.joraph.CollectionUtil;
@@ -18,6 +21,28 @@ public class EntityLoaderContext {
 	private Map<Class<?>, EntityLoaderDescriptor<?, ?>> loaders = new HashMap<>();
 
 	/**
+	 * Utility function for turning array arguments into
+	 * @param args
+	 * @return
+	 */
+	public static <T, I> Function<Iterable<? extends I>, List<? extends T>> args(
+			Function<I[], List<? extends T>> function,
+			IntFunction<I[]> supplier) {
+		return (ids) -> function.apply(CollectionUtil.array(ids, supplier));
+	}
+
+	/**
+	 * Utility function for turning array arguments into
+	 * @param args
+	 * @return
+	 */
+	public static <T, I, C extends Collection<I>> Function<Iterable<? extends I>, List<? extends T>> args(
+			Function<I[], List<? extends T>> function,
+			Supplier<C> supplier) {
+		return (ids) -> function.apply(CollectionUtil.collection(ids, supplier));
+	}
+
+	/**
 	 * Creates a builder for adding a loader.
 	 */
 	public <T> Builder<?, ?, T> addLoader(Class<? super T> entityClass) {
@@ -27,33 +52,34 @@ public class EntityLoaderContext {
 	/**
 	 * Adds a loader.
 	 */
-	public <T> void addLoader(Class<? super T> entityClass, EntityLoaderDescriptor<?, T> loader) {
+	public <T> EntityLoaderContext addLoader(Class<? super T> entityClass, EntityLoaderDescriptor<?, T> loader) {
 		this.loaders.put(entityClass, loader);
+		return this;
 	}
 
 	/**
 	 * Adds a loader.
 	 */
-	public <T> void addLoader(Class<? super T> entityClass, LoaderFunction<?, T> loader) {
-		addLoader(entityClass, new EntityLoaderDescriptor<>(entityClass, null, loader));
+	public <T> EntityLoaderContext addLoader(Class<? super T> entityClass, LoaderFunction<?, T> loader) {
+		return addLoader(entityClass, new EntityLoaderDescriptor<>(entityClass, null, loader));
 	}
 
 	/**
 	 * Adds a loader.
 	 */
-	public <T> void addLoader(Class<? super T> entityClass, Function<Iterable<?>, List<? extends T>> function) {
-		addLoader(entityClass, EntityLoaderDescriptor.of(entityClass, function));
+	public <T> EntityLoaderContext addLoader(Class<? super T> entityClass, Function<Iterable<?>, List<? extends T>> function) {
+		return addLoader(entityClass, EntityLoaderDescriptor.of(entityClass, function));
 	}
 
 	/**
 	 * Adds a loader.
 	 */
-	public <A, T, AA> void addLoader(
+	public <A, T, AA> EntityLoaderContext addLoader(
 			Class<? super T> entityClass,
 			BiFunction<AA, Iterable<?>, List<? extends T>> function,
 			Class<? super A> argumentClass,
 			Function<A, AA> argumentExtractor) {
-		addLoader(entityClass, EntityLoaderDescriptor.of(entityClass, function, argumentClass, argumentExtractor));
+		return addLoader(entityClass, EntityLoaderDescriptor.of(entityClass, function, argumentClass, argumentExtractor));
 	}
 
 	/**
@@ -151,13 +177,11 @@ public class EntityLoaderContext {
 
 		public EntityLoaderContext add() {
 			if (function!=null) {
-				EntityLoaderContext.this.addLoader(entityClass, function);
+				return EntityLoaderContext.this.addLoader(entityClass, function);
 			} else if (biFunction!=null) {
-				EntityLoaderContext.this.addLoader(entityClass, biFunction, argumentClass, argumentExtractor);
-			} else {
-				throw new IllegalStateException("No loader function specified");
+				return EntityLoaderContext.this.addLoader(entityClass, biFunction, argumentClass, argumentExtractor);
 			}
-			return EntityLoaderContext.this;
+			throw new IllegalStateException("No loader function specified");
 		}
 
 	}

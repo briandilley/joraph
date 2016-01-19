@@ -5,10 +5,35 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class CollectionUtil {
+
+	/**
+	 * Converts an {@link Iterable} to a {@link Collection}.
+	 * @param itr
+	 * @param supplier
+	 * @return
+	 */
+	public static <T, C extends Collection<T>> C collection(Iterable<? extends T> itr, Supplier<C> supplier) {
+		return StreamSupport.stream(itr.spliterator(), false)
+				.collect(supplier, Collection::add, Collection::addAll);
+	}
+
+	/**
+	 * Converts an {@link Iterable} to an array.
+	 * @param itr
+	 * @param supplier
+	 * @return
+	 */
+	public static <T> T[] array(Iterable<? extends T> itr, IntFunction<T[]> supplier) {
+		return StreamSupport.stream(itr.spliterator(), false)
+				.toArray(supplier);
+	}
 
 	/**
 	 * Creats a stream from the given items.
