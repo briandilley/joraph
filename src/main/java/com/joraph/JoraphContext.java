@@ -1,5 +1,6 @@
 package com.joraph;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -82,7 +83,7 @@ public class JoraphContext {
 	 * @param objects
 	 * @return
 	 */
-	public <T> ObjectGraph execute(Class<T> entityClass, Iterable<T> objects) {
+	public <T> ObjectGraph execute(Class<T> entityClass, Collection<T> objects) {
 		return execute(new Query()
 				.withEntityClass(entityClass)
 				.withRootObjects(objects));
@@ -94,7 +95,7 @@ public class JoraphContext {
 	 * @param objects
 	 * @return
 	 */
-	public ObjectGraph execute(Set<Class<?>> entityClasses, Iterable<Object> objects) {
+	public ObjectGraph execute(Set<Class<?>> entityClasses, Collection<Object> objects) {
 		return execute(new Query()
 				.withEntityClasses(entityClasses)
 				.withRootObjects(objects));
@@ -106,7 +107,7 @@ public class JoraphContext {
 	 * @param objects
 	 * @return
 	 */
-	public <T> ObjectGraph execute(Class<T> entityClass, Iterable<T> objects, ObjectGraph existingGraph) {
+	public <T> ObjectGraph execute(Class<T> entityClass, Collection<T> objects, ObjectGraph existingGraph) {
 		return execute(new Query()
 			.withEntityClass(entityClass)
 			.withRootObjects(objects)
@@ -119,7 +120,7 @@ public class JoraphContext {
 	 * @param objects
 	 * @return
 	 */
-	public ObjectGraph execute(Set<Class<?>> entityClasses, Iterable<Object> objects, ObjectGraph existingGraph) {
+	public ObjectGraph execute(Set<Class<?>> entityClasses, Collection<Object> objects, ObjectGraph existingGraph) {
 		return execute(new Query()
 			.withEntityClasses(entityClasses)
 			.withRootObjects(objects)
@@ -185,7 +186,7 @@ public class JoraphContext {
 	 * @return an object graph derived from the relationships defined in in the schema and
 	 * associated with the rootObject
 	 */
-	public ObjectGraph executeForObjects(Iterable<?> rootObjects) {
+	public ObjectGraph executeForObjects(Collection<?> rootObjects) {
 		assert(rootObjects != null);
 		final Set<Class<?>> entityClasses = new HashSet<>();
 		for (Object rootObject : rootObjects) {

@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,8 +22,7 @@ public class Query {
 	}
 
 	public Query(Class<?>... entityClasses) {
-		withEntityClasses(Arrays.stream(entityClasses)
-				.collect(Collectors.toSet()));
+		withEntityClass(entityClasses);
 	}
 
 
@@ -36,20 +36,17 @@ public class Query {
 	/**
 	 * @param entityClasses the entityClasses to set
 	 */
-	public Query withEntityClasses(Set<Class<?>> entityClasses) {
-		this.entityClasses = entityClasses;
+	public Query withEntityClasses(Collection<Class<?>> entityClasses) {
+		this.entityClasses = new HashSet<>(entityClasses);
 		return this;
 	}
 
 	/**
 	 * @param entityClass the entityClass to set
 	 */
-	public Query withEntityClass(Class<?> entityClass) {
-		if (this.entityClasses==null || this.entityClasses.isEmpty()) {
-			this.entityClasses = new HashSet<Class<?>>();
-		}
-		this.entityClasses.add(entityClass);
-		return this;
+	public Query withEntityClass(Class<?>... entityClasses) {
+		return withEntityClasses(Arrays.stream(entityClasses)
+				.collect(Collectors.toSet()));
 	}
 
 	/**
@@ -69,6 +66,24 @@ public class Query {
 	/**
 	 * @param rootObjects the rootObjects to set
 	 */
+	public Query withRootEntity(Collection<?> rootEntities) {
+		return withRootEntity(rootEntities.stream()
+				.toArray(Object[]::new));
+	}
+
+	/**
+	 * @param rootObjects the rootObjects to set
+	 */
+	public Query withRootEntity(Object... rootEntities) {
+		return withRootObjects(asList(rootEntities))
+				.withEntityClasses(Arrays.stream(rootEntities)
+						.map(Object::getClass)
+						.collect(Collectors.toList()));
+	}
+
+	/**
+	 * @param rootObjects the rootObjects to set
+	 */
 	public Query withRootObject(Object... rootObjects) {
 		return withRootObjects(Arrays.stream(rootObjects)
 				.collect(Collectors.toSet()));
@@ -77,8 +92,8 @@ public class Query {
 	/**
 	 * @param rootObjects the rootObjects to set
 	 */
-	public Query withRootObjects(Iterable<?> rootObjects) {
-		this.rootObjects = CollectionUtil.toSet(rootObjects);
+	public Query withRootObjects(Collection<?> rootObjects) {
+		this.rootObjects = new HashSet<>(rootObjects);
 		return this;
 	}
 
@@ -107,7 +122,7 @@ public class Query {
 	/**
 	 * @param arguments
 	 */
-	public Query withArguments(List<Object> arguments) {
+	public Query withArguments(Collection<Object> arguments) {
 		this.arguments = new ArrayList<>(arguments);
 		return this;
 	}
@@ -124,7 +139,7 @@ public class Query {
 	/**
 	 * @param arguments
 	 */
-	public Query addArguments(List<Object> arguments) {
+	public Query addArguments(Collection<Object> arguments) {
 		this.arguments.addAll(arguments);
 		return this;
 	}
@@ -132,15 +147,7 @@ public class Query {
 	/**
 	 * @param arguments
 	 */
-	public Query addArgument(Object argument) {
-		this.arguments.add(argument);
-		return this;
-	}
-
-	/**
-	 * @param arguments
-	 */
-	public Query addArguments(Object... arguments) {
+	public Query addArgument(Object... arguments) {
 		this.arguments.addAll(asList(arguments));
 		return this;
 	}

@@ -8,7 +8,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
@@ -316,13 +315,6 @@ public class JoraphIntegrationTest
 		assertNotNull(objectGraph.get(FeaturedBook.class, "book1"));
 		assertNotNull(objectGraph.get(Book.class, "book1"));
 		assertEquals("book1", objectGraph.get(Book.class, "book1").getId());
-	}
-
-	@Test
-	public void testFeatureBookWhenFeaturedBooksIsNull() throws Exception {
-		final ObjectGraph objectGraph = context.execute(FeaturedBook.class, (Collection<FeaturedBook>)null);
-
-		assertNull(objectGraph.get(Book.class, "book1"));
 	}
 
 	@Test
