@@ -32,7 +32,8 @@ public class ParallelOperation
 		return operations.stream()
 				.mapToDouble(Operation::cost)
 				.max()
-				.orElse(1);
+				.orElse(1d)
+			+ 0.1d;
 	}
 
 	/**

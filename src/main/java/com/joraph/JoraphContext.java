@@ -2,7 +2,6 @@ package com.joraph;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,6 +10,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import com.joraph.loader.EntityLoaderContext;
 import com.joraph.plan.ExecutionPlan;
@@ -179,27 +179,6 @@ public class JoraphContext {
 
 	/**
 	 * <p>Executes and retrieves an object graph using the appropriate {@link EntityLoader}s
-	 * deriving the {@code entityClasses} from the classes of the passed in {@code rootObjects}.</p>
-	 * <p>Assumes that the classes of {@code rootObjects} are defined classes within the schema.</p>
-	 * @param rootObjects the root object to create the graph from
-	 * @param <T> the entity class
-	 * @return an object graph derived from the relationships defined in in the schema and
-	 * associated with the rootObject
-	 */
-	public ObjectGraph executeForObjects(Collection<?> rootObjects) {
-		assert(rootObjects != null);
-		final Set<Class<?>> entityClasses = new HashSet<>();
-		for (Object rootObject : rootObjects) {
-			entityClasses.add(rootObject.getClass());
-		}
-		
-		return execute(new Query()
-			.withEntityClasses(entityClasses)
-			.withRootObjects(rootObjects));
-	}
-
-	/**
-	 * <p>Executes and retrieves an object graph using the appropriate {@link EntityLoader}s
 	 * deriving the {@code entityClass} from the class of the passed in {@code rootObject}.</p>
 	 * <p>Assumes that the class of {@code rootObject} is a defined class within the schema.</p>
 	 * @param rootObject the root object to create the graph from
@@ -236,7 +215,9 @@ public class JoraphContext {
 
 		return execute(new Query()
 				.withEntityClass(entityType)
-				.withRootObjects(objects)
+				.withRootObjects(objects.stream()
+						.map(Object.class::cast)
+						.collect(Collectors.toList()))
 				.withExistingGraph(existingGraph));
 	}
 

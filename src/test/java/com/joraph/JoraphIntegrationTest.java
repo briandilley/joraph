@@ -1,6 +1,7 @@
 package com.joraph;
 
 import static com.joraph.schema.PropertyDescriptorChain.newChain;
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -190,7 +191,8 @@ public class JoraphIntegrationTest
 		Book book1 = testDb.get(Book.class, "book1");
 		User user1 = testDb.get(User.class, "user1");
 
-		ObjectGraph objectGraph = context.executeForObjects(Arrays.asList(book1, user1));
+		ObjectGraph objectGraph = context.execute(new Query()
+				.withRootEntities(asList(book1, user1)));
 		assertNotNull(objectGraph);
 
 		assertNotNull(objectGraph.get(Book.class, "book1"));

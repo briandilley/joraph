@@ -29,7 +29,7 @@ public class GatherForeignKeysTo
 
 	@Override
 	public double cost() {
-		return 0.1f;
+		return 0.001f;
 	}
 
 	/**

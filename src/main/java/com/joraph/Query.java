@@ -12,10 +12,10 @@ import java.util.stream.Collectors;
 
 public class Query {
 
-	private Set<Class<?>> entityClasses;
-	private Set<?> rootObjects;
+	private Set<Class<?>> entityClasses = new HashSet<>();
+	private Set<Object> rootObjects 	= new HashSet<>();
+	private List<Object> arguments 		= new ArrayList<>();
 	private ObjectGraph existingGraph;
-	private List<Object> arguments = new ArrayList<>();
 
 	public Query() {
 		
@@ -37,7 +37,7 @@ public class Query {
 	 * @param entityClasses the entityClasses to set
 	 */
 	public Query withEntityClasses(Collection<Class<?>> entityClasses) {
-		this.entityClasses = new HashSet<>(entityClasses);
+		this.entityClasses.addAll(entityClasses);
 		return this;
 	}
 
@@ -59,14 +59,14 @@ public class Query {
 	/**
 	 * @return the rootObjects
 	 */
-	public Set<?> getRootObjects() {
+	public Set<Object> getRootObjects() {
 		return rootObjects;
 	}
 
 	/**
 	 * @param rootObjects the rootObjects to set
 	 */
-	public Query withRootEntity(Collection<?> rootEntities) {
+	public Query withRootEntities(Collection<?> rootEntities) {
 		return withRootEntity(rootEntities.stream()
 				.toArray(Object[]::new));
 	}
@@ -85,15 +85,14 @@ public class Query {
 	 * @param rootObjects the rootObjects to set
 	 */
 	public Query withRootObject(Object... rootObjects) {
-		return withRootObjects(Arrays.stream(rootObjects)
-				.collect(Collectors.toSet()));
+		return withRootObjects(asList(rootObjects));
 	}
 
 	/**
 	 * @param rootObjects the rootObjects to set
 	 */
 	public Query withRootObjects(Collection<?> rootObjects) {
-		this.rootObjects = new HashSet<>(rootObjects);
+		this.rootObjects.addAll(rootObjects);
 		return this;
 	}
 
@@ -122,24 +121,7 @@ public class Query {
 	/**
 	 * @param arguments
 	 */
-	public Query withArguments(Collection<Object> arguments) {
-		this.arguments = new ArrayList<>(arguments);
-		return this;
-	}
-
-	/**
-	 * @param arguments
-	 */
-	public Query withArgument(Object argument) {
-		this.arguments = new ArrayList<>();
-		this.arguments.add(argument);
-		return this;
-	}
-
-	/**
-	 * @param arguments
-	 */
-	public Query addArguments(Collection<Object> arguments) {
+	public Query withArguments(Collection<?> arguments) {
 		this.arguments.addAll(arguments);
 		return this;
 	}
@@ -147,9 +129,8 @@ public class Query {
 	/**
 	 * @param arguments
 	 */
-	public Query addArgument(Object... arguments) {
-		this.arguments.addAll(asList(arguments));
-		return this;
+	public Query withArgument(Object... arguments) {
+		return withArguments(asList(arguments));
 	}
 
 }

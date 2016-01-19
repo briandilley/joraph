@@ -98,7 +98,10 @@ public class EntityLoaderContext {
 	 * @throws MissingLoaderArgumentException if a loader expected an argument that wasn't provided
 	 * @throws JoraphException when a loader throws an exception
 	 */
-	public <A, I, R> List<R> load(Class<R> entityClass, List<Object> arguments, Iterable<I> ids) {
+	public <A, I, R> List<R> load(Class<R> entityClass, List<Object> arguments, Iterable<I> ids)
+			throws UnconfiguredLoaderException,
+			MissingLoaderArgumentException,
+			JoraphException {
 
 		final EntityLoaderDescriptor<A, I, R> loader = getLoader(entityClass);
 		if (loader.requiresAdditionalArguments()
