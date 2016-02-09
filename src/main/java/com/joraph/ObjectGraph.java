@@ -2,13 +2,14 @@ package com.joraph;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -193,18 +194,12 @@ public class ObjectGraph
 	 * @param id
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
 	public <T> T get(Class<T> type, Object id) {
-		final Class<?> graphTypeKey = getGraphTypeKey(type);
-		Map<Object, Object> map = results.get(graphTypeKey);
-		if (map==null) {
-			return null;
-		}
-		return (T)map.get(id);
+		return getMap(type).get(id);
 	}
 
 	/**
-	 * Returns a map of all items of a given type.
+	 * Returns an immutable map of all items of a given type.
 	 * @param type
 	 * @return
 	 */
@@ -212,9 +207,9 @@ public class ObjectGraph
 	public <T> Map<Object, T> getMap(Class<T> type) {
 		final Class<?> graphTypeKey = getGraphTypeKey(type);
 		Map<Object, Object> map = results.get(graphTypeKey);
-		return map!=null
+		return Collections.unmodifiableMap(map!=null
 				? (Map<Object, T>)map
-				: new HashMap<Object, T>();
+				: Collections.emptyMap());
 	}
 
 	/**
@@ -272,15 +267,16 @@ public class ObjectGraph
 	 * @return
 	 */
 	public <T, I> List<T> getList(Class<T> type, Collection<I> ids) {
-		List<T> ret = new ArrayList<>();
-		for (Object id : ids) {
-			ret.add(get(type, id));
-		}
-		return ret;
+		Map<Object, T> map = getMap(type);
+		return ids.stream()
+				.map(map::get)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
 	}
 
 	/**
-	 * Returns the results map.
+	 * Returns the results map.  Be careful with it, it's
+	 * not immutable.
 	 * @return the results
 	 */
 	public Map<Class<?>, Map<Object, Object>> getResults() {
