@@ -5,7 +5,7 @@
 
 	<groupId>com.joraph</groupId>
 	<artifactId>joraph</artifactId>
-	<version>0.17-SNAPSHOT</version>
+	<version>0.18-SNAPSHOT</version>
 
 	<name>Joraph</name>
 	<description>Java library for joining objects into a graph, JOin gRAPH</description>

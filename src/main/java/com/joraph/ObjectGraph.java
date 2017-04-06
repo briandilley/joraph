@@ -136,6 +136,32 @@ public class ObjectGraph
 	}
 
 	/**
+	 * Adds many results.
+	 * @param type
+	 * @param idFunction
+	 * @param objects
+	 * @param <T>
+	 */
+	public <T> void addResults(Class<? extends T> type, Function<T, Object> idFunction, Collection<T> objects) {
+		for (T object : objects) {
+			addResult(type, idFunction.apply(object), object);
+		}
+	}
+
+	/**
+	 * Adds many results.
+	 * @param type
+	 * @param idFunction
+	 * @param objects
+	 * @param <T>
+	 */
+	public <T> void addResults(Class<? extends T> type, Function<T, Object> idFunction, T[] objects) {
+		for (T object : objects) {
+			addResult(type, idFunction.apply(object), object);
+		}
+	}
+
+	/**
 	 * Adds a result.
 	 * @param type
 	 * @param id
