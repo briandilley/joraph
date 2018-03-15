@@ -117,10 +117,10 @@ if (project.hasProperty('release')) {
             }
         }
 
-    }
-}
+        nexusStaging {
+            username = ossrhUser
+            password = ossrhPassword
+        }
 
-nexusStaging {
-    username = ossrhUser
-    password = ossrhPassword
+    }
 }
