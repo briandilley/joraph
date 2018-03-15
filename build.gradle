@@ -18,7 +18,7 @@ apply plugin: 'java'
 apply plugin: 'idea'
 
 group = 'com.github.briandilley.joraph'
-version = '0.1-SNAPSHOT'
+version = '0.2-SNAPSHOT'
 description = """
 Java library for joining objects into a graph, JOin gRAPH
 """
@@ -45,23 +45,6 @@ task wrapper(type: Wrapper) {
 
 
 if (project.hasProperty('release')) {
-
-    subprojects {
-
-        task javadocJar(type: Jar) {
-            classifier = 'javadoc'
-            from javadoc
-        }
-
-        task sourcesJar(type: Jar) {
-            classifier = 'sources'
-            from sourceSets.main.allSource
-        }
-
-        artifacts {
-            archives javadocJar, sourcesJar
-        }
-    }
 
     allprojects {
         apply plugin: 'signing'
@@ -120,6 +103,20 @@ if (project.hasProperty('release')) {
         nexusStaging {
             username = ossrhUser
             password = ossrhPassword
+        }
+
+        task javadocJar(type: Jar) {
+            classifier = 'javadoc'
+            from javadoc
+        }
+
+        task sourcesJar(type: Jar) {
+            classifier = 'sources'
+            from sourceSets.main.allSource
+        }
+
+        artifacts {
+            archives javadocJar, sourcesJar
         }
 
     }
