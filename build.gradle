@@ -17,7 +17,7 @@ apply plugin: 'io.codearte.nexus-staging'
 apply plugin: 'java'
 apply plugin: 'idea'
 
-group = 'com.github.briandilley'
+group = 'com.github.briandilley.joraph'
 version = '0.1-SNAPSHOT'
 description = """
 Java library for joining objects into a graph, JOin gRAPH
