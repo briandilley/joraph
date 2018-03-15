@@ -1,13 +1,4 @@
 .gradle/
-build/
-*.class
-*.ear
-*.ipr
-*.iws
-*.jar
-*.un~
-*.war
-*~
 .classpath
 .idea/
 .idea_modules/
@@ -23,4 +14,5 @@ atlassian-ide-plugin.xml
 com_crashlytics_export_strings.xml
 hs_err_pid*
 out/
-target
+target/
+build/
