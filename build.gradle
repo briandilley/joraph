@@ -82,6 +82,9 @@ if (project.hasProperty('release')) {
                     repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
                         authentication(userName: ossrhUser, password: ossrhPassword)
                     }
+                    snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                        authentication(userName: ossrhUser, password: ossrhPassword)
+                    }
                     pom.project {
                         name project.name
                         description project.description
