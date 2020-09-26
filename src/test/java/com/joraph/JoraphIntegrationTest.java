@@ -2,19 +2,20 @@ package com.joraph;
 
 import static com.joraph.schema.PropertyDescriptorChain.newChain;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.joraph.debug.JoraphDebug;
 import com.joraph.plan.ExecutionPlan;
@@ -43,7 +44,7 @@ public class JoraphIntegrationTest
 	private ObjectGraph testDb;
 	private JoraphContext context;
 
-	@Before
+	@BeforeEach
 	public void setUp()
 			throws Exception {
 		schema		= setupSchema(new Schema());
@@ -52,7 +53,7 @@ public class JoraphIntegrationTest
 		setupLoaders(testDb, context);
 	}
 
-	@After
+	@AfterEach
 	public void tearDown()
 			throws Exception {
 		schema = null;
@@ -326,9 +327,11 @@ public class JoraphIntegrationTest
 		assertNull(objectGraph.get(Book.class, "book1"));
 	}
 
-	@Test(expected = UnknownEntityDescriptorException.class)
+	@Test
 	public void testUnconfiguredClassLoader() throws Exception {
-		context.execute(Object.class, new Object());
+		assertThrows(UnknownEntityDescriptorException.class, () -> {
+			context.execute(Object.class, new Object());
+		});
 	}
 
 	@Test

@@ -1,10 +1,11 @@
 package com.joraph.schema;
 
 import static com.joraph.schema.PropertyDescriptorChain.newChain;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class PropertyDescriptorChainTest {
 
@@ -24,7 +25,7 @@ public class PropertyDescriptorChainTest {
 		assertEquals("an id", chain.read(person , true));
 	}
 
-	@Test(expected=IllegalStateException.class)
+	@Test
 	public void testReadSubItemsFailsOnNullsWhenToldTo()
 			throws Exception {
 
@@ -34,7 +35,8 @@ public class PropertyDescriptorChainTest {
 				.andThen(Name::getFirstName)
 				.build();
 
-		firstNameChain.read(megatron, true);
+		Assertions.assertThrows(IllegalStateException.class,
+				() -> firstNameChain.read(megatron, true));
 	}
 
 	@Test

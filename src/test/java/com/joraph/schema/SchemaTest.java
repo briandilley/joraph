@@ -1,41 +1,46 @@
 package com.joraph.schema;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class SchemaTest {
 
 	private Schema schema;
 
-	@Before
+	@BeforeEach
 	public void setUp()
 		throws Exception {
 		schema = new Schema();
 	}
 
-	@After
+	@AfterEach
 	public void tearDown()
 		throws Exception {
 		schema = null;
 	}
 
-	@Test(expected=MissingPrimaryKeyException.class)
+	@Test
 	public void testMissingPrimaryKeyException() {
-		schema.addEntityDescriptor(Author.class);
-		schema.validate();
+		assertThrows(MissingPrimaryKeyException.class, () -> {
+			schema.addEntityDescriptor(Author.class);
+			schema.validate();
+		});
 	}
 
-	@Test(expected=UnknownFKException.class)
+	@Test
 	public void testUnknownFKException()
 		throws Exception {
-		schema.addEntityDescriptor(Author.class)
-				.setPrimaryKey(Author::getId)
-				.addForeignKey(Book.class, Author::getId);
-		schema.validate();
+		assertThrows(UnknownFKException.class, () -> {
+			schema.addEntityDescriptor(Author.class)
+					.setPrimaryKey(Author::getId)
+					.addForeignKey(Book.class, Author::getId);
+			schema.validate();
+		});
 	}
 
 	@Test

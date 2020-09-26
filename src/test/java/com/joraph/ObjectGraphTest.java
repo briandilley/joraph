@@ -1,17 +1,21 @@
 package com.joraph;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ObjectGraphTest {
 
 	private ObjectGraph subject;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		subject = new ObjectGraph();
 	}
@@ -29,15 +33,19 @@ public class ObjectGraphTest {
 		assertEquals(1, strings.size());
 	}
 
-	@Test(expected=UnsupportedOperationException.class)
+	@Test
 	public void testGetMapIsImmutableWithValues() {
-		subject.addResult(String.class, Integer.valueOf(1), "one");
-		subject.getMap(String.class).clear();
+		assertThrows(UnsupportedOperationException.class, () -> {
+			subject.addResult(String.class, Integer.valueOf(1), "one");
+			subject.getMap(String.class).clear();
+		});
 	}
 
-	@Test(expected=UnsupportedOperationException.class)
+	@Test
 	public void testGetMapIsImmutableWithoutValues() {
-		subject.getMap(String.class).clear();
+		assertThrows(UnsupportedOperationException.class, () -> {
+			subject.getMap(String.class).clear();
+		});
 	}
 
 }

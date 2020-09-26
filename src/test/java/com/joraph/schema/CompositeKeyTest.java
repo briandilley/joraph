@@ -1,12 +1,13 @@
 package com.joraph.schema;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.function.Function;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 
 public class CompositeKeyTest {
 
@@ -14,7 +15,7 @@ public class CompositeKeyTest {
 
 	public Function<Object[], CPK> CONVERTER = (a) -> new CPK(a[0].toString(), a[1].toString());
 
-	@Before
+	@BeforeEach
 	public void setUp()
 			throws Exception {
 		key = new CompositeKey<UserFollow, CompositeKeyTest.CPK>(CONVERTER,

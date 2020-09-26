@@ -1,15 +1,17 @@
 package com.joraph;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.List;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 import com.joraph.loader.MissingLoaderArgumentException;
 import com.joraph.schema.Author;
@@ -27,7 +29,7 @@ public class LoaderIntegrationTest
 	private ObjectGraph testDb;
 	private JoraphContext context;
 
-	@Before
+	@BeforeEach
 	public void setUp()
 			throws Exception {
 		schema		= setupSchema(new Schema());
@@ -36,7 +38,7 @@ public class LoaderIntegrationTest
 		setupLoaders(testDb, context);
 	}
 
-	@After
+	@AfterEach
 	public void tearDown()
 			throws Exception {
 		schema = null;
@@ -162,7 +164,7 @@ public class LoaderIntegrationTest
 
 	}
 
-	@Test(expected=MissingLoaderArgumentException.class)
+	@Test
 	public void testLoadWithLoadersThatRequireAdditionalArgumentsThrowsExceptionWhenArgumentsNotSpecified() {
 
 		context.getLoaderContext()
@@ -178,8 +180,10 @@ public class LoaderIntegrationTest
 		FeaturedBook featuredBook1 = testDb.get(FeaturedBook.class, "book1");
 		assertNotNull(featuredBook1);
 
-		context.execute(new Query(FeaturedBook.class)
-				.withRootObject(featuredBook1));
+		assertThrows(MissingLoaderArgumentException.class, () -> {
+			context.execute(new Query(FeaturedBook.class)
+					.withRootObject(featuredBook1));
+		});
 
 	}
 
