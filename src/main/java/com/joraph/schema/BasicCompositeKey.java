@@ -1,11 +1,12 @@
 package com.joraph.schema;
 
 import java.util.Arrays;
-import java.util.function.Function;
+
+import kotlin.jvm.functions.Function1;
 
 public class BasicCompositeKey {
 
-	public static final Function<Object[], BasicCompositeKey> CONVERTER = BasicCompositeKey::new;
+	public static final Function1<Object[], BasicCompositeKey> CONVERTER = BasicCompositeKey::new;
 
 	private Object[] objects;
 

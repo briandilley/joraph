@@ -4,6 +4,8 @@ import static java.util.Objects.requireNonNull;
 
 import com.joraph.JoraphException;
 
+import kotlin.jvm.functions.Function1;
+
 /**
  * Base class for {@code Property}.
  * @param <T> the property type
@@ -11,7 +13,7 @@ import com.joraph.JoraphException;
 public class BaseProperty<T, R>
 	implements Property<T, R> {
 
-	private PropertyDescriptorChain<T, R> chain;
+	private Function1<T, R> accessor;
 
 	/**
 	 */
@@ -19,31 +21,30 @@ public class BaseProperty<T, R>
 	}
 
 	/**
-	 * @param chain the chain to set
+	 * @param accessor the accessor to set
 	 */
-	public BaseProperty(PropertyDescriptorChain<T, R> chain) {
-		setPropertyChain(chain);
+	public BaseProperty(Function1<T, R> accessor) {
+		setPropertyChain(accessor);
 	}
 
 	/**
-	 * @param descriptor the descriptor to set
 	 */
-	protected void setPropertyChain(PropertyDescriptorChain<T, R> chain) {
-		this.chain = requireNonNull(chain, "chain must not be null");
+	protected void setPropertyChain(Function1<T, R> accessor) {
+		this.accessor = requireNonNull(accessor, "accessor must not be null");
 	}
 
 	/**
 	 * @return descriptor the descriptor
 	 */
-	protected PropertyDescriptorChain<T, R> getPropertyChain() {
-		return this.chain;
+	protected Function1<T, R> getPropertyAccessor() {
+		return this.accessor;
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public R read(Object obj) {
 		try {
-			return chain.read((T)obj, false);
+			return accessor.invoke((T)obj);
 		} catch (Exception e) {
 			throw new JoraphException(e);
 		}

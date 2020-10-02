@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 
 import com.joraph.JoraphException;
 
+import kotlin.jvm.functions.Function1;
+
 /**
  * A schema.
  */
@@ -196,8 +198,8 @@ public class Schema {
 			}
 
 			// check FKs
-			Map<PropertyDescriptorChain<?, ?>, ForeignKey<?, ?>> fks = ed.getForeignKeys();
-			for (Entry<PropertyDescriptorChain<?, ?>, ForeignKey<?, ?>> fkEntry : fks.entrySet()) {
+			Map<Function1<?, ?>, ForeignKey<?, ?>> fks = ed.getForeignKeys();
+			for (Entry<Function1<?, ?>, ForeignKey<?, ?>> fkEntry : fks.entrySet()) {
 				ForeignKey<?, ?> fk = fkEntry.getValue();
 				entityDescriptors.values().stream()
 						.filter((d) -> d.getEntityClass().equals(fk.getForeignEntity())

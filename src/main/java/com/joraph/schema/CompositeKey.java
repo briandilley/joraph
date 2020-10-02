@@ -2,7 +2,8 @@ package com.joraph.schema;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
+
+import kotlin.jvm.functions.Function1;
 
 /**
  * A composite key.
@@ -11,22 +12,17 @@ import java.util.function.Function;
 public class CompositeKey<T, R>
 		implements Property<T, R> {
 
-	private List<BaseProperty<T, ?>> properties;
-	private Function<Object[], R> converter;
+	private final List<BaseProperty<T, ?>> properties;
+	private final Function1<Object[], R> converter;
 
 	/**
-	 * @param converter
-	 * @param firstPropertyName
-	 * @param secondPropertyName
-	 * @param additionalPropertyNames
 	 */
 	@SafeVarargs
-	public CompositeKey(
-			Function<Object[], R> converter, PropertyDescriptorChain<T, ?>... chains) {
+	public CompositeKey(Function1<Object[], R> converter, Function1<T, ?>... accessors) {
 		this.converter 		= converter;
-		this.properties		= new ArrayList<>(chains.length);
-		for (int i=0; i<chains.length; i++) {
-			this.properties.add(new BaseProperty<>(chains[i]));
+		this.properties		= new ArrayList<>(accessors.length);
+		for (Function1<T, ?> accessor : accessors) {
+			this.properties.add(new BaseProperty<>(accessor));
 		}
 	}
 
@@ -36,7 +32,7 @@ public class CompositeKey<T, R>
 		for (int i=0; i<ret.length; i++) {
 			ret[i] = properties.get(i).read(obj);
 		}
-		return converter.apply(ret);
+		return converter.invoke(ret);
 	}
 
 }

@@ -1,5 +1,7 @@
 package com.joraph.schema;
 
+import kotlin.jvm.functions.Function1;
+
 /**
  * A key property.
  * @param <T> the property type
@@ -10,11 +12,9 @@ public class Key<T, R>
 
 	/**
 	 * Creates the key.
-	 * @param propertyName the property name
-	 * @param entityClass the entity class
 	 */
-	public Key(PropertyDescriptorChain<T, R> chain) {
-		super.setPropertyChain(chain);
+	public Key(Function1<T, R> accessor) {
+		super.setPropertyChain(accessor);
 	}
 
 }

@@ -3,24 +3,23 @@ package com.joraph.schema;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.util.function.Function;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import kotlin.jvm.functions.Function1;
 
 
 public class CompositeKeyTest {
 
 	private CompositeKey<UserFollow, CPK> key;
 
-	public Function<Object[], CPK> CONVERTER = (a) -> new CPK(a[0].toString(), a[1].toString());
+	public Function1<Object[], CPK> CONVERTER = (a) -> new CPK(a[0].toString(), a[1].toString());
 
 	@BeforeEach
-	public void setUp()
-			throws Exception {
-		key = new CompositeKey<UserFollow, CompositeKeyTest.CPK>(CONVERTER,
-				new PropertyDescriptorChain<>(UserFollow::getFromUserId),
-				new PropertyDescriptorChain<>(UserFollow::getToUserId));
+	public void setUp() {
+		key = new CompositeKey<>(CONVERTER,
+				UserFollow::getFromUserId,
+				UserFollow::getToUserId);
 	}
 
 	@Test

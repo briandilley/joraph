@@ -1,42 +1,28 @@
 package com.joraph.schema;
 
-import static com.joraph.schema.PropertyDescriptorChain.newChain;
+import static com.joraph.ChainableFunc.chain;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import com.joraph.ChainableFunc;
 
 public class PropertyDescriptorChainTest {
 
 	@Test
-	public void testReadRootLevelItem()
-			throws Exception {
+	public void testReadRootLevelItem() {
 
 		Person person = new Person();
 
-		PropertyDescriptorChain<Person, String> chain = new PropertyDescriptorChain<>(Person::getId);
+		ChainableFunc<Person, String> chain = chain(Person::getId);
 
-		assertNull(chain.read(person, false));
-		assertNull(chain.read(person, true));
+		assertNull(chain.read(person));
+		assertNull(chain.read(person));
 
 		person.setId("an id");
-		assertEquals("an id", chain.read(person , false));
-		assertEquals("an id", chain.read(person , true));
-	}
-
-	@Test
-	public void testReadSubItemsFailsOnNullsWhenToldTo()
-			throws Exception {
-
-		Person megatron = new Person();
-
-		PropertyDescriptorChain<Person, String> firstNameChain = newChain(Person::getName)
-				.andThen(Name::getFirstName)
-				.build();
-
-		Assertions.assertThrows(IllegalStateException.class,
-				() -> firstNameChain.read(megatron, true));
+		assertEquals("an id", chain.read(person));
+		assertEquals("an id", chain.read(person));
 	}
 
 	@Test
@@ -45,11 +31,10 @@ public class PropertyDescriptorChainTest {
 
 		Person megatron = new Person();
 
-		PropertyDescriptorChain<Person, String> firstNameChain = newChain(Person::getName)
-				.andThen(Name::getFirstName)
-				.build();
+		ChainableFunc<Person, String> firstNameChain = chain(Person::getName)
+				.andThen(Name::getFirstName);
 
-		assertNull(firstNameChain.read(megatron, false));
+		assertNull(firstNameChain.read(megatron));
 	}
 
 	@Test
@@ -68,21 +53,17 @@ public class PropertyDescriptorChainTest {
 		starscream.getName().setFirstName("Starscream");
 		starscream.getName().setLastName("Patel");
 		starscream.setFriend(megatron);
-		
 
+		ChainableFunc<Person, String> firstNameChain = chain(Person::getName)
+				.andThen(Name::getFirstName);
 
-		PropertyDescriptorChain<Person, String> firstNameChain = newChain(Person::getName)
-				.andThen(Name::getFirstName)
-				.build();
-
-		PropertyDescriptorChain<Person, String> friendLastNameChain = newChain(Person::getFriend)
+		ChainableFunc<Person, String> friendLastNameChain = chain(Person::getFriend)
 				.andThen(Person::getName)
-				.andThen(Name::getLastName)
-				.build();
+				.andThen(Name::getLastName);
 
-		assertEquals(megatron.getName().getFirstName(), firstNameChain.read(megatron, true));
-		assertEquals(megatron.getName().getFirstName(), firstNameChain.read(megatron, true));
-		assertEquals(megatron.getName().getLastName(), friendLastNameChain.read(starscream, true));
+		assertEquals(megatron.getName().getFirstName(), firstNameChain.read(megatron));
+		assertEquals(megatron.getName().getFirstName(), firstNameChain.read(megatron));
+		assertEquals(megatron.getName().getLastName(), friendLastNameChain.read(starscream));
 	}
 
 	public class Person {

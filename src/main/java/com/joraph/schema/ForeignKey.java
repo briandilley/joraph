@@ -1,8 +1,9 @@
 package com.joraph.schema;
 
-import java.beans.IntrospectionException;
 import java.util.List;
 import java.util.function.Predicate;
+
+import kotlin.jvm.functions.Function1;
 
 /**
  * A foreign key property.
@@ -12,15 +13,14 @@ public class ForeignKey<T, R>
 	extends BaseProperty<T, R>
 	implements Property<T, R> {
 
-	private Class<T> entityClass;
-	private Class<?> foreignEntity;
+	private final Class<T> entityClass;
+	private final Class<?> foreignEntity;
 
 	private final Class<?> argumentClass;
 	private final Predicate<Object> argumentPredicate;
 
-	public ForeignKey(Class<T> entityClass, Class<?> foreignEntity, PropertyDescriptorChain<T, R> chain)
-		throws IntrospectionException {
-		this(entityClass, foreignEntity, null, null, chain);
+	public ForeignKey(Class<T> entityClass, Class<?> foreignEntity, Function1<T, R> accessor) {
+		this(entityClass, foreignEntity, null, null, accessor);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -29,13 +29,12 @@ public class ForeignKey<T, R>
 			Class<?> foreignEntity,
 			Class<?> argumentClass,
 			Predicate<?> argumentPredicate,
-			PropertyDescriptorChain<T, R> chain)
-		throws IntrospectionException {
+			Function1<T, R> accessor) {
 		this.entityClass = entityClass;
 		this.argumentPredicate = (Predicate<Object>)argumentPredicate;
 		this.argumentClass = argumentClass;
 		this.foreignEntity = foreignEntity;
-		super.setPropertyChain(chain);
+		super.setPropertyChain(accessor);
 	}
 
 	/**
@@ -55,8 +54,6 @@ public class ForeignKey<T, R>
 	/**
 	 * Indicates whether or not this foreign
 	 * key should be loaded.
-	 * @param arg the query argument
-	 * @return true if it should
 	 */
 	public boolean shouldLoad(List<Object> arguments) {
 		if (argumentPredicate == null) {
@@ -67,15 +64,13 @@ public class ForeignKey<T, R>
 
 		return arguments.stream()
 				.filter(argumentClass::isInstance)
-				.filter(argumentPredicate)
-				.findFirst()
-				.isPresent();
+				.anyMatch(argumentPredicate);
 	}
 
 	@Override
 	public String toString() {
 		return entityClass.getName()
-			+"."+getPropertyChain()+"->"
+			+"."+getPropertyAccessor()+"->"
 			+foreignEntity.getName();
 	}
 

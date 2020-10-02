@@ -1,7 +1,6 @@
 package com.joraph;
 
-import static com.joraph.schema.PropertyDescriptorChain.buildChain;
-import static com.joraph.schema.PropertyDescriptorChain.newChain;
+import static com.joraph.ChainableFunc.chain;
 
 import java.util.Collection;
 import java.util.List;
@@ -23,7 +22,6 @@ import com.joraph.schema.LatestMessage;
 import com.joraph.schema.Library;
 import com.joraph.schema.Message;
 import com.joraph.schema.MessagePair;
-import com.joraph.schema.PropertyDescriptorChain;
 import com.joraph.schema.Rating;
 import com.joraph.schema.UserFavorites;
 import com.joraph.schema.Schema;
@@ -94,7 +92,7 @@ public abstract class AbstractJoraphTest {
 		schema.addEntityDescriptor(Library.class)
 			.setPrimaryKey(Library::getId)
 			.addForeignKey(User.class, Library::getLibrarianUserId);
-		
+
 		schema.addEntityDescriptor(Book.class)
 			.setPrimaryKey(Book::getId)
 			.addForeignKey(Author.class, Book::getAuthorId)
@@ -104,10 +102,9 @@ public abstract class AbstractJoraphTest {
 			.addForeignKey(Library.class)
 				.withAccessor(Book::getLibraryId)
 				.add()
-			.addForeignKey(User.class, newChain(Book::getRating)
-				.andThen(Rating::getUserId)
-				.build());
-		
+			.addForeignKey(User.class, chain(Book::getRating)
+				.andThen(Rating::getUserId));
+
 		schema.addEntityDescriptor(Checkout.class)
 			.setPrimaryKey(Checkout::getId)
 			.addForeignKey(User.class, Checkout::getUserId)
@@ -125,7 +122,7 @@ public abstract class AbstractJoraphTest {
 			.addForeignKey(Message.class, LatestMessage::getLatestMessageId);
 
 		schema.addEntityDescriptor(MessagePair.class)
-			.setPrimaryKey(buildChain(MessagePair::getLeft), buildChain(MessagePair::getRight))
+			.setPrimaryKey(MessagePair::getLeft, MessagePair::getRight)
 			.addForeignKey(Message.class, MessagePair::getLeft)
 			.addForeignKey(Message.class, MessagePair::getRight);
 
@@ -153,8 +150,8 @@ public abstract class AbstractJoraphTest {
 		/* follows */
 		schema.addEntityDescriptor(UserFollow.class)
 			.setPrimaryKey(BasicCompositeKey.CONVERTER,
-					new PropertyDescriptorChain<>(UserFollow::getFromUserId),
-					new PropertyDescriptorChain<>(UserFollow::getToUserId))
+					UserFollow::getFromUserId,
+					UserFollow::getToUserId)
 			.addForeignKey(User.class, UserFollow::getFromUserId)
 			.addForeignKey(User.class, UserFollow::getToUserId);
 

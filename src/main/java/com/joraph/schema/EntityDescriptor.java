@@ -6,10 +6,11 @@ import java.beans.IntrospectionException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import com.joraph.CollectionUtil;
+
+import kotlin.jvm.functions.Function1;
 
 /**
  * Metadata about an entity class.
@@ -17,9 +18,9 @@ import com.joraph.CollectionUtil;
 public class EntityDescriptor<T> {
 
 	private final Class<T> entityClass;
+	private final Map<Function1<T, ?>, ForeignKey<T, ?>> foreignKeys = new HashMap<>();
 	private Class<?> graphKey;
 	private Property<T, ?> primaryKey;
-	private Map<PropertyDescriptorChain<T, ?>, ForeignKey<T, ?>> foreignKeys = new HashMap<>();
 
 	/**
 	 * Creates a new instance of EntityDescriptor.
@@ -52,19 +53,13 @@ public class EntityDescriptor<T> {
 	}
 
 	/**
-	 * @param primaryKey the primaryKey to set
-	 * @throws IntrospectionException on error
-	 * @return this
 	 */
-	public <RR> EntityDescriptor<T> setPrimaryKey(Function<T, RR> fun)
-		throws IntrospectionException {
-		this.primaryKey = new Key<>(new PropertyDescriptorChain<T, RR>(fun));
+	public <RR> EntityDescriptor<T> setPrimaryKey(Function1<T, RR> fun) {
+		this.primaryKey = new Key<>(fun);
 		return this;
 	}
 
 	/**
-	 * @param graphKey the graphTypeKey to set
-	 * @return this
 	 */
 	public EntityDescriptor<T> setGraphKey(Class<?> graphKey) {
 		this.graphKey = requireNonNull(graphKey, "graphKey cannot be null");
@@ -72,128 +67,69 @@ public class EntityDescriptor<T> {
 	}
 
 	/**
-	 * 
-	 * @param converter
-	 * @param firstPropertyName
-	 * @param secondPropertyName
-	 * @param additionalPropertyNames
-	 * @return
-	 * @throws IntrospectionException
 	 */
 	@SafeVarargs
 	@SuppressWarnings("unchecked") 
 	public final EntityDescriptor<T> setPrimaryKey(
-			Function<Object[], ?> converter,
-			PropertyDescriptorChain<T, ?> first,
-			PropertyDescriptorChain<T, ?>... remaining)
-		throws IntrospectionException {
-		PropertyDescriptorChain<T, ?>[] chains = CollectionUtil.asStream(first, remaining)
-				.toArray(PropertyDescriptorChain[]::new);
+			Function1<Object[], ?> converter,
+			Function1<T, ?> first,
+			Function1<T, ?>... remaining) {
+		Function1<T, ?>[] chains = CollectionUtil.asStream(first, remaining)
+				.toArray(Function1[]::new);
 		this.primaryKey = new CompositeKey<>(converter, chains);
 		return this;
 	}
 
 	/**
-	 * 
-	 * @param converter
-	 * @param firstPropertyName
-	 * @param secondPropertyName
-	 * @param additionalPropertyNames
-	 * @return
-	 * @throws IntrospectionException
 	 */
 	@SafeVarargs
-	public final EntityDescriptor<T> setPrimaryKey(
-			PropertyDescriptorChain<T, ?> first,
-			PropertyDescriptorChain<T, ?>... remaining)
-		throws IntrospectionException {
+	public final EntityDescriptor<T> setPrimaryKey(Function1<T, ?> first, Function1<T, ?>... remaining) {
 		return setPrimaryKey(BasicCompositeKey.CONVERTER, first, remaining);
 	}
  
 	/**
 	 * @return the foreignKeys
 	 */
-	public Map<PropertyDescriptorChain<?, ?>, ForeignKey<?, ?>> getForeignKeys() {
+	public Map<Function1<?, ?>, ForeignKey<?, ?>> getForeignKeys() {
 		return Collections.unmodifiableMap(foreignKeys);
 	}
 
 	/**
 	 * Creates a builder for adding a foreign key.
-	 * @param foreignEntity the foreign entity
-	 * @return this
 	 */
-	public ForeignKeyBuilder<?, T> addForeignKey(Class<?> foreignEntity)
-			throws IntrospectionException {
+	public ForeignKeyBuilder<?, T> addForeignKey(Class<?> foreignEntity) {
 		return new ForeignKeyBuilder<>(this, foreignEntity);
 	}
 
 	/**
 	 * Adds a foreign key.
-	 * @param propertyName the property name
-	 * @param foreignEntity the foreign entity
-	 * @throws IntrospectionException on error
-	 * @return this
 	 */
-	public EntityDescriptor<T> addForeignKey(Class<?> foreignEntity, Function<T, ?> accessor)
-			throws IntrospectionException {
-		addForeignKey(foreignEntity, new PropertyDescriptorChain<>(accessor), null, null);
+	public EntityDescriptor<T> addForeignKey(Class<?> foreignEntity, Function1<T, ?> accessor) {
+		addForeignKey(foreignEntity, accessor, null, null);
 		return this;
 	}
 
 	/**
 	 * Adds a foreign key.
-	 * @param propertyName the property name
-	 * @param foreignEntity the foreign entity
-	 * @throws IntrospectionException on error
-	 * @return this
 	 */
-	public <A> EntityDescriptor<T> addForeignKey(Class<?> foreignEntity, Function<T, ?> accessor, Class<A> argumentClass, Predicate<A> loadPredicate)
-			throws IntrospectionException {
-		return addForeignKey(foreignEntity, new PropertyDescriptorChain<>(accessor), argumentClass, loadPredicate);
-	}
-
-	/**
-	 * Adds a foreign key.
-	 * @param propertyName the property name
-	 * @param foreignEntity the foreign entity
-	 * @throws IntrospectionException on error
-	 * @return this
-	 */
-	public EntityDescriptor<T> addForeignKey(Class<?> foreignEntity, PropertyDescriptorChain<T, ?> accessor)
-			throws IntrospectionException {
-		return addForeignKey(foreignEntity, accessor, null, null);
-	}
-
-	/**
-	 * Adds a foreign key.
-	 * @param propertyName the property name
-	 * @param foreignEntity the foreign entity
-	 * @param argumentPredicate an argument predicate for determining when
-	 * to load the foreign key
-	 * @throws IntrospectionException on error
-	 * @return this
-	 */
-	public <A> EntityDescriptor<T> addForeignKey(Class<?> foreignEntity, PropertyDescriptorChain<T, ?> accessor, Class<A> argumentClass, Predicate<A> argumentPredicate)
-			throws IntrospectionException {
+	public <A> EntityDescriptor<T> addForeignKey(Class<?> foreignEntity, Function1<T, ?> accessor, Class<A> argumentClass, Predicate<A> argumentPredicate)  {
 		this.foreignKeys.put(accessor, new ForeignKey<>(entityClass, foreignEntity, argumentClass, argumentPredicate, accessor));
 		return this;
 	}
 
 	/**
 	 * Returns a {@link ForeignKey} by name.
-	 * @param propertyName the name
-	 * @return the key
 	 */
-	public ForeignKey<T, ?> getForeignKey(Function<Object, ?> accessor) {
-		return foreignKeys.get(new PropertyDescriptorChain<>(accessor));
+	public ForeignKey<T, ?> getForeignKey(Function1<Object, ?> accessor) {
+		return foreignKeys.get(accessor);
 	}
 
 
 	public class ForeignKeyBuilder<A, TT> {
 
-		private EntityDescriptor<TT> entity;
-		private Class<?> foreignEntity;
-		private PropertyDescriptorChain<TT, ?> accessor;
+		private final EntityDescriptor<TT> entity;
+		private final Class<?> foreignEntity;
+		private Function1<TT, ?> accessor;
 		private Class<A> argumentClass;
 		private Predicate<A> argumentPredicate;
 
@@ -202,13 +138,9 @@ public class EntityDescriptor<T> {
 			this.foreignEntity = foreignEntity;
 		}
 
-		public ForeignKeyBuilder<A, TT> withAccessor(PropertyDescriptorChain<TT, ?> accessor) {
+		public ForeignKeyBuilder<A, TT> withAccessor(Function1<TT, ?> accessor) {
 			this.accessor = accessor;
 			return this;
-		}
-
-		public ForeignKeyBuilder<A, TT> withAccessor(Function<TT, ?> accessor) {
-			return withAccessor(new PropertyDescriptorChain<>(accessor));
 		}
 
 		@SuppressWarnings("unchecked")

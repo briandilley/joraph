@@ -7,11 +7,11 @@ import java.util.Set;
 
 public class Node {
 
-	private Schema schema;
-	private Node parent;
-	private Class<?> entityClass;
-	private Collection<ForeignKey<?, ?>> foreignKeys;
-	private boolean circular;
+	private final Schema schema;
+	private final Node parent;
+	private final Class<?> entityClass;
+	private final Collection<ForeignKey<?, ?>> foreignKeys;
+	private final boolean circular;
 
 	/**
 	 * For visiting via {@link #visit(Node)}.

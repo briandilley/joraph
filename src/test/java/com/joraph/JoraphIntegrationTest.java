@@ -1,6 +1,6 @@
 package com.joraph;
 
-import static com.joraph.schema.PropertyDescriptorChain.newChain;
+import static com.joraph.ChainableFunc.chain;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -380,9 +380,8 @@ public class JoraphIntegrationTest
 			throws Exception {
 
 		ExtensionsKt.<Checkout>findFirstByEntityClass(schema.getEntityDescriptors(Checkout.class), Checkout.class)
-			.addForeignKey(User.class, newChain(Checkout::getMetaData)
-					.andThen(CheckoutMetaData::getLibrarianUserId)
-					.build());
+			.addForeignKey(User.class, chain(Checkout::getMetaData)
+					.andThen(CheckoutMetaData::getLibrarianUserId));
 
 		schema.validate();
 		assertTrue(schema.isValidated());
