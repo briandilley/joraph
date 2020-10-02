@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import com.joraph.ChainableFunc;
 
-public class PropertyDescriptorChainTest {
+public class ChainableFuncTest {
 
 	@Test
 	public void testReadRootLevelItem() {
@@ -26,8 +26,7 @@ public class PropertyDescriptorChainTest {
 	}
 
 	@Test
-	public void testReadSubItemsDoesNotFailOnNullsWhenToldNotTo()
-			throws Exception {
+	public void testReadSubItemsDoesNotFailOnNullsWhenToldNotTo() {
 
 		Person megatron = new Person();
 
@@ -38,8 +37,7 @@ public class PropertyDescriptorChainTest {
 	}
 
 	@Test
-	public void testReadSubItems()
-			throws Exception {
+	public void testReadSubItems() {
 
 		Person megatron = new Person();
 		megatron.setId("megatron");
@@ -64,6 +62,21 @@ public class PropertyDescriptorChainTest {
 		assertEquals(megatron.getName().getFirstName(), firstNameChain.read(megatron));
 		assertEquals(megatron.getName().getFirstName(), firstNameChain.read(megatron));
 		assertEquals(megatron.getName().getLastName(), friendLastNameChain.read(starscream));
+	}
+
+	@Test
+	public void testNullsOk() {
+
+		Person starscream = new Person();
+		starscream.setId("starscream");
+		starscream.setName(new Name());
+		starscream.getName().setFirstName("Starscream");
+		starscream.getName().setLastName(null);
+
+		ChainableFunc<Person, String> firstNameChain = chain(Person::getName)
+				.andThen(Name::getLastName);
+
+		assertNull(firstNameChain.read(starscream));
 	}
 
 	public class Person {
