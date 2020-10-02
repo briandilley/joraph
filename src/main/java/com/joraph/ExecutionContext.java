@@ -125,7 +125,7 @@ public class ExecutionContext {
 								.map(CollectionUtil::convertToSet)
 								.flatMap(Set::stream)
 								.filter(Objects::nonNull)
-								.filter(objectGraph.hasFunction(entityDescriptor.getEntityClass()).negate())))
+								.filter(objectGraph.hasPredicate(entityDescriptor.getEntityClass()).negate())))
 				.forEach(keysToLoad.getAddKeyFunction(entityClass));
 
 	}
