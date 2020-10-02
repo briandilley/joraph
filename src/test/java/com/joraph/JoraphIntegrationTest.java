@@ -112,8 +112,8 @@ public class JoraphIntegrationTest
 	@Test
 	public void testSimpleObjectGraphWithDifferentGraphTypeKeys() {
 
-		schema.getEntityDescriptors(Book.class).findFirstByEntityClass(Book.class).get().setGraphKey(String.class);
-		schema.getEntityDescriptors(Author.class).findFirstByEntityClass(Author.class).get().setGraphKey(Integer.class);
+		ExtensionsKt.findFirstByEntityClass(schema.getEntityDescriptors(Book.class), Book.class).setGraphKey(String.class);
+		ExtensionsKt.findFirstByEntityClass(schema.getEntityDescriptors(Author.class), Author.class).setGraphKey(Integer.class);
 
 		Book book1 = testDb.get(Book.class, "book1");
 
@@ -379,9 +379,7 @@ public class JoraphIntegrationTest
 	public void testDeepForeignKeys()
 			throws Exception {
 
-		schema.getEntityDescriptors(Checkout.class)
-			.findFirstByEntityClass(Checkout.class)
-			.get()
+		ExtensionsKt.<Checkout>findFirstByEntityClass(schema.getEntityDescriptors(Checkout.class), Checkout.class)
 			.addForeignKey(User.class, newChain(Checkout::getMetaData)
 					.andThen(CheckoutMetaData::getLibrarianUserId)
 					.build());

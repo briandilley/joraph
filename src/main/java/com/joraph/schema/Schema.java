@@ -65,14 +65,11 @@ public class Schema {
 	 * @param entityClass the entity class
 	 * @return the descriptor for the class, or null if no descriptor exists for it
 	 */
-	public EntityDescriptorCollection getEntityDescriptors(Class<?> entityClass) {
+	public Set<EntityDescriptor<?>> getEntityDescriptors(Class<?> entityClass) {
 		return this.entityDescriptors.values().stream()
 				.filter((ed) -> ed.getEntityClass().equals(entityClass)
 					|| ed.getGraphKey().equals(entityClass))
-				.collect(
-						EntityDescriptorCollection::new,
-						EntityDescriptorCollection::add,
-						EntityDescriptorCollection::addAll);
+				.collect(Collectors.toSet());
 	}
 
 	/**
@@ -178,8 +175,6 @@ public class Schema {
 
 	/**
 	 * Describes the given entity class.
-	 * @param entityClass the class
-	 * @return the node
 	 */
 	public Set<Class<?>> describeEntities() {
 		this.assertValidated();

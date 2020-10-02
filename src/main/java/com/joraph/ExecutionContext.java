@@ -38,11 +38,6 @@ public class ExecutionContext {
 
 	/**
 	 * Creates a new instance of ExecutionContext.
-	 * @param context the {@link com.joraph.JoraphContext}
-	 * @param entityClass the entity class
-	 * @param rootObjects root objects to derive child objects from based on the schema
-	 *                    contained within {@link com.joraph.JoraphContext}
-	 * @param existingGraph an existing graph to populate
 	 */
 	public ExecutionContext(JoraphContext context, Query query) {
 		this.context		= context;
@@ -53,7 +48,7 @@ public class ExecutionContext {
 				? query.getExistingGraph()
 				: new ObjectGraph(context.getSchema());
 		
-		addToResults(query.getRootObjects(), query.getEntityClasses());
+		addToResults(query.getRootObjects());
 	}
 
 	/**
@@ -80,20 +75,20 @@ public class ExecutionContext {
 		return objectGraph;
 	}
 
-	private void addToResults(Iterable<?> objects, Set<Class<?>> entityClasses) {
+	private void addToResults(Iterable<?> objects) {
 		if (objects == null) {
 			return;
 		}
 
-		final Schema schema = context.getSchema();
-		assert(schema != null);
+		final Schema schema = Objects.requireNonNull(context.getSchema(), "Schema must not be null");
 
 		for (Object object : objects) {
 			if (object==null) {
 				continue;
 			}
-			final EntityDescriptor<?> entityDescriptor = schema.getEntityDescriptors(object.getClass())
-					.findFirstByEntityClass(object.getClass())
+			final EntityDescriptor<?> entityDescriptor = schema.getEntityDescriptors(object.getClass()).stream()
+					.filter((d) -> d.getEntityClass().equals(object.getClass()))
+					.findFirst()
 					.orElseThrow(() -> new UnknownEntityDescriptorException(object.getClass()));
 
 			final Property<?, ?> pk = entityDescriptor.getPrimaryKey();
@@ -125,7 +120,7 @@ public class ExecutionContext {
 								.map(CollectionUtil::convertToSet)
 								.flatMap(Set::stream)
 								.filter(Objects::nonNull)
-								.filter(objectGraph.hasPredicate(entityDescriptor.getEntityClass()).negate())))
+								.filter((id) -> !objectGraph.has(entityDescriptor.getEntityClass(), id))))
 				.forEach(keysToLoad.getAddKeyFunction(entityClass));
 
 	}
@@ -136,9 +131,8 @@ public class ExecutionContext {
 			return;
 		}
 
-		List<?> objects = context.getLoaderContext().load(
-				entityClass, query.getArguments(), ids);
-		addToResults(objects, CollectionUtil.asSet(entityClass));
+		List<?> objects = context.getLoaderContext().load(entityClass, query.getArguments(), ids);
+		addToResults(objects);
 		keysToLoad.removeKeys(entityClass, ids);
 	}
 

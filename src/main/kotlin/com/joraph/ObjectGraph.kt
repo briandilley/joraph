@@ -2,14 +2,13 @@ package com.joraph
 
 import com.joraph.schema.Property
 import com.joraph.schema.Schema
-import java.util.function.Predicate
 import java.util.stream.Stream
 
 class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = null) :
         Cloneable,
         Iterable<Pair<Class<*>, MutableMap<Any, Any>>> {
 
-    private val results: MutableMap<Class<*>, MutableMap<Any, Any>> = mutableMapOf()
+    val results: MutableMap<Class<*>, MutableMap<Any, Any>> = mutableMapOf()
 
     @Throws(CloneNotSupportedException::class)
     override fun clone(): ObjectGraph {
@@ -99,22 +98,6 @@ class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = null) 
     }
 
     /**
-     * Returns a {@link Function} that delegates to
-     * {@link #has(Class, Object)} for the given type.
-     */
-    fun hasFunction(type: Class<*>): (Any) -> Boolean {
-        return { id -> has(type, id) }
-    }
-
-    /**
-     * Returns a {@link Function} that delegates to
-     * {@link #has(Class, Object)} for the given type.
-     */
-    fun hasPredicate(type: Class<*>): Predicate<Any> {
-        return Predicate<Any> { id -> has(type, id) }
-    }
-
-    /**
      * Returns the object of the given type with
      * the given id.
      */
@@ -123,14 +106,6 @@ class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = null) 
         val map = results[graphTypeKey]
                 ?: return false
         return map.containsKey(id)
-    }
-
-    /**
-     * Returns a [Function] that delegates to
-     * [.get] for the given type.
-     */
-    fun <T : Any> getFunction(type: Class<T>): (Any) -> T? {
-        return { id -> get(type, id) }
     }
 
     /**
@@ -190,14 +165,6 @@ class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = null) 
     }
 
     /**
-     * Returns a [Function] that delegates to
-     * [.getList] for the given type.
-     */
-    fun <T : Any, I : Any> getListFunction(type: Class<*>): (Collection<I>) -> List<T> {
-        return { ids: Collection<I> -> getList(type, ids) }
-    }
-
-    /**
      * Returns a list of all items of a given type with
      * the given ids - sorted in the same way as the ids.
      */
@@ -207,11 +174,4 @@ class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = null) 
                 .toList()
     }
 
-    /**
-     * Returns the results map.  Be careful with it, it's
-     * not immutable.
-     */
-    fun getResults(): MutableMap<Class<*>, MutableMap<Any, Any>> {
-        return results
-    }
 }
