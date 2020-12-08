@@ -146,33 +146,6 @@ public class Schema {
 				.collect(Collectors.toList());
 	}
 
-	public Graph<Class<?>> graph(Class<?> startClass) {
-		Graph<Class<?>> ret = new Graph<>(CLASS_COMPARATOR);
-		graph(describe(startClass), ret);
-		return ret;
-	}
-
-	private void graph(Node node, Graph<Class<?>> graph) {
-		if (node.isCircular()) {
-			throw new CircularDependencyException(node.getEntityClass());
-		}
-		graph.addEntity(node.getEntityClass());
-		for (ForeignKey<?, ?> fk : node.getForeignKeys()) {
-			graph.addEdge(node.getEntityClass(), fk.getForeignEntity());
-			graph(node.child(fk), graph);
-		}
-	}
-
-	/**
-	 * Describes the given entity class.
-	 * @param entityClass the class
-	 * @return the node
-	 */
-	public Node describe(Class<?> entityClass) {
-		this.assertValidated();
-		return new Node(null, this, entityClass, describeForeignKeysFrom(entityClass), false);
-	}
-
 	/**
 	 * Describes the given entity class.
 	 */

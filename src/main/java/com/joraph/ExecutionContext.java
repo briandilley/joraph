@@ -3,27 +3,29 @@ package com.joraph;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import com.joraph.debug.DebugInfo;
 import com.joraph.debug.JoraphDebug;
-import com.joraph.plan.ExecutionPlan;
-import com.joraph.plan.GatherForeignKeysTo;
-import com.joraph.plan.LoadEntities;
-import com.joraph.plan.Operation;
-import com.joraph.plan.ParallelOperation;
 import com.joraph.schema.EntityDescriptor;
+import com.joraph.schema.ForeignKey;
 import com.joraph.schema.Property;
 import com.joraph.schema.Schema;
 import com.joraph.schema.SchemaUtil;
 import com.joraph.schema.UnknownEntityDescriptorException;
+
+import kotlin.jvm.functions.Function1;
 
 /**
  * An execution context which brings together a {@link com.joraph.JoraphContext},
@@ -32,16 +34,17 @@ import com.joraph.schema.UnknownEntityDescriptorException;
 public class ExecutionContext {
 
 	private final JoraphContext context;
+	private final Schema schema;
 	private final Query query;
 	private final ObjectGraph objectGraph;
 	private final KeysToLoad keysToLoad;
-	private ExecutionPlan plan;
 
 	/**
 	 * Creates a new instance of ExecutionContext.
 	 */
 	public ExecutionContext(JoraphContext context, Query query) {
 		this.context		= context;
+		this.schema         = context.getSchema();
 		this.query 			= query;
 		this.keysToLoad		= new KeysToLoad();
 
@@ -59,18 +62,44 @@ public class ExecutionContext {
 	 * objects
 	 */
 	public ObjectGraph execute() {
-		if (plan!=null) {
-			return objectGraph;
-		}
 
 		keysToLoad.clear();
 
-		plan = context.plan(query.getEntityClasses());
-		for (Operation op : plan.getOperations()) {
-			executeOperation(op);
+
+		final Set<EntityDescriptor<?>> descriptors = query.getEntityClasses().stream()
+				.flatMap((clazz) -> schema.getEntityDescriptors(clazz).stream())
+				.collect(Collectors.toSet());
+
+
+		// for each entity
+		boolean keepLoading = true;
+		while (keepLoading) {
+
+			// get all of the FKs
+			for (EntityDescriptor<?> desc : descriptors) {
+				for (Map.Entry<Function1<?,?>, ForeignKey<?,?>> fk : desc.getForeignKeys().entrySet()) {
+					gatherValuesForForeignKeysTo(fk.getValue().getForeignEntity());
+				}
+			}
+
+			// figure out which entities to load based on the FKs
+			Set<Class<?>> entitiesToLoad = keysToLoad.getEntitiesToLoad();
+
+			// load the new entities
+			if (entitiesToLoad.size() == 1) {
+				loadEntities(entitiesToLoad.iterator().next());
+			} else if (entitiesToLoad.size() > 1) {
+				loadEntitiesInParallel(entitiesToLoad);
+			}
+
+			// add the new descriptors to the list
+			boolean newDescriptors = descriptors.addAll(entitiesToLoad.stream()
+					.flatMap((clazz) -> schema.getEntityDescriptors(clazz).stream())
+					.collect(Collectors.toSet()));
+
+			keepLoading = !entitiesToLoad.isEmpty() || newDescriptors;
 		}
 
-		JoraphDebug.addExecutionPlan(plan);
 		JoraphDebug.addObjectGraph(objectGraph);
 
 		return objectGraph;
@@ -97,18 +126,6 @@ public class ExecutionContext {
 		}
 	}
 
-	private void executeOperation(Operation op) {
-		if (GatherForeignKeysTo.class.isInstance(op)) {
-			gatherValuesForForeignKeysTo(GatherForeignKeysTo.class.cast(op).getEntityClass());
-
-		} else if (LoadEntities.class.isInstance(op)) {
-			loadEntities(LoadEntities.class.cast(op).getEntityClass());
-
-		} else if (ParallelOperation.class.isInstance(op)) {
-			runInParallel(ParallelOperation.class.cast(op).getOperations());
-		}
-	}
-
 	private void gatherValuesForForeignKeysTo(Class<?> entityClass) {
 
 		context.getSchema().getEntityDescriptors(entityClass).stream()
@@ -122,39 +139,36 @@ public class ExecutionContext {
 								.flatMap(Set::stream)
 								.filter(Objects::nonNull)
 								.filter((id) -> !objectGraph.has(entityDescriptor.getEntityClass(), id))))
-				.forEach(keysToLoad.getAddKeyFunction(entityClass));
+				.forEach(keysToLoad.getAddKeyToLoadFunction(entityClass));
 
 	}
 
 	private void loadEntities(Class<?> entityClass) {
-		Set<Object> ids = keysToLoad.getKeys(entityClass);
+		Set<Object> ids = keysToLoad.getKeysToLoad(entityClass);
 		if (ids == null || ids.isEmpty()) {
 			return;
 		}
 
 		List<?> objects = context.getLoaderContext().load(entityClass, query.getArguments(), ids);
 		addToResults(objects);
-		keysToLoad.removeKeys(entityClass, ids);
+		keysToLoad.addKeysLoaded(entityClass, ids);
 	}
 
-	private void runInParallel(List<Operation> ops) {
-		List<Future<?>> futures = new ArrayList<Future<?>>();
-		for (final Operation op : ops) {
+	private void loadEntitiesInParallel(Collection<Class<?>> entityClasses) {
+		List<Future<?>> futures = new ArrayList<>();
+		for (final Class<?> entityClass : entityClasses) {
 			final DebugInfo info = JoraphDebug.getDebugInfo();
-			futures.add(context.getExecutorService().submit(new Runnable() {
-				@Override
-				public void run() {
-					JoraphDebug.setThreadDebugInfo(info);
-					executeOperation(op);
-					JoraphDebug.clearThreadDebugInfo();
-				}
+			futures.add(context.getExecutorService().submit(() -> {
+				JoraphDebug.setThreadDebugInfo(info);
+				loadEntities(entityClass);
+				JoraphDebug.clearThreadDebugInfo();
 			}));
 			JoraphDebug.setThreadDebugInfo(info);
 		}
 		for (Future<?> future : futures) {
 			try {
 				future.get(context.getParallelExecutorDefaultTimeoutMillis(), TimeUnit.MILLISECONDS);
-			} catch (Exception e) {
+			} catch (InterruptedException | ExecutionException | TimeoutException e) {
 				throw new JoraphException(e);
 			}
 		}
@@ -182,35 +196,51 @@ public class ExecutionContext {
 	}
 
 	/**
-	 * @return the plan
-	 */
-	public ExecutionPlan getPlan() {
-		return plan;
-	}
-
-	/**
 	 * Simple class for managing the keys that need to be loaded.
 	 */
 	private static class KeysToLoad {
-		private final Map<Class<?>, Set<Object>> map = new ConcurrentHashMap<>();
-		private Consumer<Object> getAddKeyFunction(Class<?> entityClass) {
-			return (id) -> addKey(entityClass, id);
+		private final Map<Class<?>, Set<Object>> keysToLoad = new HashMap<>();
+		private final Map<Class<?>, Set<Object>> keysLoaded = new HashMap<>();
+
+		private Consumer<Object> getAddKeyToLoadFunction(Class<?> entityClass) {
+			return (id) -> addKeyToLoad(entityClass, id);
 		}
-		private void addKey(Class<?> entityClass, Object id) {
-			entitySet(entityClass).add(id);
+
+		private synchronized void addKeyToLoad(Class<?> entityClass, Object id) {
+			if (!getKeysLoaded(entityClass).contains(id)) {
+				getKeysToLoad(entityClass).add(id);
+			}
 		}
-		private void removeKeys(Class<?> entityClass, Collection<Object> ids) {
-			entitySet(entityClass).removeAll(ids);
+
+		private synchronized void addKeysLoaded(Class<?> entityClass, Collection<Object> ids) {
+			getKeysLoaded(entityClass).addAll(ids);
+			getKeysToLoad(entityClass).removeAll(ids);
 		}
-		private Set<Object> getKeys(Class<?> entityClass) {
-			return entitySet(entityClass);
-		}
-		private Set<Object> entitySet(Class<?> entityClass) {
-			return map.computeIfAbsent(entityClass, __ ->
+
+		private Set<Object> getKeysToLoad(Class<?> entityClass) {
+			return keysToLoad.computeIfAbsent(entityClass, __ ->
 					Collections.newSetFromMap(new ConcurrentHashMap<>()));
 		}
-		private void clear() {
-			map.clear();
+
+		private Set<Object> getKeysLoaded(Class<?> entityClass) {
+			return keysLoaded.computeIfAbsent(entityClass, __ ->
+					Collections.newSetFromMap(new ConcurrentHashMap<>()));
+		}
+
+		private synchronized void clear() {
+			keysToLoad.clear();
+			keysLoaded.clear();
+		}
+
+		public synchronized boolean hasKeysToLoad() {
+			return !getEntitiesToLoad().isEmpty();
+		}
+
+		public synchronized Set<Class<?>> getEntitiesToLoad() {
+			return keysToLoad.entrySet().stream()
+					.filter((e) -> !e.getValue().isEmpty())
+					.map(Map.Entry::getKey)
+					.collect(Collectors.toSet());
 		}
 	}
 

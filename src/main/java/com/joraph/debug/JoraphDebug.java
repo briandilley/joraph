@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 
 import com.joraph.ObjectGraph;
-import com.joraph.plan.ExecutionPlan;
 
 public class JoraphDebug {
 
@@ -41,13 +40,6 @@ public class JoraphDebug {
 			return;
 		}
 		getDebugInfo().addObjectGraph(objectGraph);
-	}
-
-	public static void addExecutionPlan(ExecutionPlan executionPlan) {
-		if (!hasDebugInfo()) {
-			return;
-		}
-		getDebugInfo().addExecutionPlan(executionPlan);
 	}
 
 	public static void addLoaderDebug(LoaderDebug loaderDebug) {

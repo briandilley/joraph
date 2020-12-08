@@ -180,7 +180,7 @@ public class LoaderIntegrationTest
 		FeaturedBook featuredBook1 = testDb.get(FeaturedBook.class, "book1");
 		assertNotNull(featuredBook1);
 
-		assertThrows(MissingLoaderArgumentException.class, () -> {
+		assertThrows(JoraphException.class, () -> {
 			context.execute(new Query(FeaturedBook.class)
 					.withRootObject(featuredBook1));
 		});

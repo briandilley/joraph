@@ -26,30 +26,23 @@ public class SchemaTest {
 
 	@Test
 	public void testCircular() {
-		assertThrows(CircularDependencyException.class, () -> {
-			schema.addEntityDescriptor(Author.class)
-					.withPrimaryKey(Author::getId)
-					.withForeignKey(Author.class, Author::getId);
-			schema.validate();
-			schema.graph(Author.class);
-		});
+		schema = new Schema();
+		schema.addEntityDescriptor(Author.class)
+				.withPrimaryKey(Author::getId)
+				.withForeignKey(Author.class, Author::getId);
+		schema.validate();
 
-		assertThrows(CircularDependencyException.class, () -> {
-			schema.addEntityDescriptor(Author.class)
-					.withPrimaryKey(Author::getId)
-					.withForeignKey(User.class, Author::getId);
-
-			schema.addEntityDescriptor(User.class)
-					.withPrimaryKey(User::getId)
-					.withForeignKey(Library.class, User::getId);
-
-			schema.addEntityDescriptor(Library.class)
-					.withPrimaryKey(Library::getId)
-					.withForeignKey(Author.class, Library::getId);
-
-			schema.validate();
-			schema.graph(Author.class);
-		});
+		schema = new Schema();
+		schema.addEntityDescriptor(Author.class)
+				.withPrimaryKey(Author::getId)
+				.withForeignKey(User.class, Author::getId);
+		schema.addEntityDescriptor(User.class)
+				.withPrimaryKey(User::getId)
+				.withForeignKey(Library.class, User::getId);
+		schema.addEntityDescriptor(Library.class)
+				.withPrimaryKey(Library::getId)
+				.withForeignKey(Author.class, Library::getId);
+		schema.validate();
 	}
 
 	@Test

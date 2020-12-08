@@ -18,7 +18,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.joraph.debug.JoraphDebug;
-import com.joraph.plan.ExecutionPlan;
 import com.joraph.schema.Author;
 import com.joraph.schema.BasicCompositeKey;
 import com.joraph.schema.Book;
@@ -69,8 +68,6 @@ public class JoraphIntegrationTest
 
 		Query q = new Query(Book.class, User.class)
 				.withRootObject(book1, user1);
-
-		System.out.println(context.plan(q));
 
 		ObjectGraph objectGraph = context.execute(q);
 		assertNotNull(objectGraph);
@@ -144,10 +141,6 @@ public class JoraphIntegrationTest
 
 	@Test
 	public void testPolyMorphicLoading() {
-
-		ExecutionPlan plan = context.plan(CollectionUtil.asSet(MessagePair.class));
-		assertNotNull(plan);
-		System.out.println(plan.toString());
 
 		MessagePair messagePair = testDb.get(MessagePair.class, new BasicCompositeKey("usermessage1", "bookmessage4"));
 
@@ -345,14 +338,14 @@ public class JoraphIntegrationTest
 		assertFalse(objectGraph.has(User.class, "user2"));
 		assertFalse(objectGraph.has(User.class, "user3"));
 
-		objectGraph = context.supplement(objectGraph, UserFollow.class,
+		objectGraph = context.supplement(objectGraph, UserFollow.class, Arrays.asList(
 				new BasicCompositeKey("user1", "user2"),
 				new BasicCompositeKey("user1", "user3"),
 				new BasicCompositeKey("user2", "user1"),
 				new BasicCompositeKey("user2", "user3"),
 				new BasicCompositeKey("user3", "user1"),
 				new BasicCompositeKey("user3", "user2"),
-				new BasicCompositeKey("user3", "user7"));
+				new BasicCompositeKey("user3", "user7")));
 		assertNotNull(objectGraph);
 		assertTrue(objectGraph.has(User.class, "user1"));
 		assertTrue(objectGraph.has(User.class, "user2"));
@@ -417,7 +410,6 @@ public class JoraphIntegrationTest
 
 		assertTrue(JoraphDebug.hasDebugInfo());
 		assertEquals(1, JoraphDebug.getDebugInfo().getObjectGraphs().size());
-		assertEquals(1, JoraphDebug.getDebugInfo().getExecutionPlans().size());
 		assertTrue(JoraphDebug.getDebugInfo().getObjectGraphs().contains(objectGraph));
 
 		JoraphDebug.finishDebug();
@@ -436,7 +428,6 @@ public class JoraphIntegrationTest
 
 		assertTrue(JoraphDebug.hasDebugInfo());
 		assertEquals(2, JoraphDebug.getDebugInfo().getObjectGraphs().size());
-		assertEquals(2, JoraphDebug.getDebugInfo().getExecutionPlans().size());
 		assertTrue(JoraphDebug.getDebugInfo().getObjectGraphs().contains(objectGraph));
 		assertTrue(JoraphDebug.getDebugInfo().getObjectGraphs().contains(objectGraph2));
 

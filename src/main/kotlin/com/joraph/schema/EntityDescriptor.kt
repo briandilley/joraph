@@ -105,4 +105,27 @@ class EntityDescriptor<T> @JvmOverloads constructor(
     init {
         graphKey = entityClass
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as EntityDescriptor<*>
+
+        if (entityClass != other.entityClass) return false
+        if (graphKey != other.graphKey) return false
+        if (foreignKeys != other.foreignKeys) return false
+        if (_primaryKey != other._primaryKey) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = entityClass.hashCode()
+        result = 31 * result + graphKey.hashCode()
+        result = 31 * result + foreignKeys.hashCode()
+        result = 31 * result + (_primaryKey?.hashCode() ?: 0)
+        return result
+    }
+
 }
