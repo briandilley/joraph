@@ -11,13 +11,13 @@ import kotlin.jvm.functions.Function1;
 
 public class CompositeKeyTest {
 
-	private CompositeKey<UserFollow, CPK> key;
+	private Key<UserFollow, CPK> key;
 
 	public Function1<Object[], CPK> CONVERTER = (a) -> new CPK(a[0].toString(), a[1].toString());
 
 	@BeforeEach
 	public void setUp() {
-		key = new CompositeKey<>(CONVERTER,
+		key = SchemaUtil.compositeKey(CONVERTER,
 				UserFollow::getFromUserId,
 				UserFollow::getToUserId);
 	}

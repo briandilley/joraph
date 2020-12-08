@@ -132,7 +132,6 @@ public class Node {
 
 	/**
 	 * Returns the child for the given property name.
-	 * @param propertyName the name
 	 * @return the child
 	 */
 	public Node child(ForeignKey<?, ?> prop) {

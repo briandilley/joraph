@@ -10,8 +10,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.joraph.JoraphException;
-
 import kotlin.jvm.functions.Function1;
 
 /**
@@ -156,7 +154,7 @@ public class Schema {
 
 	private void graph(Node node, Graph<Class<?>> graph) {
 		if (node.isCircular()) {
-			throw new JoraphException("Circular dependency detected on "+node.getEntityClass());
+			throw new CircularDependencyException(node.getEntityClass());
 		}
 		graph.addEntity(node.getEntityClass());
 		for (ForeignKey<?, ?> fk : node.getForeignKeys()) {
@@ -193,9 +191,7 @@ public class Schema {
 			EntityDescriptor<?> ed = entry.getValue();
 
 			// check pk
-			if (ed.getPrimaryKey()==null) {
-				throw new MissingPrimaryKeyException(ed);
-			}
+			ed.getPrimaryKey();
 
 			// check FKs
 			Map<Function1<?, ?>, ForeignKey<?, ?>> fks = ed.getForeignKeys();

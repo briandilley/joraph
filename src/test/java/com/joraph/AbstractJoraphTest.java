@@ -61,18 +61,18 @@ public abstract class AbstractJoraphTest {
 		throws Exception {
 
 		schema.addEntityDescriptor(Author.class)
-			.setPrimaryKey(Author::getId);
+			.withPrimaryKey(Author::getId);
 		
 		schema.addEntityDescriptor(Genre.class)
-			.setPrimaryKey(Genre::getId);
+			.withPrimaryKey(Genre::getId);
 
 		schema.addEntityDescriptor(User.class)
-			.setGraphKey(User.class)
-			.setPrimaryKey(User::getId);
+			.withGraphKey(User.class)
+			.withPrimaryKey(User::getId);
 
 		schema.addEntityDescriptor(UserFavorites.class)
-			.setPrimaryKey(UserFavorites::getUserId)
-			.addForeignKey(User.class, UserFavorites::getUserId)
+			.withPrimaryKey(UserFavorites::getUserId)
+			.withForeignKey(User.class, UserFavorites::getUserId)
 			.addForeignKey(User.class)
 				.withAccessor(UserFavorites::getUserId)
 				.add()
@@ -86,79 +86,79 @@ public abstract class AbstractJoraphTest {
 				.add();
 
 		schema.addEntityDescriptor(UserEx.class)
-			.setGraphKey(User.class)
-			.setPrimaryKey(UserEx::getId);
+			.withGraphKey(User.class)
+			.withPrimaryKey(UserEx::getId);
 
 		schema.addEntityDescriptor(Library.class)
-			.setPrimaryKey(Library::getId)
-			.addForeignKey(User.class, Library::getLibrarianUserId);
+			.withPrimaryKey(Library::getId)
+			.withForeignKey(User.class, Library::getLibrarianUserId);
 
 		schema.addEntityDescriptor(Book.class)
-			.setPrimaryKey(Book::getId)
-			.addForeignKey(Author.class, Book::getAuthorId)
-			.addForeignKey(Author.class, Book::getCoAuthorId)
-			.addForeignKey(Genre.class, Book::getGenreId)
-			.addForeignKey(Library.class, Book::getLibraryId)
+			.withPrimaryKey(Book::getId)
+			.withForeignKey(Author.class, Book::getAuthorId)
+			.withForeignKey(Author.class, Book::getCoAuthorId)
+			.withForeignKey(Genre.class, Book::getGenreId)
+			.withForeignKey(Library.class, Book::getLibraryId)
 			.addForeignKey(Library.class)
 				.withAccessor(Book::getLibraryId)
 				.add()
-			.addForeignKey(User.class, chain(Book::getRating)
+			.withForeignKey(User.class, chain(Book::getRating)
 				.andThen(Rating::getUserId));
 
 		schema.addEntityDescriptor(Checkout.class)
-			.setPrimaryKey(Checkout::getId)
-			.addForeignKey(User.class, Checkout::getUserId)
-			.addForeignKey(Library.class, Checkout::getLibraryId)
-			.addForeignKey(Book.class, Checkout::getBookId);
+			.withPrimaryKey(Checkout::getId)
+			.withForeignKey(User.class, Checkout::getUserId)
+			.withForeignKey(Library.class, Checkout::getLibraryId)
+			.withForeignKey(Book.class, Checkout::getBookId);
 		
 		schema.addEntityDescriptor(SimilarBook.class)
-			.setPrimaryKey(SimilarBook::getId)
-			.addForeignKey(Book.class, SimilarBook::getBookId)
-			.addForeignKey(Book.class, SimilarBook::getSimilarBookId);
+			.withPrimaryKey(SimilarBook::getId)
+			.withForeignKey(Book.class, SimilarBook::getBookId)
+			.withForeignKey(Book.class, SimilarBook::getSimilarBookId);
 
 
 		schema.addEntityDescriptor(LatestMessage.class)
-			.setPrimaryKey(LatestMessage::getId)
-			.addForeignKey(Message.class, LatestMessage::getLatestMessageId);
+			.withPrimaryKey(LatestMessage::getId)
+			.withForeignKey(Message.class, LatestMessage::getLatestMessageId);
 
 		schema.addEntityDescriptor(MessagePair.class)
-			.setPrimaryKey(MessagePair::getLeft, MessagePair::getRight)
-			.addForeignKey(Message.class, MessagePair::getLeft)
-			.addForeignKey(Message.class, MessagePair::getRight);
+			.withPrimaryKey(MessagePair::getLeft, MessagePair::getRight)
+			.withForeignKey(Message.class, MessagePair::getLeft)
+			.withForeignKey(Message.class, MessagePair::getRight);
 
 		schema.addEntityDescriptor(UserMessage.class)
-			.setGraphKey(Message.class)
-			.setPrimaryKey(UserMessage::getId)
-			.addForeignKey(User.class, UserMessage::getUserId);
+			.withGraphKey(Message.class)
+			.withPrimaryKey(UserMessage::getId)
+			.withForeignKey(User.class, UserMessage::getUserId);
 
 		schema.addEntityDescriptor(BookMessage.class)
-			.setGraphKey(Message.class)
-			.setPrimaryKey(BookMessage::getId)
-			.addForeignKey(Book.class, BookMessage::getBookId);
+			.withGraphKey(Message.class)
+			.withPrimaryKey(BookMessage::getId)
+			.withForeignKey(Book.class, BookMessage::getBookId);
 
 		schema.addEntityDescriptor(AuthorMessage.class)
-			.setGraphKey(Message.class)
-			.setPrimaryKey(AuthorMessage::getId)
-			.addForeignKey(Author.class, AuthorMessage::getAuthorId);
+			.withGraphKey(Message.class)
+			.withPrimaryKey(AuthorMessage::getId)
+			.withForeignKey(Author.class, AuthorMessage::getAuthorId);
 
 		schema.addEntityDescriptor(FeaturedBook.class)
 		/* purposefully set this way */
-			.setPrimaryKey(FeaturedBook::getBookId)
-			.addForeignKey(Book.class, FeaturedBook::getBookId)
-			.addForeignKey(User.class, FeaturedBook::getFeaturedById);
+			.withPrimaryKey(FeaturedBook::getBookId)
+			.withForeignKey(Book.class, FeaturedBook::getBookId)
+			.withForeignKey(User.class, FeaturedBook::getFeaturedById);
 
 		/* follows */
 		schema.addEntityDescriptor(UserFollow.class)
-			.setPrimaryKey(BasicCompositeKey.CONVERTER,
+			.withPrimaryKey(BasicCompositeKey.CONVERTER,
 					UserFollow::getFromUserId,
 					UserFollow::getToUserId)
-			.addForeignKey(User.class, UserFollow::getFromUserId)
-			.addForeignKey(User.class, UserFollow::getToUserId);
+			.withForeignKey(User.class, UserFollow::getFromUserId)
+			.withForeignKey(User.class, UserFollow::getToUserId);
 
 		/* this entity should have no EntityLoader defined */
 		schema.addEntityDescriptor(ErrorBook.class)
-			.setPrimaryKey(ErrorBook::getBookId)
-			.addForeignKey(ErrorBook.class, ErrorBook::getAnotherErrorBookId);
+			.withPrimaryKey(ErrorBook::getBookId)
+			.withForeignKey(ErrorBook.class, ErrorBook::getAnotherErrorBookId);
 
 		schema.validate();
 		return schema;

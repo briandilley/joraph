@@ -380,7 +380,7 @@ public class JoraphIntegrationTest
 			throws Exception {
 
 		ExtensionsKt.<Checkout>findFirstByEntityClass(schema.getEntityDescriptors(Checkout.class), Checkout.class)
-			.addForeignKey(User.class, chain(Checkout::getMetaData)
+			.withForeignKey(User.class, chain(Checkout::getMetaData)
 					.andThen(CheckoutMetaData::getLibrarianUserId));
 
 		schema.validate();

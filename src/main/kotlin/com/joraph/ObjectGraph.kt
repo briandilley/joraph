@@ -68,7 +68,9 @@ class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = null) 
                 ?: col.findFirstByGraphKey<Property<*, *>>(entityClass)?.primaryKey
 
         requireNotNull(pk) { "Primary key for ${entityClass.name} not found" }
-        addResult(value.javaClass, pk.read(value), value)
+        val id = requireNotNull(pk.read(value)) { "Primary key cannot be null" }
+
+        addResult(value.javaClass, id, value)
     }
 
     /**

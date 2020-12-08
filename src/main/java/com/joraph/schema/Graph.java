@@ -180,6 +180,10 @@ public class Graph<T>
 		entities.add(entity);
 	}
 
+	public boolean hasEntity(T entity) {
+		return entities.contains(entity);
+	}
+
 	public void removeEntity(T entity) {
 		entities.remove(entity);
 		outgoingEdge.remove(entity);

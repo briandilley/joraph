@@ -22,6 +22,7 @@ import com.joraph.plan.ParallelOperation;
 import com.joraph.schema.EntityDescriptor;
 import com.joraph.schema.Property;
 import com.joraph.schema.Schema;
+import com.joraph.schema.SchemaUtil;
 import com.joraph.schema.UnknownEntityDescriptorException;
 
 /**
@@ -112,7 +113,7 @@ public class ExecutionContext {
 
 		context.getSchema().getEntityDescriptors(entityClass).stream()
 				.flatMap((entityDescriptor) -> context.getSchema().describeForeignKeysTo(entityClass).stream()
-						.filter((fk) -> fk.shouldLoad(query.getArguments()))
+						.filter((fk) -> SchemaUtil.shouldLoad(fk, query.getArguments()))
 						.flatMap((fk) -> objectGraph.stream(fk.getEntityClass())
 								.filter((o) -> o.getClass().equals(fk.getEntityClass()))
 								.map(fk::read)
