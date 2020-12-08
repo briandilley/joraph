@@ -14,7 +14,7 @@ maven
 <dependency>
     <groupId>com.github.briandilley.joraph</groupId>
     <artifactId>joraph</artifactId>
-    <version>0.1</version>
+    <version>0.2.1</version>
 </dependency>
 ```
 
@@ -22,7 +22,7 @@ gradle
 ```
 dependencies {
 
-    compile('com.github.briandilley.joraph:joraph:0.1')
+    compile('com.github.briandilley.joraph:joraph:0.2.1')
 
 }
 ```
