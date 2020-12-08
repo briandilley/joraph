@@ -91,29 +91,29 @@ public class EntityLoaderContext {
 	/**
 	 * Loads entities of the given type.
 	 * @param entityClass the type
-	 * @param argumentProvider the argument provider
 	 * @param ids the ids to load
 	 * @return the loaded entities
 	 * @throws UnconfiguredLoaderException if a loader wasn't found
 	 * @throws MissingLoaderArgumentException if a loader expected an argument that wasn't provided
 	 * @throws JoraphException when a loader throws an exception
 	 */
-	public <A, I, R> List<R> load(Class<R> entityClass, List<Object> arguments, Iterable<I> ids)
+	public <I, R> List<R> load(Class<R> entityClass, List<Object> arguments, Iterable<I> ids)
 			throws UnconfiguredLoaderException,
 			MissingLoaderArgumentException,
 			JoraphException {
 
-		final EntityLoaderDescriptor<A, I, R> loader = getLoader(entityClass);
+		final EntityLoaderDescriptor<Object, I, R> loader = getLoader(entityClass);
 		if (loader.requiresAdditionalArguments()
 				&& (arguments == null || arguments.isEmpty())) {
 			throw new MissingLoaderArgumentException(loader);
 		}
 
-		final A argument;
+		final LoaderFunction<Object, I, R> loaderFunction = loader.getLoader();
+
+		final Object argument;
 		if (loader.requiresAdditionalArguments()) {
 			argument = arguments.stream()
 					.filter(loader.getArgumentClass()::isInstance)
-					.map(loader.getArgumentClass()::cast)
 					.findFirst()
 					.orElseThrow(() -> new MissingLoaderArgumentException(loader));
 		} else {
@@ -124,7 +124,7 @@ public class EntityLoaderContext {
 
 		try {
 			final long start = System.currentTimeMillis();
-			List<R> objects = loader.getLoader().load(argument, idsToLoad);
+			List<R> objects = loaderFunction.load(argument, idsToLoad);
 			JoraphDebug.addLoaderDebug(
 					entityClass,
 					System.currentTimeMillis()-start,
