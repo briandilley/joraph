@@ -7,10 +7,10 @@ package com.joraph.schema
  * @param <T> the property type
  */
 @FunctionalInterface
-interface Property<T, R> : Function1<T?, R?> {
-    override fun invoke(value: T?): R? {
+interface Property<T, R> : Function1<T, R?> {
+    override fun invoke(value: T): R? {
         return read(value as Any)
     }
 
-    fun read(obj: Any?): R?
+    fun read(obj: Any): R?
 }

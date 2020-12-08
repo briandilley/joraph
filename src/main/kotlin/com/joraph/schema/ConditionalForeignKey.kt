@@ -9,7 +9,7 @@ import java.util.function.Predicate
 open class ConditionalForeignKey<T, R, A>(
         entityClass: Class<T>,
         foreignEntity: Class<*>,
-        accessor: Function1<T?, R?>,
+        accessor: Function1<T, R?>,
         val argumentClass: Class<A>,
         val argumentPredicate: Predicate<A>) : ForeignKey<T, R>(entityClass, foreignEntity, accessor), Property<T, R> {
 
