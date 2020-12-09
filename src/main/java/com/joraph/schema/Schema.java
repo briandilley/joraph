@@ -116,7 +116,7 @@ public class Schema {
 	public Collection<ForeignKey<?, ?>> describeForeignKeysFrom(Class<?> entityClass) {
 		return getEntityDescriptors(entityClass).stream()
 				.flatMap((entityDescriptor) ->
-						entityDescriptor.getForeignKeys().values().stream())
+						entityDescriptor.getForeignKeys().stream())
 				.collect(Collectors.toList());
 	}
 
@@ -128,7 +128,6 @@ public class Schema {
 	public Collection<ForeignKey<?, ?>> describeForeignKeysTo(Class<?> toEntityClass) {
 		return entityDescriptors.values().stream()
 				.map(EntityDescriptor::getForeignKeys)
-				.map(Map::values)
 				.flatMap(Collection::stream)
 				.filter((fk) -> fk.getForeignEntity().equals(toEntityClass))
 				.collect(Collectors.toList());
@@ -141,7 +140,6 @@ public class Schema {
 	public Collection<ForeignKey<?, ?>> describeForeignKeys() {
 		return entityDescriptors.values().stream()
 				.map(EntityDescriptor::getForeignKeys)
-				.map(Map::values)
 				.flatMap(Collection::stream)
 				.collect(Collectors.toList());
 	}
@@ -168,9 +166,8 @@ public class Schema {
 			ed.getPrimaryKey();
 
 			// check FKs
-			Map<Function1<?, ?>, ForeignKey<?, ?>> fks = ed.getForeignKeys();
-			for (Entry<Function1<?, ?>, ForeignKey<?, ?>> fkEntry : fks.entrySet()) {
-				ForeignKey<?, ?> fk = fkEntry.getValue();
+			Set<ForeignKey<?, ?>> fks = ed.getForeignKeys();
+			for (ForeignKey<?, ?> fk : fks) {
 				entityDescriptors.values().stream()
 						.filter((d) -> d.getEntityClass().equals(fk.getForeignEntity())
 								|| d.getGraphKey().equals(fk.getForeignEntity()))

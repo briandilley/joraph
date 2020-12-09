@@ -12,7 +12,7 @@ class EntityDescriptor<T> @JvmOverloads constructor(
         primaryKey: Key<T, *>? = null,
         var graphKey: Class<*> = entityClass) {
 
-    val foreignKeys: MutableMap<Function1<*, *>, ForeignKey<*, *>> = mutableMapOf()
+    val foreignKeys: MutableSet<ForeignKey<*, *>> = mutableSetOf()
 
     @JvmOverloads constructor(
             entityClass: Class<T>,
@@ -56,12 +56,12 @@ class EntityDescriptor<T> @JvmOverloads constructor(
     }
 
     fun withForeignKey(foreignEntity: Class<*>, accessor: Function1<T, *>): EntityDescriptor<T> {
-        foreignKeys[accessor] = ForeignKey(entityClass, foreignEntity, accessor)
+        foreignKeys.add(ForeignKey(entityClass, foreignEntity, accessor))
         return this
     }
 
     fun <A> withForeignKey(foreignEntity: Class<*>, accessor: Function1<T, *>, argumentClass: Class<A>, argumentPredicate: Predicate<A>): EntityDescriptor<T> {
-        foreignKeys[accessor] = ConditionalForeignKey(entityClass, foreignEntity, accessor, argumentClass, argumentPredicate)
+        foreignKeys.add(ConditionalForeignKey(entityClass, foreignEntity, accessor, argumentClass, argumentPredicate))
         return this
     }
 

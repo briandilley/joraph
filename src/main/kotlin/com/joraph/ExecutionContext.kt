@@ -47,8 +47,8 @@ class ExecutionContext(
 
             // get all of the FKs
             for (desc in descriptors) {
-                for ((_, value) in desc.foreignKeys) {
-                    gatherValuesForForeignKeysTo(value.foreignEntity)
+                for (fk in desc.foreignKeys) {
+                    gatherValuesForForeignKeysTo(fk.foreignEntity)
                 }
             }
 

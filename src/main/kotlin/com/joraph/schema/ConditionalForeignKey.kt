@@ -34,4 +34,25 @@ open class ConditionalForeignKey<T, R, A>(
                 + "(arg: " + argumentClass + ")")
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        if (!super.equals(other)) return false
+
+        other as ConditionalForeignKey<*, *, *>
+
+        if (argumentClass != other.argumentClass) return false
+        if (argumentPredicate != other.argumentPredicate) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = super.hashCode()
+        result = 31 * result + argumentClass.hashCode()
+        result = 31 * result + argumentPredicate.hashCode()
+        return result
+    }
+
+
 }
