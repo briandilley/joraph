@@ -16,7 +16,7 @@ class EntityDescriptor<T> @JvmOverloads constructor(
 
     @JvmOverloads constructor(
             entityClass: Class<T>,
-            keyFunction: Function1<T, Any?>,
+            keyFunction: Function1<T, *>,
             graphKey: Class<*> = entityClass) : this(
             entityClass = entityClass,
             primaryKey = Key(keyFunction),
@@ -32,22 +32,22 @@ class EntityDescriptor<T> @JvmOverloads constructor(
         return this
     }
 
-    fun <RR> withPrimaryKey(func: Function1<T?, RR?>): EntityDescriptor<T> {
+    fun withPrimaryKey(func: Function1<T, *>): EntityDescriptor<T> {
         _primaryKey = Key(func)
         return this
     }
 
     @SafeVarargs
     fun withPrimaryKey(
-            cconverter: Function1<Array<Any?>, Any>,
-            first: Function1<T, Any?>,
-            vararg accessors: Function1<T, Any?>): EntityDescriptor<T> {
+            cconverter: Function1<Array<Any?>, *>,
+            first: Function1<T, *>,
+            vararg accessors: Function1<T, *>): EntityDescriptor<T> {
         _primaryKey = SchemaUtil.compositeKey(cconverter, first, *accessors)
         return this
     }
 
     @SafeVarargs
-    fun withPrimaryKey(first: Function1<T, Any?>, vararg remaining: Function1<T, Any?>): EntityDescriptor<T> {
+    fun withPrimaryKey(first: Function1<T, *>, vararg remaining: Function1<T, *>): EntityDescriptor<T> {
         return withPrimaryKey(BasicCompositeKey.CONVERTER, first, *remaining)
     }
 
@@ -55,14 +55,12 @@ class EntityDescriptor<T> @JvmOverloads constructor(
         return ForeignKeyBuilder<Any, T>(this, foreignEntity)
     }
 
-    @JvmOverloads
-    fun withForeignKey(foreignEntity: Class<*>, accessor: Function1<T, Any>): EntityDescriptor<T> {
+    fun withForeignKey(foreignEntity: Class<*>, accessor: Function1<T, *>): EntityDescriptor<T> {
         foreignKeys[accessor] = ForeignKey(entityClass, foreignEntity, accessor)
         return this
     }
 
-    @JvmOverloads
-    fun <A> withForeignKey(foreignEntity: Class<*>, accessor: Function1<T, Any>, argumentClass: Class<A>, argumentPredicate: Predicate<A>): EntityDescriptor<T> {
+    fun <A> withForeignKey(foreignEntity: Class<*>, accessor: Function1<T, *>, argumentClass: Class<A>, argumentPredicate: Predicate<A>): EntityDescriptor<T> {
         foreignKeys[accessor] = ConditionalForeignKey(entityClass, foreignEntity, accessor, argumentClass, argumentPredicate)
         return this
     }
@@ -71,15 +69,16 @@ class EntityDescriptor<T> @JvmOverloads constructor(
             private val entity: EntityDescriptor<TT>,
             private val foreignEntity: Class<*>) {
 
-        private var accessor: Function1<TT, Any>? = null
+        private var accessor: Function1<TT, *>? = null
         private var argumentClass: Class<A>? = null
         private var argumentPredicate: Predicate<A>? = null
 
-        fun withAccessor(accessor: Function1<TT, Any>?): ForeignKeyBuilder<A, TT> {
+        fun withAccessor(accessor: Function1<TT, *>?): ForeignKeyBuilder<A, TT> {
             this.accessor = accessor
             return this
         }
 
+        @Suppress("UNCHECKED_CAST")
         fun <A2> withPredicate(argumentClass: Class<A2>, argumentPredicate: Predicate<A2>): ForeignKeyBuilder<A2, TT> {
             this.argumentClass = argumentClass as Class<A>?
             this.argumentPredicate = argumentPredicate as Predicate<A>?

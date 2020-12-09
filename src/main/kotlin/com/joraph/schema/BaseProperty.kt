@@ -8,6 +8,7 @@ import com.joraph.JoraphException
  */
 open class BaseProperty<T, R> constructor(val propertyAccessor: Function1<T, R?>) : Property<T, R> {
 
+    @Suppress("UNCHECKED_CAST")
     override fun read(obj: Any): R? {
         return try {
             propertyAccessor.invoke(obj as T)

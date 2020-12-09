@@ -17,6 +17,7 @@ open class ConditionalForeignKey<T, R, A>(
      * Indicates whether or not this foreign
      * key should be loaded.
      */
+    @Suppress("UNCHECKED_CAST")
     fun shouldLoad(arguments: List<Any?>?): Boolean {
         if (arguments == null || arguments.isEmpty()) {
             return false

@@ -146,6 +146,7 @@ public class Schema {
 				.collect(Collectors.toList());
 	}
 
+
 	/**
 	 * Describes the given entity class.
 	 */

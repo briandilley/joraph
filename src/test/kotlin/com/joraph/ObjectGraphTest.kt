@@ -16,12 +16,6 @@ class ObjectGraphTest {
     @BeforeEach
     fun setUp() {
         _subject = ObjectGraph()
-
-        val x: Function1<Book, Rating> = Book::getRating
-
-        val y = Book::getRating.chain() andThen Rating::getUserId
-
-        val func = Book::getRating andThen Rating::getUserId
     }
 
     @Test

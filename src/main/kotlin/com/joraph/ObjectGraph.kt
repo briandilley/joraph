@@ -48,8 +48,8 @@ class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = null) 
     @Suppress("UNCHECKED_CAST")
     fun <T : Any> getIds(type: Class<*>): Set<T> {
         return schema!!.getEntityDescriptors(type)
-                .map { getList<T>(it.entityClass)
-                        .map { o -> it.primaryKey.read(o) as T } }
+                .map { getList(it.entityClass)
+                        .map { o -> it.primaryKey.read(o!!) as T } }
                 .flatten()
                 .toSet()
     }
@@ -103,7 +103,10 @@ class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = null) 
      * Returns the object of the given type with
      * the given id.
      */
-    fun has(type: Class<*>, id: Any): Boolean {
+    fun has(type: Class<*>, id: Any?): Boolean {
+        if (id == null) {
+            return false
+        }
         val graphTypeKey = getGraphTypeKey(type)
         val map = results[graphTypeKey]
                 ?: return false
@@ -115,7 +118,16 @@ class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = null) 
      * the given id.
      */
     @Suppress("UNCHECKED_CAST")
-    operator fun <T : Any> get(type: Class<T>, id: Any): T? = getMap<T>(type)[id]
+    operator fun <T : Any> get(type: Class<T>, id: Any?): T? = id?.let { getMap<T>(type)[it] }
+
+    /**
+     * Returns the object of the given type with
+     * the given id, throws an exception if it's not found.
+     */
+    fun <T : Any> getRequired(type: Class<T>, id: Any?): T {
+        return get(type, id)
+                ?: throw EntityNotFoundException("Entity of type ${type.name} with id $id not found")
+    }
 
     /**
      * Returns the object of the given type with
@@ -144,7 +156,7 @@ class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = null) 
     /**
      * Returns a list of all items of a given type.
      */
-    fun <T : Any> getList(type: Class<*>): List<T> {
+    fun <T : Any> getList(type: Class<T>): List<T> {
         return getMap<T>(type)
                 .map { it.value }
                 .toList()
@@ -154,7 +166,7 @@ class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = null) 
      * Returns a list of all items of a given type.
      */
     @Suppress("UNCHECKED_CAST")
-    fun <T : Any> stream(type: Class<*>): Stream<T> {
+    fun <T : Any> stream(type: Class<T>): Stream<T> {
         return getMap<T>(type).values.stream()
                 .map { it as T }
     }
@@ -162,7 +174,7 @@ class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = null) 
     /**
      * Returns a list of all items of a given type.
      */
-    fun streamIds(type: Class<*>): Stream<Any> {
+    fun <T : Any> streamIds(type: Class<T>): Stream<Any> {
         return getMap<Any>(type).keys.stream()
     }
 
@@ -170,9 +182,11 @@ class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = null) 
      * Returns a list of all items of a given type with
      * the given ids - sorted in the same way as the ids.
      */
-    fun <T : Any, I : Any> getList(type: Class<*>, ids: Collection<I>): List<T> {
+    fun <T : Any, I : Any> getList(type: Class<T>, ids: Collection<I?>): List<T> {
         val map = getMap<T>(type)
-        return ids.mapNotNull { map[it] }
+        return ids
+                .filterNotNull()
+                .mapNotNull { map[it] }
                 .toList()
     }
 

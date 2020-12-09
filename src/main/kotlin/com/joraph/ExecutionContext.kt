@@ -98,9 +98,9 @@ class ExecutionContext(
         context.schema.getEntityDescriptors(entityClass)
                 .flatMap { ed -> context.schema.describeForeignKeysTo(entityClass)
                         .filter { fk -> shouldLoad(fk, query.arguments) }
-                        .flatMap { fk ->  objectGraph.getList<Any>(fk.entityClass)
-                                .filter { o -> o.javaClass == fk.entityClass }
-                                .mapNotNull { obj -> fk.read(obj) }
+                        .flatMap { fk ->  objectGraph.getList(fk.entityClass)
+                                .filter { o -> o!!.javaClass == fk.entityClass }
+                                .mapNotNull { obj -> fk.read(obj!!) }
                                 .flatMap { id -> CollectionUtil.convertToSet(id) } // because it could be a one to many
                                 .filterNotNull()
                                 .filter { id -> !objectGraph.has(ed.entityClass, id) }}}
