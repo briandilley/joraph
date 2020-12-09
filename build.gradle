@@ -31,7 +31,7 @@ apply plugin: "kotlin"
 apply plugin: "com.adarshr.test-logger"
 
 group = "com.github.briandilley.joraph"
-version = "0.2.2"
+version = "0.3-SNAPSHOT"
 description = """
 Java library for joining objects into a graph, JOin gRAPH
 """
