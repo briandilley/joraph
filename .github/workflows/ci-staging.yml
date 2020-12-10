@@ -23,7 +23,7 @@ jobs:
       - name: Build
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon --max-workers=2 --warning-mode=all all build -x test
+          ./gradlew --no-daemon --max-workers=2 --warning-mode=all build -x test
 
       - name: Test
         run: ./gradlew --no-daemon --max-workers=2 --warning-mode=all test --continue
