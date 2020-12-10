@@ -134,6 +134,11 @@ if (project.hasProperty("release")) {
         }
     }
 
+    nexusStaging {
+        username = ossrhUsername
+        password = ossrhPassword
+    }
+
 } else {
     uploadArchives {
         repositories {
@@ -142,11 +147,6 @@ if (project.hasProperty("release")) {
             }
         }
     }
-}
-
-nexusStaging {
-    username = ossrhUsername
-    password = ossrhPassword
 }
 
 artifacts {

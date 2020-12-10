@@ -13,7 +13,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - uses: actions/setup-java@v1
+
+      - name: Setup Java
+        uses: actions/setup-java@v1
         with:
           java-version: '8'
           java-package: jdk
@@ -21,7 +23,7 @@ jobs:
       - name: Build
         run: |
           chmod +x gradlew
-          ./gradlew --warning-mode all build -x test
+          ./gradlew --no-daemon --max-workers=2 --warning-mode=all all build -x test
 
       - name: Test
         run: ./gradlew --no-daemon --max-workers=2 --warning-mode=all test --continue
