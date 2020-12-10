@@ -1,5 +1,5 @@
 
-[![Build Status](https://travis-ci.org/briandilley/joraph.svg?branch=develop)](https://travis-ci.org/briandilley/joraph)
+![Build And Deploy Joraph](https://github.com/briandilley/joraph/workflows/Build%20And%20Deploy%20Joraph/badge.svg?branch=develop)
 
 Joraph
 ======
