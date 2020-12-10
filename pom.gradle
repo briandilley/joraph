@@ -1,0 +1,47 @@
+allprojects { project ->
+    publishing {
+        publications {
+            joraph {
+                pom {
+                    name = rootProject.name.capitalize() + (project.parent ? " ($shortName)" : '')
+                    description = project.description
+                    url = 'https://github.com/briandilley/joraph'
+                    issueManagement {
+                        system = 'GitHub'
+                        url = 'https://github.com/briandilley/joraph/issues'
+                    }
+                    ciManagement {
+                        system = 'Github Actions'
+                        url = 'https://github.com/briandilley/joraph/actions'
+                    }
+                    inceptionYear = '2013'
+                    developers {
+                        developer {
+                            id = 'briandilley'
+                            name = 'Brian Dilley'
+                            email = 'brian.dilley@gmail.com.com'
+                            url = 'https://github.com/briandilley'
+                            timezone = 'America/Los_Angeles'
+                        }
+                    }
+                    licenses {
+                        license {
+                            name = 'The MIT License (MIT)'
+                            url = 'https://github.com/briandilley/joraph/blob/develop/LICENSE'
+                            distribution = 'repo'
+                            comments = 'A business-friendly OSS license'
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git:https://github.com/briandilley/joraph.git'
+                        developerConnection = 'git@github.com:briandilley/joraph.git'
+                        url = 'https://github.com/briandilley/joraph'
+                    }
+                    distributionManagement {
+                        downloadUrl = 'https://github.com/briandilley/joraph/releases'
+                    }
+                }
+            }
+        }
+    }
+}
