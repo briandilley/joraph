@@ -21,14 +21,14 @@ maven
 <dependency>
     <groupId>com.github.briandilley.joraph</groupId>
     <artifactId>joraph</artifactId>
-    <version>0.2.3</version>
+    <version>1.0</version>
 </dependency>
 ```
 
 gradle
 ```groovy
 dependencies {
-    compile('com.github.briandilley.joraph:joraph:0.2.3')
+    compile('com.github.briandilley.joraph:joraph:1.0')
 }
 ```
 
@@ -340,6 +340,15 @@ And an example usage of a search endpoint returning a list of `Video` objects.
     }
 
 ```
+
+# Future work
+
+- View hydration layer. Something implementing the above described pattern that keeps you from having to create
+  the response classes.
+
+- GraphQL front-end. Joraph could be a great back-end to a GraphQL front-end.
+
+- Documentation of all of the functionality (ie: conditional foreign keys, loader arguments, etc.)
 
 # Who has used Joraph in Production?
 
