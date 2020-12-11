@@ -1,5 +1,6 @@
 
 ![Build And Deploy Joraph](https://github.com/briandilley/joraph/workflows/Build%20And%20Deploy%20Joraph/badge.svg?branch=develop)
+[![codecov](https://codecov.io/gh/briandilley/joraph/branch/develop/graph/badge.svg?token=IM4UTUDXNB)](https://codecov.io/gh/briandilley/joraph)
 
 Joraph
 ======
