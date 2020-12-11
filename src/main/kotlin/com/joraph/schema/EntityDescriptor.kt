@@ -3,10 +3,6 @@ package com.joraph.schema
 import java.util.*
 import java.util.function.Predicate
 
-
-/**
- * Metadata about an entity class.
- */
 class EntityDescriptor<T> @JvmOverloads constructor(
         val entityClass: Class<T>,
         primaryKey: Key<T, *>? = null,
@@ -48,7 +44,7 @@ class EntityDescriptor<T> @JvmOverloads constructor(
 
     @SafeVarargs
     fun withPrimaryKey(first: Function1<T, *>, vararg remaining: Function1<T, *>): EntityDescriptor<T> {
-        return withPrimaryKey(BasicCompositeKey.CONVERTER, first, *remaining)
+        return withPrimaryKey(CompositeValue.CONVERTER, first, *remaining)
     }
 
     fun addForeignKey(foreignEntity: Class<*>): ForeignKeyBuilder<*, T> {

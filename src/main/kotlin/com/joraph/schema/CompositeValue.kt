@@ -1,12 +1,15 @@
 package com.joraph.schema
 
-
-class BasicCompositeKey {
+/**
+ * Can be used as a value for a [Key] or other [Property] when the value
+ * needs to be made up of multiple other values.
+ */
+class CompositeValue {
 
     companion object {
 
         @JvmField
-        val CONVERTER: ((Array<Any?>) -> Any) = ::BasicCompositeKey
+        val CONVERTER: ((Array<Any?>) -> Any) = ::CompositeValue
     }
 
     val parts: Array<Any?>
@@ -29,7 +32,7 @@ class BasicCompositeKey {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
-        other as BasicCompositeKey
+        other as CompositeValue
         if (!parts.contentEquals(other.parts)) return false
         return true
     }

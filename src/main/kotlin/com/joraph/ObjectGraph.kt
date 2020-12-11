@@ -5,6 +5,22 @@ import com.joraph.schema.Schema
 import java.util.concurrent.ConcurrentHashMap
 import java.util.stream.Stream
 
+/**
+ * The [ObjectGraph] contains all of the entities from one more more graph as defined by
+ * a [Schema]. The result of a [Query] is an [ObjectGraph]. This can be thought of as a
+ * [Map] of [Map]s where the first [Map] is keyed by the entity [Class] and it's value
+ * is a [Map] of that entity's id to the entity itself. For instance, to get a Person
+ * with the id 34:
+ * ```
+ * val person = objectGraph.get(Person.class).get(34)
+ * ```
+ * or:
+ * ```
+ * val person = objectGraph[Person::class.java][34]
+ * ```
+ * This class is thread-safe and can be used on it's own, and with our without a [Schema],
+ * although some methods require a schema to be present.
+ */
 open class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = null) :
         Cloneable,
         Iterable<Pair<Class<*>, MutableMap<Any, Any>>> {

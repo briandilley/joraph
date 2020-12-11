@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 
 import com.joraph.debug.JoraphDebug;
 import com.joraph.schema.Author;
-import com.joraph.schema.BasicCompositeKey;
+import com.joraph.schema.CompositeValue;
 import com.joraph.schema.Book;
 import com.joraph.schema.BookMessage;
 import com.joraph.schema.Checkout;
@@ -91,8 +91,8 @@ public class JoraphIntegrationTest
 	@Test
 	public void testLoadFromGraphTypeKey() {
 
-		UserFollow user3_user4 = testDb.get(UserFollow.class, new BasicCompositeKey("user3", "user4"));
-		UserFollow user3_user2 = testDb.get(UserFollow.class, new BasicCompositeKey("user3", "user2"));
+		UserFollow user3_user4 = testDb.get(UserFollow.class, new CompositeValue("user3", "user4"));
+		UserFollow user3_user2 = testDb.get(UserFollow.class, new CompositeValue("user3", "user2"));
 
 		ObjectGraph objectGraph = context.execute(UserFollow.class,
 				Arrays.asList(user3_user4, user3_user2));
@@ -142,7 +142,7 @@ public class JoraphIntegrationTest
 	@Test
 	public void testPolyMorphicLoading() {
 
-		MessagePair messagePair = testDb.get(MessagePair.class, new BasicCompositeKey("usermessage1", "bookmessage4"));
+		MessagePair messagePair = testDb.get(MessagePair.class, new CompositeValue("usermessage1", "bookmessage4"));
 
 		ObjectGraph objectGraph = context.execute(MessagePair.class, messagePair);
 		assertNotNull(objectGraph);
@@ -339,13 +339,13 @@ public class JoraphIntegrationTest
 		assertFalse(objectGraph.has(User.class, "user3"));
 
 		objectGraph = context.supplement(objectGraph, UserFollow.class, Arrays.asList(
-				new BasicCompositeKey("user1", "user2"),
-				new BasicCompositeKey("user1", "user3"),
-				new BasicCompositeKey("user2", "user1"),
-				new BasicCompositeKey("user2", "user3"),
-				new BasicCompositeKey("user3", "user1"),
-				new BasicCompositeKey("user3", "user2"),
-				new BasicCompositeKey("user3", "user7")));
+				new CompositeValue("user1", "user2"),
+				new CompositeValue("user1", "user3"),
+				new CompositeValue("user2", "user1"),
+				new CompositeValue("user2", "user3"),
+				new CompositeValue("user3", "user1"),
+				new CompositeValue("user3", "user2"),
+				new CompositeValue("user3", "user7")));
 		assertNotNull(objectGraph);
 		assertTrue(objectGraph.has(User.class, "user1"));
 		assertTrue(objectGraph.has(User.class, "user2"));
@@ -358,13 +358,13 @@ public class JoraphIntegrationTest
 		// user2 follows: user1, user3
 		// user3 follows: user1
 
-		assertTrue(objectGraph.has(UserFollow.class, new BasicCompositeKey("user1", "user2")));
-		assertTrue(objectGraph.has(UserFollow.class, new BasicCompositeKey("user2", "user1")));
-		assertTrue(objectGraph.has(UserFollow.class, new BasicCompositeKey("user2", "user3")));
-		assertTrue(objectGraph.has(UserFollow.class, new BasicCompositeKey("user3", "user1")));
-		assertTrue(objectGraph.has(UserFollow.class, new BasicCompositeKey("user3", "user2")));
-		assertFalse(objectGraph.has(UserFollow.class, new BasicCompositeKey("user1", "user3")));
-		assertFalse(objectGraph.has(UserFollow.class, new BasicCompositeKey("user3", "user7")));
+		assertTrue(objectGraph.has(UserFollow.class, new CompositeValue("user1", "user2")));
+		assertTrue(objectGraph.has(UserFollow.class, new CompositeValue("user2", "user1")));
+		assertTrue(objectGraph.has(UserFollow.class, new CompositeValue("user2", "user3")));
+		assertTrue(objectGraph.has(UserFollow.class, new CompositeValue("user3", "user1")));
+		assertTrue(objectGraph.has(UserFollow.class, new CompositeValue("user3", "user2")));
+		assertFalse(objectGraph.has(UserFollow.class, new CompositeValue("user1", "user3")));
+		assertFalse(objectGraph.has(UserFollow.class, new CompositeValue("user3", "user7")));
 
 	}
 

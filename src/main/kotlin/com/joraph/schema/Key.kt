@@ -1,10 +1,10 @@
 package com.joraph.schema
 
 /**
- * A key property.
- * @param <T> the property type
+ * A property that is a primary (unique) key. An entity can only
+ * have a single primary key.
  */
-class Key<T, R>(accessor: Function1<T, R?>) : BaseProperty<T, R>(accessor), Property<T, R> {
+class Key<T, R>(accessor: (T) -> R?) : BaseProperty<T, R>(accessor), Property<T, R> {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

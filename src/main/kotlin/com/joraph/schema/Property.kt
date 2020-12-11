@@ -2,12 +2,10 @@ package com.joraph.schema
 
 
 /**
- * Implementers have reflection-based runtime access to a
- * class's properties.
- * @param <T> the property type
+ * Base interface representing a property of an entity with an access method.
  */
 @FunctionalInterface
-interface Property<T, R> : Function1<T, R?> {
+interface Property<T, R> : (T) -> R? {
     override fun invoke(value: T): R? {
         return read(value as Any)
     }

@@ -2,17 +2,22 @@ package com.joraph
 
 import com.joraph.debug.JoraphDebug
 import com.joraph.loader.EntityLoaderContext
+import com.joraph.loader.LoaderFunction
 import com.joraph.schema.PrimaryKeyNullPointerException
 import com.joraph.schema.Property
 import com.joraph.schema.Schema
 import com.joraph.schema.SchemaUtil.shouldLoad
 import com.joraph.schema.UnknownEntityDescriptorException
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
 /**
- * An execution context which brings together a [com.joraph.JoraphContext],
- * a single entity class, and the root objects.
+ * An execution context is created for every [Query] that is executed. It uses the [Schema] configured
+ * by the [JoraphContext] that it was created for to coordinate [LoaderFunction]s and to execute the [Query]
+ * that it was created for. Technically an [ExecutionContext] could be used more than once, but it is
+ * unnecessary to do so because it is not thread-safe.
  */
 open class ExecutionContext @JvmOverloads constructor(
         val context: JoraphContext,
@@ -26,12 +31,7 @@ open class ExecutionContext @JvmOverloads constructor(
     private val keysToLoad: KeysToLoad = KeysToLoad()
 
     /**
-     *
-     * Executes the plan, iterates the resulting operations, and returns the results.
-     *
-     * Subsequent calls to `execute` result in a cached [ObjectGraph].
-     * @return the results derived from loading the associated objects supplied in the root
-     * objects
+     * Executes the [Query] and returns the resulting [ObjectGraph].
      */
     open fun execute(): ObjectGraph {
         addToResults(query.rootObjects)
@@ -145,5 +145,52 @@ open class ExecutionContext @JvmOverloads constructor(
             }
         }
     }
+
+}
+
+/**
+ * Simple class for managing the keys that need to be loaded and those
+ * that have already been loaded.
+ */
+internal class KeysToLoad {
+
+    private val keysToLoad: MutableMap<Class<*>, MutableSet<Any>> = mutableMapOf()
+    private val keysLoaded: MutableMap<Class<*>, MutableSet<Any>> = mutableMapOf()
+
+    fun getAddKeyToLoadFunction(entityClass: Class<*>): (Any) -> Unit = { addKeyToLoad(entityClass, it) }
+
+    @Synchronized
+    fun addKeyToLoad(entityClass: Class<*>, id: Any) {
+        if (id !in getKeysLoaded(entityClass)) {
+            getKeysToLoad(entityClass).add(id)
+        }
+    }
+
+    @Synchronized
+    fun addKeysLoaded(entityClass: Class<*>, ids: Collection<Any>) {
+        getKeysLoaded(entityClass).addAll(ids)
+        getKeysToLoad(entityClass).removeAll(ids)
+    }
+
+    fun getKeysToLoad(entityClass: Class<*>): MutableSet<Any> {
+        return keysToLoad.computeIfAbsent(entityClass) { Collections.newSetFromMap(ConcurrentHashMap()) }
+    }
+
+    fun getKeysLoaded(entityClass: Class<*>): MutableSet<Any> {
+        return keysLoaded.computeIfAbsent(entityClass) { Collections.newSetFromMap(ConcurrentHashMap()) }
+    }
+
+    @Synchronized
+    fun clear() {
+        keysToLoad.clear()
+        keysLoaded.clear()
+    }
+
+    @get:Synchronized
+    val entitiesToLoad: Set<Class<*>>
+        get() = keysToLoad.entries
+            .filter{ !it.value.isEmpty() }
+            .map{ it.key }
+            .toSet()
 
 }
