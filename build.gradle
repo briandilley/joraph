@@ -23,6 +23,13 @@ buildscript {
 
 plugins {
     id("org.jetbrains.dokka") version "1.4.20"
+    id('jacoco')
+}
+
+repositories {
+    gradlePluginPortal()
+    mavenCentral()
+    jcenter()
 }
 
 apply plugin: "java"
@@ -38,10 +45,10 @@ Java library for joining objects into a graph, JOin gRAPH
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-repositories {
-    gradlePluginPortal()
-    mavenCentral()
-    jcenter()
+compileKotlin {
+    kotlinOptions {
+        suppressWarnings = true
+    }
 }
 
 ext {
@@ -59,6 +66,19 @@ test {
     maxParallelForks = 1
     forkEvery = 1
     maxHeapSize = "2g"
+    finalizedBy jacocoTestReport
+}
+
+jacoco {
+    toolVersion = "0.8.5"
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.enabled true
+        csv.enabled true
+    }
 }
 
 dependencies {
