@@ -2,6 +2,9 @@ package com.joraph
 
 object CollectionUtil {
 
+    /**
+     * Returns the given [Iterable] as a [MutableList], converting it if necessary.
+     */
     @JvmStatic
     fun <T> toList(itr: Iterable<T>): MutableList<T> {
         if (itr is MutableList<*>) {
@@ -12,6 +15,9 @@ object CollectionUtil {
         return ret
     }
 
+    /**
+     * Returns the given [Iterable] as a [MutableSet], converting it if necessary.
+     */
     @JvmStatic
     fun <T> toSet(itr: Iterable<T>): MutableSet<T> {
         if (itr is MutableSet<*>) {
@@ -22,6 +28,10 @@ object CollectionUtil {
         return ret
     }
 
+    /**
+     * Returns the given object as a [MutableSet], converting it if necessary, or
+     * wrapping it in one if it's not already a [Collection] type.
+     */
     @JvmStatic
     @Suppress("UNCHECKED")
     fun convertToSet(value: Any): MutableSet<*> {

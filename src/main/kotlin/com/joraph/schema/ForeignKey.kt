@@ -1,13 +1,13 @@
 package com.joraph.schema
 
 /**
- * A foreign key property.
- * @param <T> the ID type
+ * Represents a foreign key from one entity to another.  Foreign keys always
+ * reference the foreign entity's primary key.
  */
 open class ForeignKey<T, R>(
         val entityClass: Class<T>,
         val foreignEntity: Class<*>,
-        accessor: Function1<T, R?>) : BaseProperty<T, R>(accessor), Property<T, R> {
+        accessor: (T) -> R?) : BaseProperty<T, R>(accessor), Property<T, R> {
 
     override fun toString(): String {
         return (entityClass.name

@@ -14,7 +14,7 @@ import com.joraph.loader.EntityLoaderContext;
 import com.joraph.loader.LoaderFunction;
 import com.joraph.schema.Author;
 import com.joraph.schema.AuthorMessage;
-import com.joraph.schema.BasicCompositeKey;
+import com.joraph.schema.CompositeValue;
 import com.joraph.schema.Book;
 import com.joraph.schema.BookMessage;
 import com.joraph.schema.Checkout;
@@ -152,7 +152,7 @@ public abstract class AbstractJoraphTest {
 
 		/* follows */
 		schema.addEntityDescriptor(UserFollow.class)
-			.withPrimaryKey(BasicCompositeKey.CONVERTER,
+			.withPrimaryKey(CompositeValue.CONVERTER,
 					UserFollow::getFromUserId,
 					UserFollow::getToUserId)
 			.withForeignKey(User.class, UserFollow::getFromUserId)
@@ -196,7 +196,7 @@ public abstract class AbstractJoraphTest {
 			.setId("latestMessage1")
 			.setLatestMessageId("usermessage1"));
 
-		testDb.addResult(MessagePair.class, new BasicCompositeKey("usermessage1", "bookmessage4"), new MessagePair()
+		testDb.addResult(MessagePair.class, new CompositeValue("usermessage1", "bookmessage4"), new MessagePair()
 			.setLeft("usermessage1")
 			.setRight("bookmessage4"));
 
@@ -225,17 +225,17 @@ public abstract class AbstractJoraphTest {
 		// user2 follows: user1, user3
 		// user3 follows: user1
 
-		testDb.addResult(UserFollow.class, new BasicCompositeKey("user1", "user2"),
+		testDb.addResult(UserFollow.class, new CompositeValue("user1", "user2"),
 			new UserFollow("user1", "user2"));
-		testDb.addResult(UserFollow.class, new BasicCompositeKey("user2", "user1"),
+		testDb.addResult(UserFollow.class, new CompositeValue("user2", "user1"),
 			new UserFollow("user2", "user1"));
-		testDb.addResult(UserFollow.class, new BasicCompositeKey("user3", "user1"),
+		testDb.addResult(UserFollow.class, new CompositeValue("user3", "user1"),
 			new UserFollow("user3", "user1"));
-		testDb.addResult(UserFollow.class, new BasicCompositeKey("user2", "user3"),
+		testDb.addResult(UserFollow.class, new CompositeValue("user2", "user3"),
 			new UserFollow("user2", "user3"));
-		testDb.addResult(UserFollow.class, new BasicCompositeKey("user3", "user4"),
+		testDb.addResult(UserFollow.class, new CompositeValue("user3", "user4"),
 			new UserFollow("user3", "user4"));
-		testDb.addResult(UserFollow.class, new BasicCompositeKey("user3", "user2"),
+		testDb.addResult(UserFollow.class, new CompositeValue("user3", "user2"),
 			new UserFollow("user3", "user2"));
 
 		testDb.addResult(Genre.class, "genre1", new Genre()

@@ -3,13 +3,13 @@ package com.joraph.schema
 import java.util.function.Predicate
 
 /**
- * A foreign key property.
- * @param <T> the ID type
+ * A [ForeignKey] that is conditional upon a specific argument being present and
+ * a given predicate evaluating to true when the argument is passed to it.
  */
 open class ConditionalForeignKey<T, R, A>(
         entityClass: Class<T>,
         foreignEntity: Class<*>,
-        accessor: Function1<T, R?>,
+        accessor: (T) -> R?,
         val argumentClass: Class<A>,
         val argumentPredicate: Predicate<A>) : ForeignKey<T, R>(entityClass, foreignEntity, accessor), Property<T, R> {
 
@@ -53,6 +53,5 @@ open class ConditionalForeignKey<T, R, A>(
         result = 31 * result + argumentPredicate.hashCode()
         return result
     }
-
 
 }

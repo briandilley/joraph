@@ -3,10 +3,9 @@ package com.joraph.schema
 import com.joraph.JoraphException
 
 /**
- * Base class for `Property`.
- * @param <T> the property type</T>
+ * Base class for [Property] that uses a function for accessing the Property's value.
  */
-open class BaseProperty<T, R> constructor(val propertyAccessor: Function1<T, R?>) : Property<T, R> {
+open class BaseProperty<T, R> constructor(val propertyAccessor: (T) -> R?) : Property<T, R> {
 
     @Suppress("UNCHECKED_CAST")
     override fun read(obj: Any): R? {

@@ -3,7 +3,6 @@ package com.joraph.schema
 
 import com.joraph.JoraphException
 
-
 class MissingPrimaryKeyException(val entityDescriptor: EntityDescriptor<*>)
     : JoraphException("${entityDescriptor.entityClass.name} is missing a primary key")
 

@@ -1,10 +1,18 @@
 package com.joraph
 
-data class ChainableFunc<T, R>(private val func: Function1<T, R?>) : Function1<T, R?> {
+/**
+ * A [ChainableFunc] makes it easy to walk through an object graph to find
+ * a value.  For instance:
+ * ```
+ * val prop = ChainableFunc.chain(Person::address).andThen(Address::city).andThen(City::id)
+ * val cityId = prop.read(person)
+ * ```
+ */
+data class ChainableFunc<T, R>(private val func: (T) -> R?) : (T) -> R? {
 
     companion object {
         @JvmStatic
-        fun <T, R> chain(func: Function1<T, R?>): ChainableFunc<T, R?>
+        fun <T, R> chain(func: (T) -> R?): ChainableFunc<T, R?>
                 = ChainableFunc(func)
     }
 
@@ -17,9 +25,9 @@ data class ChainableFunc<T, R>(private val func: Function1<T, R?>) : Function1<T
 
     fun get(p1: T): R? = invoke(p1)
 
-    infix fun <N> andThen(next: Function1<R, N?>): ChainableFunc<T, N>
+    infix fun <N> andThen(next: (R) -> N?): ChainableFunc<T, N>
             = ChainableFunc(func andThen next)
 
 }
 
-fun <T, R> Function1<T, R?>.chain(): ChainableFunc<T, R> = ChainableFunc(this)
+fun <T, R> ((T) -> R?).chain(): ChainableFunc<T, R> = ChainableFunc(this)

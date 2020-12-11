@@ -1,5 +1,9 @@
 package com.joraph.schema
 
+/**
+ * The Schema holds all of the meta-data about an object graph, that is all of it's entities and their
+ * primary and foreign keys.
+ */
 class Schema {
 
     var isValidated = false
@@ -15,9 +19,9 @@ class Schema {
     }
 
     /**
-     * Returns the graph type key for the given entity class.
-     * @param entityClass the entity class
-     * @return the key
+     * Returns the graph type key for the given entity class. This is the key that
+     * will be used to store the given entity in the [com.joraph.ObjectGraph]. This is
+     * useful for polymorphic types that need to be addressed as the same super type.
      */
     fun getGraphTypeKey(entityClass: Class<*>): Class<*> {
         val desc = entityDescriptors[entityClass]
@@ -26,8 +30,7 @@ class Schema {
     }
 
     /**
-     * @param entityClass the entity class
-     * @return the descriptor for the class, or null if no descriptor exists for it
+     * Returns all of the [EntityDescriptor] configured for the given entity.
      */
     fun getEntityDescriptors(entityClass: Class<*>): Set<EntityDescriptor<*>> {
         return entityDescriptors.values
@@ -36,8 +39,7 @@ class Schema {
     }
 
     /**
-     * Adds an entity descriptor to the schema.
-     * @param entityDescriptor the entity descriptor to add
+     * Adds an [EntityDescriptor] to the schema.
      */
     fun addEntityDescriptor(entityDescriptor: EntityDescriptor<*>) {
         isValidated = false
@@ -45,11 +47,7 @@ class Schema {
     }
 
     /**
-     * Wraps a class in an [com.joraph.schema.EntityDescriptor] and then
-     * adds it to the schema.
-     * @param entityClass the entity class
-     * @return the [com.joraph.schema.EntityDescriptor] created as a wrapper and
-     * added to the schema
+     * Adds to the schema and returns an empty [EntityDescriptor] for the given entity.
      */
     fun <T> addEntityDescriptor(entityClass: Class<T>): EntityDescriptor<T> {
         isValidated = false
@@ -59,11 +57,7 @@ class Schema {
     }
 
     /**
-     * Describes the foreign keys from one class to another, if any exist.
-     * @param fromEntityClass the from entity class
-     * @param toEntityClass the to entity class
-     * @return all of the foreign keys which exist from one entity class to
-     * another or an empty collection if no such relationships exist
+     * Returns a [List] of [ForeignKey]s defined from the [fromEntityClass] to the [toEntityClass].
      */
     fun describeForeignKeys(fromEntityClass: Class<*>, toEntityClass: Class<*>): List<ForeignKey<*, *>> {
         return describeForeignKeysFrom(fromEntityClass)
@@ -72,9 +66,7 @@ class Schema {
     }
 
     /**
-     * Describes the foreign keys configured for a specified class.
-     * @param entityClass the entity class
-     * @return the foreign keys configured for that class
+     * Returns a [List] of [ForeignKey]s defined on the [entityClass].
      */
     fun describeForeignKeysFrom(entityClass: Class<*>): List<ForeignKey<*, *>> {
         return getEntityDescriptors(entityClass)
@@ -82,19 +74,16 @@ class Schema {
     }
 
     /**
-     * Describes the foreign keys coming into a given entity class.
-     * @param toEntityClass the entity class
-     * @return foreign keys that point to an entity class
+     * Returns a [List] of [ForeignKey]s defined on other entities to the [entityClass].
      */
-    fun describeForeignKeysTo(toEntityClass: Class<*>): List<ForeignKey<*, *>> {
+    fun describeForeignKeysTo(entityClass: Class<*>): List<ForeignKey<*, *>> {
         return entityDescriptors.values
             .flatMap { it.foreignKeys }
-            .filter { it.foreignEntity == toEntityClass }
+            .filter { it.foreignEntity == entityClass }
     }
 
     /**
-     * Describes all of the foreign keys that have been configured.
-     * @return all of the configured foreign keys
+     * Returns a [List] of all [ForeignKey]s defined.
      */
     fun describeForeignKeys(): List<ForeignKey<*, *>> {
         return entityDescriptors.values
@@ -102,7 +91,7 @@ class Schema {
     }
 
     /**
-     * Describes the given entity class.
+     * Returns a [List] of all entities defined.
      */
     fun describeEntities(): Set<Class<*>> {
         assertValidated()
@@ -110,7 +99,7 @@ class Schema {
     }
 
     /**
-     * Validates the [Schema].
+     * Validates the [Schema], throwing a [com.joraph.JoraphException] on error.
      */
     fun validate(): Schema {
 
