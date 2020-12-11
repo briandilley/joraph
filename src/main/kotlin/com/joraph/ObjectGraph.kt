@@ -26,7 +26,7 @@ open class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = n
      * Returns the graph type key for the given entity class.
      */
     fun getGraphTypeKey(entityClass: Class<*>): Class<*> {
-        return if (schema != null) schema.getGraphTypeKey(entityClass) else entityClass
+        return schema?.getGraphTypeKey(entityClass) ?: entityClass
     }
 
     /**

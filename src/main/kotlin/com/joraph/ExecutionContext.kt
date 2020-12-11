@@ -121,6 +121,7 @@ open class ExecutionContext @JvmOverloads constructor(
             return
         }
         val objects = loaderContext.load(entityClass, query.arguments, ids)
+
         addToResults(objects)
         keysToLoad.addKeysLoaded(entityClass, ids)
     }
