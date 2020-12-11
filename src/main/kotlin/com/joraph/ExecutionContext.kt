@@ -14,12 +14,13 @@ import java.util.concurrent.TimeUnit
  * An execution context which brings together a [com.joraph.JoraphContext],
  * a single entity class, and the root objects.
  */
-class ExecutionContext(
+open class ExecutionContext @JvmOverloads constructor(
         val context: JoraphContext,
-        val query: Query) {
+        val query: Query,
+        var maxPasses: Int = 50) {
 
     val schema: Schema = context.schema
-    val objectGraph: ObjectGraph = if (query.hasExistingGraph()) query.existingGraph else ObjectGraph(context.schema)
+    val objectGraph: ObjectGraph = query.existingGraph ?: ObjectGraph(context.schema)
     val loaderContext: EntityLoaderContext = context.loaderContext
 
     private val keysToLoad: KeysToLoad = KeysToLoad()
@@ -32,18 +33,23 @@ class ExecutionContext(
      * @return the results derived from loading the associated objects supplied in the root
      * objects
      */
-    fun execute(): ObjectGraph {
+    open fun execute(): ObjectGraph {
         addToResults(query.rootObjects)
 
         keysToLoad.clear()
         val descriptors = query.entityClasses
-                .flatMap { clazz: Class<*>? -> schema.getEntityDescriptors(clazz) }
+                .flatMap { schema.getEntityDescriptors(it) }
                 .toMutableSet()
-
 
         // for each entity
         var keepLoading = true
+        var pass = 0
         while (keepLoading) {
+
+            pass++
+            if (pass > maxPasses) {
+                throw JoraphException("Maximum passes ($maxPasses) exceeded, do you have a circular dependency?")
+            }
 
             // get all of the FKs
             for (desc in descriptors) {
@@ -64,10 +70,12 @@ class ExecutionContext(
 
             // add the new descriptors to the list
             val newDescriptors = descriptors.addAll(entitiesToLoad
-                    .flatMap { clazz: Class<*>? -> schema.getEntityDescriptors(clazz) }
+                    .flatMap { schema.getEntityDescriptors(it) }
                     .toSet())
             keepLoading = entitiesToLoad.isNotEmpty() || newDescriptors
         }
+
+
         JoraphDebug.addObjectGraph(objectGraph)
         return objectGraph
     }

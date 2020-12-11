@@ -2,7 +2,10 @@ package com.joraph;
 
 import static com.joraph.ChainableFunc.chain;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -45,16 +48,16 @@ public abstract class AbstractJoraphTest {
 
 	public void setupLoaders(ObjectGraph testDb, JoraphContext context) {
 		EntityLoaderContext loaderContext = context.getLoaderContext();
-		loaderContext.addLoader(Author.class, 		this.loaderFor(testDb, Author.class));
-		loaderContext.addLoader(Book.class, 		this.loaderFor(testDb, Book.class));
-		loaderContext.addLoader(Checkout.class, 	this.loaderFor(testDb, Checkout.class));
-		loaderContext.addLoader(Genre.class, 		this.loaderFor(testDb, Genre.class));
-		loaderContext.addLoader(Library.class, 		this.loaderFor(testDb, Library.class));
-		loaderContext.addLoader(User.class, 		this.loaderFor(testDb, User.class));
-		loaderContext.addLoader(SimilarBook.class, 	this.loaderFor(testDb, SimilarBook.class));
-		loaderContext.addLoader(FeaturedBook.class, this.loaderFor(testDb, FeaturedBook.class));
-		loaderContext.addLoader(UserFollow.class,  	this.loaderFor(testDb, UserFollow.class));
-		loaderContext.addLoader(Message.class,  	this.loaderFor(testDb, Message.class));
+		loaderContext.withLoader(Author.class, 		this.loaderFor(testDb, Author.class));
+		loaderContext.withLoader(Book.class, 		this.loaderFor(testDb, Book.class));
+		loaderContext.withLoader(Checkout.class, 	this.loaderFor(testDb, Checkout.class));
+		loaderContext.withLoader(Genre.class, 		this.loaderFor(testDb, Genre.class));
+		loaderContext.withLoader(Library.class, 	this.loaderFor(testDb, Library.class));
+		loaderContext.withLoader(User.class, 		this.loaderFor(testDb, User.class));
+		loaderContext.withLoader(SimilarBook.class, this.loaderFor(testDb, SimilarBook.class));
+		loaderContext.withLoader(FeaturedBook.class,    this.loaderFor(testDb, FeaturedBook.class));
+		loaderContext.withLoader(UserFollow.class,      this.loaderFor(testDb, UserFollow.class));
+		loaderContext.withLoader(Message.class,  	this.loaderFor(testDb, Message.class));
 	}
 
 	public Schema setupSchema(Schema schema)
@@ -273,17 +276,17 @@ public abstract class AbstractJoraphTest {
 
 		testDb.addResult(UserFavorites.class, "user1", new UserFavorites()
 				.setUserId("user1")
-				.setAuthorIds(CollectionUtil.asSet("author1", "author2"))
-				.setLibraryIds(CollectionUtil.asSet("library1")));
+				.setAuthorIds(new HashSet<>(Arrays.asList("author1", "author2")))
+				.setLibraryIds(new HashSet<>(Collections.singletonList("library1"))));
 
 		testDb.addResult(UserFavorites.class, "user2", new UserFavorites()
 				.setUserId("user2")
-				.setAuthorIds(CollectionUtil.asSet("author2", "author3"))
-				.setLibraryIds(CollectionUtil.asSet("library2")));
+				.setAuthorIds(new HashSet<>(Arrays.asList("author2", "author3")))
+				.setLibraryIds(new HashSet<>(Collections.singletonList("library2"))));
 
 		testDb.addResult(UserFavorites.class, "user3", new UserFavorites()
 				.setUserId("user2")
-				.setLibraryIds(CollectionUtil.asSet("library1", "library2")));
+				.setLibraryIds(new HashSet<>(Arrays.asList("library1", "library2"))));
 
 		testDb.addResult(Checkout.class, "checkout1", new Checkout()
 			.setId("checkout1")

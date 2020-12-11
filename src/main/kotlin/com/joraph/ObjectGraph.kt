@@ -2,13 +2,14 @@ package com.joraph
 
 import com.joraph.schema.Property
 import com.joraph.schema.Schema
+import java.util.concurrent.ConcurrentHashMap
 import java.util.stream.Stream
 
-class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = null) :
+open class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = null) :
         Cloneable,
         Iterable<Pair<Class<*>, MutableMap<Any, Any>>> {
 
-    val results: MutableMap<Class<*>, MutableMap<Any, Any>> = mutableMapOf()
+    val results: MutableMap<Class<*>, MutableMap<Any, Any>> = ConcurrentHashMap()
 
     @Throws(CloneNotSupportedException::class)
     override fun clone(): ObjectGraph {
@@ -33,7 +34,7 @@ class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = null) 
      */
     fun copyGraphTo(destinationObjectGraph: ObjectGraph) {
         for ((key, value) in this) {
-            value.putAll(destinationObjectGraph.results.computeIfAbsent(key) { mutableMapOf() })
+            value.putAll(destinationObjectGraph.results.computeIfAbsent(key) { ConcurrentHashMap() })
         }
     }
 
@@ -96,7 +97,7 @@ class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = null) 
      */
     fun addResult(type: Class<*>, id: Any, value: Any) {
         val graphTypeKey = getGraphTypeKey(type)
-        results.computeIfAbsent(graphTypeKey) { mutableMapOf() }[id] = value
+        results.computeIfAbsent(graphTypeKey) { ConcurrentHashMap() }[id] = value
     }
 
     /**
@@ -149,7 +150,7 @@ class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = null) 
     @Suppress("UNCHECKED_CAST")
     fun <T : Any> getMap(type: Class<*>): Map<Any, T> {
         val graphTypeKey = getGraphTypeKey(type)
-        return results.computeIfAbsent(graphTypeKey) { mutableMapOf() }
+        return results.computeIfAbsent(graphTypeKey) { ConcurrentHashMap() }
                 .toMap() as Map<Any, T>
     }
 

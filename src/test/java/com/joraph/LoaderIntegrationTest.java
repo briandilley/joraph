@@ -68,7 +68,7 @@ public class LoaderIntegrationTest
 
 		ObjectGraph objectGraph = context.execute(new Query(UserFavorites.class)
 				.withRootObject(userFavorites1, userFavorites2)
-				.withArgument(argument));
+				.withArgumentProvider(argument));
 		assertNotNull(objectGraph);
 
 		assertNotNull(objectGraph.get(UserFavorites.class, "user1"));
@@ -91,7 +91,7 @@ public class LoaderIntegrationTest
 
 		objectGraph = context.execute(new Query(UserFavorites.class)
 				.withRootObject(userFavorites1, userFavorites2)
-				.withArgument(argument));
+				.withArgumentProvider(argument));
 		assertNotNull(objectGraph);
 
 		assertNotNull(objectGraph.get(UserFavorites.class, "user1"));
@@ -114,7 +114,7 @@ public class LoaderIntegrationTest
 
 		objectGraph = context.execute(new Query(UserFavorites.class)
 				.withRootObject(userFavorites1, userFavorites2)
-				.withArgument("Test"));
+				.withArgumentProvider("Test"));
 		assertNotNull(objectGraph);
 
 		assertNotNull(objectGraph.get(UserFavorites.class, "user1"));
@@ -138,12 +138,12 @@ public class LoaderIntegrationTest
 
 		context.getLoaderContext()
 			.addLoader(Book.class)
-				.withArgument(TestArgs.class, TestArgs::incrementAndGetArg1)
-				.withListBiFunction(this::loadBooks)
+				.expectingArgument(TestArgs.class, TestArgs::incrementAndGetArg1)
+				.withLoader(this::loadBooks)
 				.add()
 			.addLoader(Author.class)
-				.withArgument(TestArgs.class, TestArgs::incrementAndGetArg2)
-				.withListBiFunction(this::loadAuthors)
+				.expectingArgument(TestArgs.class, TestArgs::incrementAndGetArg2)
+				.withLoader(this::loadAuthors)
 				.add();
 
 		TestArgs argument = new TestArgs();
@@ -153,7 +153,7 @@ public class LoaderIntegrationTest
 
 		ObjectGraph objectGraph = context.execute(new Query(FeaturedBook.class)
 				.withRootObject(featuredBook1)
-				.withArgument(argument));
+				.withArgumentProvider(argument));
 		assertNotNull(objectGraph);
 
 		assertNotNull(objectGraph.get(FeaturedBook.class, "book1"));
@@ -169,12 +169,12 @@ public class LoaderIntegrationTest
 
 		context.getLoaderContext()
 			.addLoader(Book.class)
-				.withArgument(TestArgs.class, TestArgs::incrementAndGetArg1)
-				.withListBiFunction(this::loadBooks)
+				.expectingArgument(TestArgs.class, TestArgs::incrementAndGetArg1)
+				.withLoader(this::loadBooks)
 				.add()
 			.addLoader(Author.class)
-				.withArgument(TestArgs.class, TestArgs::incrementAndGetArg2)
-				.withListBiFunction(this::loadAuthors)
+				.expectingArgument(TestArgs.class, TestArgs::incrementAndGetArg2)
+				.withLoader(this::loadAuthors)
 				.add();
 
 		FeaturedBook featuredBook1 = testDb.get(FeaturedBook.class, "book1");
