@@ -22,14 +22,14 @@ maven
 <dependency>
     <groupId>com.github.briandilley.joraph</groupId>
     <artifactId>joraph</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
 </dependency>
 ```
 
 gradle
 ```groovy
 dependencies {
-    compile('com.github.briandilley.joraph:joraph:1.0')
+    compile('com.github.briandilley.joraph:joraph:1.1')
 }
 ```
 
