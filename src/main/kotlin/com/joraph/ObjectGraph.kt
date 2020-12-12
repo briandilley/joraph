@@ -21,12 +21,18 @@ import java.util.stream.Stream
  * This class is thread-safe and can be used on it's own, and with our without a [Schema],
  * although some methods require a schema to be present.
  */
-open class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = null) :
+open class ObjectGraph @JvmOverloads constructor(val schema: Schema? = null) :
         Cloneable,
-        Iterable<Pair<Class<*>, MutableMap<Any, Any>>> {
+        Iterable<Triple<Class<*>, Any, Any>> {
 
+    /**
+     *
+     */
     val results: MutableMap<Class<*>, MutableMap<Any, Any>> = ConcurrentHashMap()
 
+    /**
+     *
+     */
     @Throws(CloneNotSupportedException::class)
     override fun clone(): ObjectGraph {
         val ret = ObjectGraph(schema)
@@ -34,9 +40,38 @@ open class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = n
         return ret
     }
 
-    override fun iterator(): Iterator<Pair<Class<*>, MutableMap<Any, Any>>> = results.entries
-            .map { Pair(it.key, it.value) }
+    /**
+     *
+     */
+    override fun iterator(): Iterator<Triple<Class<*>, Any, Any>> = results.entries
+            .flatMap { e -> e.value.entries
+                .map { ee -> Triple(e.key, ee.key, ee.value) }}
             .iterator()
+
+    /**
+     *
+     */
+    val size: Int get() = results.entries
+        .map { it.value.size }
+        .filter { it > 0 }
+        .fold(0) { l, r -> l+r }
+
+    /**
+     *
+     */
+    fun isNotEmpty(): Boolean = !isEmpty()
+
+    /**
+     *
+     */
+    fun isEmpty(): Boolean {
+        for ((_, v) in results) {
+            if (v.isNotEmpty()) {
+                return false
+            }
+        }
+        return true
+    }
 
     /**
      * Returns the graph type key for the given entity class.
@@ -49,8 +84,8 @@ open class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = n
      * Copy this [ObjectGraph]'s results to the given [ObjectGraph].
      */
     fun copyGraphTo(destinationObjectGraph: ObjectGraph) {
-        for ((key, value) in this) {
-            value.putAll(destinationObjectGraph.results.computeIfAbsent(key) { ConcurrentHashMap() })
+        for ((type, id, value) in this) {
+            destinationObjectGraph.addResult(type, id, value)
         }
     }
 
@@ -64,11 +99,11 @@ open class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = n
      */
     @Suppress("UNCHECKED_CAST")
     fun <T : Any> getIds(type: Class<*>): Set<T> {
-        return schema!!.getEntityDescriptors(type)
-                .map { getList(it.entityClass)
-                        .map { o -> it.primaryKey.read(o!!) as T } }
-                .flatten()
-                .toSet()
+        return (schema!!.getEntityDescriptors(type).map { it.graphKey } + setOf(type))
+            .mapNotNull { results[it]?.keys }
+            .flatten()
+            .map { it as T }
+            .toSet()
     }
 
     /**
@@ -129,6 +164,17 @@ open class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = n
                 ?: return false
         return map.containsKey(id)
     }
+
+    /**
+     * Removes all objects of the given type returning the number
+     * of objects that were removed.
+     */
+    fun removeAll(type: Class<*>): Int = results.remove(type)?.size ?: 0
+
+    /**
+     * Removes the given object returning true if it was found and removed.
+     */
+    fun remove(type: Class<*>, id: Any?): Boolean = id?.let { results[type]?.remove(it) } != null
 
     /**
      * Returns the object of the given type with
@@ -206,5 +252,24 @@ open class ObjectGraph @JvmOverloads constructor(private val schema: Schema? = n
                 .mapNotNull { map[it] }
                 .toList()
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ObjectGraph
+
+        if (schema != other.schema) return false
+        if (results != other.results) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = schema?.hashCode() ?: 0
+        result = 31 * result + results.hashCode()
+        return result
+    }
+
 
 }
