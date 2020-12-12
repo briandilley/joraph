@@ -55,6 +55,7 @@ open class Query {
      */
     fun withRootEntity(vararg rootEntities: Any): Query {
         return withRootObjects(rootEntities.toList())
+            .withEntityClasses(rootEntities.map { it::class.java })
     }
 
     /**
